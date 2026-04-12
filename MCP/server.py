@@ -1,0 +1,198 @@
+import json
+import os
+from typing import List, Dict, Any, Optional, Union
+from mcp.server.fastmcp import FastMCP
+
+# Create MCP server instance
+mcp = FastMCP("FairnessAlgorithmsServer")
+
+@mcp.tool()
+def get_algorithm_info(algorithm_id: str = "algo1") -> str:
+    """
+    Get detailed documentation about an algorithmic knowledge skill.
+    Call this tool to learn what the algorithm calculates and what domains it applies to.
+    """
+    registry = {
+        "algo1": {
+            "name": "Certifying and Removing Disparate Impact (Knowledge Skill)",
+            "purpose": "Detects and removes disparate impact in datasets via pre-processing by equalizing distributions across protected groups while preserving candidate ranks.",
+            "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
+            "not_suited_for": ["Criminal Justice (due to label bias)", "Healthcare (if extreme accuracy loss is harmful without clinical context)"],
+            "tools_provided": [
+                {
+                    "tool_name": "load_algorithm_knowledge",
+                    "description": "Loads the algorithmic pseudo-code and schemas into the agent context.",
+                    "inputs_schema": {
+                        "algorithm_id": "String. Set to 'algo1'."
+                    }
+                }
+            ]
+        },
+        "algo2": {
+            "name": "Equality of Opportunity in Supervised Learning (Knowledge Skill)",
+            "purpose": "Provides post-processing threshold optimizations to enforce equalized odds (TPR/FPR equalized) or equal opportunity (TPR equalized) directly on outputs without retraining.",
+            "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
+            "not_suited_for": ["Criminal Justice (due to mathematical base-rate proxy bias)"],
+            "tools_provided": [
+                {
+                    "tool_name": "load_algorithm_knowledge",
+                    "description": "Loads the mathematical logic guiding TPR/FPR ROC post-processing.",
+                    "inputs_schema": {
+                        "algorithm_id": "String. Set to 'algo2'."
+                    }
+                }
+            ]
+        },
+        "algo3": {
+            "name": "Fair Prediction with Disparate Impact - Recidivism (Knowledge Skill)",
+            "purpose": "Framework diagnosing the theoretical impossibility of balancing Predictive Parity and Error Rate Balance when base rates differ, calibrating optimal tradeoff thresholds.",
+            "best_suited_for": ["Criminal Justice", "Lending & Finance"],
+            "not_suited_for": ["Education (interventions alter logic matrices)", "Healthcare (without clinical harm-weight tables)"],
+            "tools_provided": [
+                {
+                    "tool_name": "load_algorithm_knowledge",
+                    "description": "Loads the mathematical theorem proof logic governing cost-calibrated strategy boundaries.",
+                    "inputs_schema": {
+                        "algorithm_id": "String. Set to 'algo3'."
+                    }
+                }
+            ]
+        },
+        "algo4": {
+            "name": "Intersectional Subgroup Scan for Fairness Auditing & Mitigation (Knowledge Skill)",
+            "purpose": "Efficiently identifies and remediates fairness gerrymandering manifesting exclusively inside highly specific, intersecting demographic subgroups via combinatorial scanning.",
+            "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
+            "not_suited_for": ["Criminal Justice (label validity overrides)", "Healthcare (clinical context required)"],
+            "tools_provided": [
+                {
+                    "tool_name": "load_algorithm_knowledge",
+                    "description": "Loads algorithmic rules for scanning and mutating boolean subgroup structures.",
+                    "inputs_schema": {
+                        "algorithm_id": "String. Set to 'algo4'."
+                    }
+                }
+            ]
+        },
+        "algo5": {
+            "name": "Mutual Information Proxy Scanner for Algorithmic Fairness (Knowledge Skill)",
+            "purpose": "Detects and residualizes non-linear proxy discrimination features leaking protected attribute intelligence using formal information theory and conditionally decorrelating residuals.",
+            "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
+            "not_suited_for": ["Criminal Justice (systematic biased labels skew decorrelation vectors)"],
+            "tools_provided": [
+                {
+                    "tool_name": "load_algorithm_knowledge",
+                    "description": "Loads rules for detecting predictive proxy dependencies formally via MI estimators.",
+                    "inputs_schema": {
+                        "algorithm_id": "String. Set to 'algo5'."
+                    }
+                }
+            ]
+        },
+        "algo6": {
+            "name": "Brownian Distance Covariance Scanner (Knowledge Skill)",
+            "purpose": "Assumption-free detection and non-linear decorrelation of arbitrary proxy relationships between features and protected attributes using pairwise Euclidean distance matrices. Capable of mapping U-shaped proxy bounds.",
+            "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
+            "not_suited_for": ["Criminal Justice (label validity)", "Big Data (O(N^2) memory bounds restrict datasets natively >30k rows)"],
+            "tools_provided": [
+                {
+                    "tool_name": "load_algorithm_knowledge",
+                    "description": "Loads rules for double-centering distance matrices computing pure dCor independence limits.",
+                    "inputs_schema": {
+                        "algorithm_id": "String. Set to 'algo6'."
+                    }
+                }
+            ]
+        },
+        "algo7": {
+            "name": "SHAP Values for Proxy Detection & Redundancy Auditing (Knowledge Skill)",
+            "purpose": "Axiomatic, game-theoretic feature attribution identifying covert proxies natively by exactly quantifying model reliance and penalizing biased dependency via structural reweighting.",
+            "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
+            "not_suited_for": ["Black-box APIs (requires model access)", "Deep NLP tasks (requires explicit tabular feature matrices)"],
+            "tools_provided": [
+                {
+                    "tool_name": "load_algorithm_knowledge",
+                    "description": "Loads rules for calculating weighted Kernel SHAP matrices detecting redundant proxies.",
+                    "inputs_schema": {
+                        "algorithm_id": "String. Set to 'algo7'."
+                    }
+                }
+            ]
+        },
+        "algo9": {
+            "name": "Causal Fair Inference & Path-Specific Effect Mitigation (Knowledge Skill)",
+            "purpose": "Estimates and mitigates direct causal discrimination pathways (Path-Specific Effects) using Inverse Probability Weighting (IPW) and Constrained Maximum Likelihood Estimation.",
+            "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
+            "not_suited_for": ["Criminal Justice (fails when heavy unmeasured confounding corrupts models)", "Healthcare"],
+            "tools_provided": [
+                {
+                    "tool_name": "load_algorithm_knowledge",
+                    "description": "Loads strict causal estimation rules bounding NDE/PSE optimization constraints.",
+                    "inputs_schema": {
+                        "algorithm_id": "String. Set to 'algo9'."
+                    }
+                }
+            ]
+        },
+        "algo10": {
+            "name": "Counterfactual Fairness through Data Orthogonalization (Knowledge Skill)",
+            "purpose": "A model-agnostic pre-processing technique ensuring mathematical Counterfactual Fairness by executing closed-form SVD transformations generating features mathematically orthogonal to bias.",
+            "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
+            "not_suited_for": ["Criminal Justice (label validity overrides pre-processing limits)"],
+            "tools_provided": [
+                {
+                    "tool_name": "load_algorithm_knowledge",
+                    "description": "Loads strictly executed closed-form OB tracking zero-covariance limits.",
+                    "inputs_schema": {
+                        "algorithm_id": "String. Set to 'algo10'."
+                    }
+                }
+            ]
+        },
+        "algo11": {
+            "name": "Causal Explanation Formula Mechanism Decomposition (Knowledge Skill)",
+            "purpose": "Isolates and mathematically decomposes Total Variation into Direct, Indirect, and Spurious Counterfactual effects, enabling Narrow Tailoring Affirmative Action policy design.",
+            "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
+            "not_suited_for": ["Criminal Justice (unmeasured confounding corrupts results)"],
+            "tools_provided": [
+                {
+                    "tool_name": "load_algorithm_knowledge",
+                    "description": "Loads decomposition tracking math models enabling Affirmative Action bounds.",
+                    "inputs_schema": {
+                        "algorithm_id": "String. Set to 'algo11'."
+                    }
+                }
+            ]
+        }
+    }
+    
+    algorithm_id = algorithm_id.strip()
+    if algorithm_id in registry:
+        return json.dumps(registry[algorithm_id], indent=2)
+    return json.dumps({"error": f"Algorithm '{algorithm_id}' not found in registry."})
+
+
+@mcp.tool()
+def load_algorithm_knowledge(algorithm_id: str) -> str:
+    """
+    Loads the knowledge skill markdown for a fairness algorithm directly into the agent's context 
+    window so the agent can write the implementation securely into the user's local script.
+    
+    Args:
+        algorithm_id: Identifier of the algorithm (e.g., "algo1", "algo2", "algo3").
+    """
+    algorithm_id = algorithm_id.strip()
+    valid_algos = ["algo1", "algo2", "algo3", "algo4", "algo5", "algo6", "algo7", "algo9", "algo10", "algo11"]
+    if algorithm_id in valid_algos:
+        # Calculate path relative to this server file linking directly to the specific algo directory
+        file_path = os.path.join(os.path.dirname(__file__), algorithm_id, "knowledge.md")
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return f.read()
+        except Exception as e:
+            return f"Error loading knowledge MD file for {algorithm_id}: {str(e)}"
+    
+    return f"Knowledge skill not configured yet for {algorithm_id}."
+
+
+if __name__ == "__main__":
+    mcp.run()
