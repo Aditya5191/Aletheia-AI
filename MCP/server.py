@@ -4,7 +4,7 @@ from typing import List, Dict, Any, Optional, Union
 from mcp.server.fastmcp import FastMCP
 
 # Create MCP server instance
-mcp = FastMCP("FairnessAlgorithmsServer")
+mcp = FastMCP("FairnessAlgorithmsServer", host="0.0.0.0", port=8000)
 
 @mcp.tool()
 def get_algorithm_info(algorithm_id: str = "algo1") -> str:
@@ -229,4 +229,9 @@ def load_algorithm_knowledge(algorithm_id: str) -> str:
 
 
 if __name__ == "__main__":
-    mcp.run()
+    import sys
+    if "--sse" in sys.argv:
+        print("Network hosting active: Starting Lusitania MCP Server over SSE (0.0.0.0:8000)...")
+        mcp.run(transport="sse")
+    else:
+        mcp.run()
