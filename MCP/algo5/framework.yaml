@@ -1,0 +1,78 @@
+algorithm_id: 5
+name: Mutual Information Proxy Scanner
+type: FRAMEWORK
+pipeline_dag:
+  - step_id: 1
+    name: "Compute Observed Mutual Information"
+    sub_skill: "ksg_mutual_information"
+    pseudo_code: |
+      def compute_observed_mi(X, protected_attr, k=3):
+          from sklearn.feature_selection import mutual_info_classif
+          # Map pure continuous MI strictly avoiding binning natively.
+          mi_scores = mutual_info_classif(X, protected_attr, n_neighbors=k)
+          return list(mi_scores)
+    constraints: ["X and protected_attr structure lengths exactly match"]
+    output: "observed_mi"
+  - step_id: 2
+    name: "Significance Testing via Permutation"
+    sub_skill: "null_permutations"
+    depends_on: ["observed_mi"]
+    pseudo_code: |
+      def null_permutation_testing(X, protected_attr, observed_mi, n_perms=200):
+          import numpy as np
+          from sklearn.feature_selection import mutual_info_classif
+          p_vals = np.zeros(X.shape[1])
+          for _ in range(n_perms):
+              # Safely shuffle protected class independently locally
+              shuffled = np.random.permutation(protected_attr)
+              sim_mi = mutual_info_classif(X, shuffled)
+              p_vals += (sim_mi >= observed_mi).astype(int)
+          return list(p_vals / n_perms)
+    constraints: ["n_perms >= 50"]
+    output: "p_values"
+  - step_id: 3
+    name: "FDR Correction (Benjamini-Hochberg)"
+    sub_skill: "fdr_correction"
+    depends_on: ["observed_mi", "p_values"]
+    pseudo_code: |
+      def fdr_correct(observed_mi, p_values, X_columns_list, alpha=0.05):
+          from statsmodels.stats.multitest import multipletests
+          _, p_adj, _, _ = multipletests(p_values, alpha=alpha, method='fdr_bh')
+          flagged_proxies = []
+          for i in range(len(p_adj)):
+              if p_adj[i] < alpha and observed_mi[i] > 0.01:
+                  name = X_columns_list[i] if X_columns_list else f"feature_{i}"
+                  flagged_proxies.append({"feature": name, "idx": i, "mi": observed_mi[i]})
+          return flagged_proxies
+    constraints: ["requires statsmodels module"]
+    output: "flagged_proxies"
+  - step_id: 4
+    name: "Conditional Residualization"
+    sub_skill: "residualize"
+    depends_on: ["flagged_proxies"]
+    pseudo_code: |
+      def conditional_residualization(X, protected_attr, flagged_proxies):
+          import numpy as np
+          from sklearn.linear_model import Ridge
+          X_clean = X.copy()
+          for proxy in flagged_proxies:
+              idx = proxy["idx"]
+              y_feat = X[:, idx]
+              
+              # Model mathematically targets estimating x_feat via protected_attr
+              model = Ridge().fit(protected_attr.reshape(-1, 1), y_feat)
+              preds = model.predict(protected_attr.reshape(-1, 1))
+              residual = y_feat - preds
+              
+              # Safely enforce variance scalars restoring scaling cleanly
+              orig_std = y_feat.std()
+              res_std = residual.std()
+              normalized_residual = residual * (orig_std / res_std) if res_std > 0 else residual
+              
+              X_clean[:, idx] = normalized_residual
+          return {"clean_X": X_clean, "mitigated_proxies": flagged_proxies}
+    constraints: ["variance precision constants preserved"]
+    output: "final_result"
+orchestration_pattern: "sequential_with_conditional_skip"
+sandbox_requirements: ["numpy", "scikit-learn", "statsmodels"]
+failure_handling: "return_partial_state_on_timeout"

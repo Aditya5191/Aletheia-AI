@@ -15,6 +15,7 @@ def get_algorithm_info(algorithm_id: str = "algo1") -> str:
     registry = {
         "algo1": {
             "name": "Certifying and Removing Disparate Impact (Knowledge Skill)",
+            "type": "PURE",
             "purpose": "Detects and removes disparate impact in datasets via pre-processing by equalizing distributions across protected groups while preserving candidate ranks.",
             "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
             "not_suited_for": ["Criminal Justice (due to label bias)", "Healthcare (if extreme accuracy loss is harmful without clinical context)"],
@@ -30,6 +31,7 @@ def get_algorithm_info(algorithm_id: str = "algo1") -> str:
         },
         "algo2": {
             "name": "Equality of Opportunity in Supervised Learning (Knowledge Skill)",
+            "type": "PURE",
             "purpose": "Provides post-processing threshold optimizations to enforce equalized odds (TPR/FPR equalized) or equal opportunity (TPR equalized) directly on outputs without retraining.",
             "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
             "not_suited_for": ["Criminal Justice (due to mathematical base-rate proxy bias)"],
@@ -45,6 +47,7 @@ def get_algorithm_info(algorithm_id: str = "algo1") -> str:
         },
         "algo3": {
             "name": "Fair Prediction with Disparate Impact - Recidivism (Knowledge Skill)",
+            "type": "PURE",
             "purpose": "Framework diagnosing the theoretical impossibility of balancing Predictive Parity and Error Rate Balance when base rates differ, calibrating optimal tradeoff thresholds.",
             "best_suited_for": ["Criminal Justice", "Lending & Finance"],
             "not_suited_for": ["Education (interventions alter logic matrices)", "Healthcare (without clinical harm-weight tables)"],
@@ -60,6 +63,7 @@ def get_algorithm_info(algorithm_id: str = "algo1") -> str:
         },
         "algo4": {
             "name": "Intersectional Subgroup Scan for Fairness Auditing & Mitigation (Knowledge Skill)",
+            "type": "FRAMEWORK",
             "purpose": "Efficiently identifies and remediates fairness gerrymandering manifesting exclusively inside highly specific, intersecting demographic subgroups via combinatorial scanning.",
             "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
             "not_suited_for": ["Criminal Justice (label validity overrides)", "Healthcare (clinical context required)"],
@@ -75,6 +79,7 @@ def get_algorithm_info(algorithm_id: str = "algo1") -> str:
         },
         "algo5": {
             "name": "Mutual Information Proxy Scanner for Algorithmic Fairness (Knowledge Skill)",
+            "type": "FRAMEWORK",
             "purpose": "Detects and residualizes non-linear proxy discrimination features leaking protected attribute intelligence using formal information theory and conditionally decorrelating residuals.",
             "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
             "not_suited_for": ["Criminal Justice (systematic biased labels skew decorrelation vectors)"],
@@ -90,6 +95,7 @@ def get_algorithm_info(algorithm_id: str = "algo1") -> str:
         },
         "algo6": {
             "name": "Brownian Distance Covariance Scanner (Knowledge Skill)",
+            "type": "PURE",
             "purpose": "Assumption-free detection and non-linear decorrelation of arbitrary proxy relationships between features and protected attributes using pairwise Euclidean distance matrices. Capable of mapping U-shaped proxy bounds.",
             "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
             "not_suited_for": ["Criminal Justice (label validity)", "Big Data (O(N^2) memory bounds restrict datasets natively >30k rows)"],
@@ -105,6 +111,7 @@ def get_algorithm_info(algorithm_id: str = "algo1") -> str:
         },
         "algo7": {
             "name": "SHAP Values for Proxy Detection & Redundancy Auditing (Knowledge Skill)",
+            "type": "FRAMEWORK",
             "purpose": "Axiomatic, game-theoretic feature attribution identifying covert proxies natively by exactly quantifying model reliance and penalizing biased dependency via structural reweighting.",
             "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
             "not_suited_for": ["Black-box APIs (requires model access)", "Deep NLP tasks (requires explicit tabular feature matrices)"],
@@ -120,6 +127,7 @@ def get_algorithm_info(algorithm_id: str = "algo1") -> str:
         },
         "algo9": {
             "name": "Causal Fair Inference & Path-Specific Effect Mitigation (Knowledge Skill)",
+            "type": "PURE",
             "purpose": "Estimates and mitigates direct causal discrimination pathways (Path-Specific Effects) using Inverse Probability Weighting (IPW) and Constrained Maximum Likelihood Estimation.",
             "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
             "not_suited_for": ["Criminal Justice (fails when heavy unmeasured confounding corrupts models)", "Healthcare"],
@@ -135,6 +143,7 @@ def get_algorithm_info(algorithm_id: str = "algo1") -> str:
         },
         "algo10": {
             "name": "Counterfactual Fairness through Data Orthogonalization (Knowledge Skill)",
+            "type": "FRAMEWORK",
             "purpose": "A model-agnostic pre-processing technique ensuring mathematical Counterfactual Fairness by executing closed-form SVD transformations generating features mathematically orthogonal to bias.",
             "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
             "not_suited_for": ["Criminal Justice (label validity overrides pre-processing limits)"],
@@ -150,6 +159,7 @@ def get_algorithm_info(algorithm_id: str = "algo1") -> str:
         },
         "algo11": {
             "name": "Causal Explanation Formula Mechanism Decomposition (Knowledge Skill)",
+            "type": "PURE",
             "purpose": "Isolates and mathematically decomposes Total Variation into Direct, Indirect, and Spurious Counterfactual effects, enabling Narrow Tailoring Affirmative Action policy design.",
             "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
             "not_suited_for": ["Criminal Justice (unmeasured confounding corrupts results)"],
@@ -174,22 +184,46 @@ def get_algorithm_info(algorithm_id: str = "algo1") -> str:
 @mcp.tool()
 def load_algorithm_knowledge(algorithm_id: str) -> str:
     """
-    Loads the knowledge skill markdown for a fairness algorithm directly into the agent's context 
+    Loads the knowledge skill directly into the agent's context 
     window so the agent can write the implementation securely into the user's local script.
     
     Args:
         algorithm_id: Identifier of the algorithm (e.g., "algo1", "algo2", "algo3").
     """
     algorithm_id = algorithm_id.strip()
-    valid_algos = ["algo1", "algo2", "algo3", "algo4", "algo5", "algo6", "algo7", "algo9", "algo10", "algo11"]
+    valid_algos = {
+        "algo1": "PURE", "algo2": "PURE", "algo3": "PURE", "algo4": "FRAMEWORK", 
+        "algo5": "FRAMEWORK", "algo6": "PURE", "algo7": "FRAMEWORK", "algo9": "PURE",
+        "algo10": "FRAMEWORK", "algo11": "PURE"
+    }
+    
     if algorithm_id in valid_algos:
-        # Calculate path relative to this server file linking directly to the specific algo directory
-        file_path = os.path.join(os.path.dirname(__file__), algorithm_id, "knowledge.md")
-        try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                return f.read()
-        except Exception as e:
-            return f"Error loading knowledge MD file for {algorithm_id}: {str(e)}"
+        algo_type = valid_algos[algorithm_id]
+        if algo_type == "PURE":
+            file_path = os.path.join(os.path.dirname(__file__), algorithm_id, "knowledge.md")
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    return f.read()
+            except Exception as e:
+                return f"Error loading knowledge MD file for {algorithm_id}: {str(e)}"
+        elif algo_type == "FRAMEWORK":
+            yaml_path = os.path.join(os.path.dirname(__file__), algorithm_id, "framework.yaml")
+            scaffold_path = os.path.join(os.path.dirname(__file__), "framework_scaffold.py")
+            try:
+                with open(yaml_path, 'r', encoding='utf-8') as f:
+                    yaml_content = f.read()
+                with open(scaffold_path, 'r', encoding='utf-8') as f:
+                    scaffold_content = f.read()
+                
+                # Prepend the scaffold logic to the YAML output securely
+                return (f"=== PYTHON STATE MACHINE SCAFFOLD ===\n"
+                        f"IMPORTANT: You MUST use the exact scaffold below to run the framework steps.\n\n"
+                        f"{scaffold_content}\n\n"
+                        f"=== FRAMEWORK YAML PIPELINE DAG ===\n"
+                        f"IMPORTANT: Execute the scaffold mapped strictly to these steps:\n\n"
+                        f"{yaml_content}")
+            except Exception as e:
+                return f"Error loading framework YAML or scaffold for {algorithm_id}: {str(e)}"
     
     return f"Knowledge skill not configured yet for {algorithm_id}."
 

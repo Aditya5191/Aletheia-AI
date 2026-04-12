@@ -1,0 +1,74 @@
+algorithm_id: 7
+name: SHAP Axiomatic Feature Attribution Auditing
+type: FRAMEWORK
+pipeline_dag:
+  - step_id: 1
+    name: "Baseline Expectation Calculation"
+    sub_skill: "compute_baseline"
+    pseudo_code: |
+      def compute_baseline_expectation(model, X_background):
+          return model.predict(X_background).mean()
+    constraints: ["model input is fitted classifier/regressor"]
+    output: "baseline_pred"
+  - step_id: 2
+    name: "Kernel SHAP Subsetting Approximation"
+    sub_skill: "shap_ridge_regression"
+    depends_on: ["baseline_pred"]
+    pseudo_code: |
+      def compute_shap_values(model, X, baseline_pred):
+          # Since full Kernel SHAP is complex to write natively perfectly,
+          # The agent may use the SHAP library structurally for speed
+          import shap
+          explainer = shap.KernelExplainer(model.predict, shap.kmeans(X, 10))
+          shap_values = explainer.shap_values(X)
+          return shap_values
+    constraints: ["securely bounds subset approximations"]
+    output: "shap_values"
+  - step_id: 3
+    name: "Structural Proxy Scoring"
+    sub_skill: "proxy_scoring"
+    depends_on: ["shap_values"]
+    pseudo_code: |
+      def compute_proxy_scores(X, protected_attr, shap_values, proxy_threshold=0.25):
+          import numpy as np
+          scores = []
+          for i in range(X.shape[1]):
+              feat_vals = X[:, i]
+              s_vals = shap_values[:, i]
+              
+              # Pearson correlation logically 
+              corr = np.corrcoef(feat_vals, protected_attr)[0, 1]
+              if np.isnan(corr): corr = 0
+              
+              proxy_score = np.abs(s_vals.mean()) * np.abs(corr)
+              if proxy_score > proxy_threshold:
+                  scores.append({"feature_idx": i, "proxy_score": proxy_score, "shap_magnitude": np.abs(s_vals.mean())})
+          return scores
+    constraints: ["proxy_threshold strictly bounding limits >= 0.1"]
+    output: "flagged_scored_proxies"
+  - step_id: 4
+    name: "Attribution Mitigation Router"
+    sub_skill: "reweighting_engine"
+    depends_on: ["flagged_scored_proxies"]
+    pseudo_code: |
+      def mitigate_proxy_attribution(X, flagged_scored_proxies, mitigation_type="reweight", alpha=1.5):
+          import numpy as np
+          if mitigation_type == "reweight":
+              sample_weights = np.ones(X.shape[0])
+              for proxy in flagged_scored_proxies:
+                  idx = proxy["feature_idx"]
+                  norm_feat = (X[:, idx] - X[:, idx].min()) / (X[:, idx].max() - X[:, idx].min() + 1e-9)
+                  
+                  # Exponential scaling decay bounding cleanly gracefully
+                  decay = np.exp(-alpha * proxy["proxy_score"] * norm_feat)
+                  sample_weights *= decay
+                  
+              # Normalize weights cleanly locking structural parameters matching constraints inside [0.1, 5]
+              sample_weights = np.clip(sample_weights, 0.1, 5.0)
+              return {"action": "reweighted", "sample_weights": sample_weights}
+          return {"action": "skipped"}
+    constraints: ["sample_weights perfectly clamped inside [0.1, 5.0] limits"]
+    output: "final_result"
+orchestration_pattern: "sequential_with_conditional_skip"
+sandbox_requirements: ["numpy", "scikit-learn", "shap"]
+failure_handling: "return_partial_state_on_timeout"

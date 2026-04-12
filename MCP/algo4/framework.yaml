@@ -1,0 +1,69 @@
+algorithm_id: 4
+name: Intersectional Subgroup Scan
+type: FRAMEWORK
+pipeline_dag:
+  - step_id: 1
+    name: "Generate Combinatorial Groups"
+    sub_skill: "combinatorics"
+    pseudo_code: |
+      def generate_groups(protected_cols, max_depth=2, min_size=30, df=None):
+          import itertools
+          groups = []
+          for r in range(2, min(len(protected_cols), max_depth)+1):
+              for combo in itertools.combinations(protected_cols, r):
+                  mask = df.groupby(list(combo)).transform('size') >= min_size
+                  if mask.any(): groups.append(combo)
+          return groups
+    constraints: ["max_combinations <= 50", "min_group_size >= 30"]
+    output: "candidate_groups"
+  - step_id: 2
+    name: "Compute Base Metric Per Group"
+    sub_skill: "statistical_parity"
+    depends_on: ["candidate_groups"]
+    pseudo_code: |
+      def compute_parity(df, candidate_groups, outcome):
+          from scipy.stats import chi2_contingency
+          import pandas as pd
+          results = []
+          for combo in candidate_groups:
+              rates = df.groupby(list(combo))[outcome].mean()
+              dir_val = rates.min() / rates.max() if rates.max() > 0 else 1.0
+              
+              # Chi2 approximation for P-value mapping
+              ct = pd.crosstab(df[list(combo)[0]], df[outcome]) 
+              _, p_val, _, _ = chi2_contingency(ct)
+              
+              results.append({"group": combo, "dir": dir_val, "p_val": p_val})
+          return results
+    constraints: ["skip if group_size < threshold"]
+    output: "raw_metrics"
+  - step_id: 3
+    name: "Multiple Testing Correction"
+    sub_skill: "fdr_correction"
+    depends_on: ["raw_metrics"]
+    pseudo_code: |
+      def fdr_adjust(raw_metrics, alpha=0.05):
+          from statsmodels.stats.multitest import multipletests
+          if not raw_metrics: return []
+          p_vals = [r["p_val"] for r in raw_metrics]
+          reject, p_adj, _, _ = multipletests(p_vals, alpha=alpha, method='fdr_bh')
+          
+          flagged = []
+          for i, r in enumerate(raw_metrics):
+              if reject[i]:
+                  r["p_adj"] = p_adj[i]
+                  flagged.append(r)
+          return flagged
+    constraints: ["requires statsmodels package configured"]
+    output: "corrected_flags"
+  - step_id: 4
+    name: "Aggregate & Rank"
+    sub_skill: "aggregation"
+    depends_on: ["corrected_flags"]
+    pseudo_code: |
+      def rank_outputs(corrected_flags):
+          return sorted(corrected_flags, key=lambda x: x["dir"])
+    output: "final_result"
+orchestration_pattern: "sequential_with_conditional_skip"
+sandbox_requirements: ["pandas", "scipy.stats", "itertools", "statsmodels"]
+failure_handling: "return_partial_state_on_timeout"
