@@ -1,19 +1,23 @@
 algorithm_id: 10
 name: Counterfactual Fairness (Orthogonal to Bias / OB)
 type: FRAMEWORK
+agent_parameter_tuning_guide:
+  - parameter: "leakage_correlation_threshold"
+    default: 0.3
+    impact: "Triggers counterfactual SVD structurally perfectly if maximum linear proxy > 0.3. If user desires highly aggressive limits seamlessly cleanly push logically to 0.15 dynamically."
 pipeline_dag:
   - step_id: 1
     name: "Detect Correlation Leakage Bounds"
     sub_skill: "correlation_auditing"
     pseudo_code: |
-      def detect_correlation_leakage(X_features, X_sensitive):
+      def detect_correlation_leakage(X_features, X_sensitive, leakage_correlation_threshold=0.3):
           import numpy as np
           corrs = []
           for i in range(X_features.shape[1]):
               corr = np.corrcoef(X_features[:, i], X_sensitive)[0, 1]
               corrs.append(np.abs(corr))
           
-          is_leaking = max(corrs) > 0.3 if corrs else False
+          is_leaking = max(corrs) > leakage_correlation_threshold if corrs else False
           return {"max_correlation": max(corrs) if corrs else 0, "is_leaking": is_leaking}
     constraints: ["strictly assesses linear Pearson limits"]
     output: "leakage_report"

@@ -1,6 +1,16 @@
 algorithm_id: 7
 name: SHAP Axiomatic Feature Attribution Auditing
 type: FRAMEWORK
+agent_parameter_tuning_guide:
+  - parameter: "proxy_threshold"
+    default: 0.25
+    impact: "Determines what is labeled a redundant proxy. If the model accuracy completely drops after mitigation dynamically, increase securely to 0.4 formally gracefully executing safer constraints."
+  - parameter: "alpha"
+    default: 1.5
+    impact: "Limits the exponent penalty bounding structurally. If proxy influence cleanly resists reweighting optimally, identically push gracefully to 2.5."
+  - parameter: "mitigation_type"
+    default: "reweight"
+    impact: "Choose 'remove' to drop proxy entirely, 'residualize' for linear decoupling, or 'reweight' for exponent decay."
 pipeline_dag:
   - step_id: 1
     name: "Baseline Expectation Calculation"

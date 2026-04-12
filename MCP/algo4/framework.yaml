@@ -1,6 +1,16 @@
 algorithm_id: 4
 name: Intersectional Subgroup Scan
 type: FRAMEWORK
+agent_parameter_tuning_guide:
+  - parameter: "max_depth"
+    default: 2
+    impact: "Controls how many protected attributes are combined strictly. Increase to 3 only if dataset length > 10,000 to avoid combinatoric memory explosions natively."
+  - parameter: "min_size"
+    default: 30
+    impact: "Minimum sub-group statistical size limit. If dataset is strictly < 500 rows, decrease safely to 15 to map occurrences purely; if dataset > 50,000 increase strictly to 100."
+  - parameter: "alpha"
+    default: 0.05
+    impact: "Benjamini-Hochberg FDR threshold. Increase to 0.10 for softer detection on smaller datasets."
 pipeline_dag:
   - step_id: 1
     name: "Generate Combinatorial Groups"

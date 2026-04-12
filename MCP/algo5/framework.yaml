@@ -1,6 +1,16 @@
 algorithm_id: 5
 name: Mutual Information Proxy Scanner
 type: FRAMEWORK
+agent_parameter_tuning_guide:
+  - parameter: "k"
+    default: 3
+    impact: "Defines localized volume bounding. For highly dense clustered data cleanly map to strictly 5-10 natively reducing noise bounds natively."
+  - parameter: "n_perms"
+    default: 200
+    impact: "Null permutation bounds. If the dataset exceeds 50,000 rows exactly, lower to 50 formally to avoid catastrophic sandbox timeout limits."
+  - parameter: "alpha"
+    default: 0.05
+    impact: "Benjamini-Hochberg FDR threshold. Increase to 0.10 for softer detection on smaller datasets."
 pipeline_dag:
   - step_id: 1
     name: "Compute Observed Mutual Information"
