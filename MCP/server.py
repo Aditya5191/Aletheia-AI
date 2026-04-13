@@ -4,10 +4,10 @@ from typing import List, Dict, Any, Optional, Union
 from mcp.server.fastmcp import FastMCP
 
 # Create MCP server instance
-mcp = FastMCP("FairnessAlgorithmsServer", host="0.0.0.0", port=8000)
+mcp = FastMCP("FairnessAlgorithmsServer")
 
 @mcp.tool()
-def get_algorithm_info(algorithm_id: str = "algo1") -> str:
+def get_algorithm_info(algorithm_id: str = "all") -> str:
     """
     Get detailed documentation about an algorithmic knowledge skill.
     Call this tool to learn what the algorithm calculates and what domains it applies to.
@@ -176,6 +176,10 @@ def get_algorithm_info(algorithm_id: str = "algo1") -> str:
     }
     
     algorithm_id = algorithm_id.strip()
+    if algorithm_id.lower() == "all":
+        menu = {k: {"name": v["name"], "type": v["type"], "purpose": v["purpose"]} for k, v in registry.items()}
+        return json.dumps({"available_algorithms": menu}, indent=2)
+        
     if algorithm_id in registry:
         return json.dumps(registry[algorithm_id], indent=2)
     return json.dumps({"error": f"Algorithm '{algorithm_id}' not found in registry."})
@@ -229,9 +233,4 @@ def load_algorithm_knowledge(algorithm_id: str) -> str:
 
 
 if __name__ == "__main__":
-    import sys
-    if "--sse" in sys.argv:
-        print("Network hosting active: Starting Lusitania MCP Server over SSE (0.0.0.0:8000)...")
-        mcp.run(transport="sse")
-    else:
-        mcp.run()
+    mcp.run()
