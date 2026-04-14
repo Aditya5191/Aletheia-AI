@@ -186,27 +186,6 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
 
 
 @mcp.tool()
-def list_algorithms() -> str:
-    """
-    Lists all available fairness algorithms registered in the Lusitània MCP server.
-    Use this to see the full menu of IDs before calling get_algorithm_info or load_algorithm_knowledge.
-    """
-    registry = {
-        "algo1": "Certifying and Removing Disparate Impact",
-        "algo2": "Equality of Opportunity in Supervised Learning",
-        "algo3": "Fair Prediction with Disparate Impact - Recidivism",
-        "algo4": "Intersectional Subgroup Scan",
-        "algo5": "Mutual Information Proxy Scanner",
-        "algo6": "Brownian Distance Covariance Scanner",
-        "algo7": "SHAP Values for Proxy Detection",
-        "algo9": "Causal Fair Inference",
-        "algo10": "Counterfactual Fairness (Orthogonal to Bias)",
-        "algo11": "Causal Explanation Formula"
-    }
-    return json.dumps({"algorithms": registry}, indent=2)
-
-
-@mcp.tool()
 def load_algorithm_knowledge(algorithm_id: str) -> str:
     """
     Loads the knowledge skill directly into the agent's context 
