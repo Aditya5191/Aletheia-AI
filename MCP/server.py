@@ -266,7 +266,9 @@ def load_algorithm_knowledge(algorithm_id: str) -> str:
     Args:
         algorithm_id: Identifier of the algorithm (e.g., "algo1", "algo2", "algo3").
     """
-    algorithm_id = algorithm_id.strip()
+    from pathlib import Path
+
+    algorithm_id = algorithm_id.strip().lower()
     valid_algos = {
         "algo1": "PURE", "algo2": "PURE", "algo3": "PURE", "algo4": "FRAMEWORK", 
         "algo5": "FRAMEWORK", "algo6": "PURE", "algo7": "FRAMEWORK", "algo9": "PURE",
@@ -274,35 +276,41 @@ def load_algorithm_knowledge(algorithm_id: str) -> str:
         "algo14": "FRAMEWORK"
     }
     
-    if algorithm_id in valid_algos:
-        algo_type = valid_algos[algorithm_id]
-        if algo_type == "PURE":
-            file_path = os.path.join(os.path.dirname(__file__), algorithm_id, "knowledge.md")
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    return f.read()
-            except Exception as e:
-                return f"Error loading knowledge MD file for {algorithm_id}: {str(e)}"
-        elif algo_type == "FRAMEWORK":
-            yaml_path = os.path.join(os.path.dirname(__file__), algorithm_id, "framework.yaml")
-            scaffold_path = os.path.join(os.path.dirname(__file__), "framework_scaffold.py")
-            try:
-                with open(yaml_path, 'r', encoding='utf-8') as f:
-                    yaml_content = f.read()
-                with open(scaffold_path, 'r', encoding='utf-8') as f:
-                    scaffold_content = f.read()
-                
-                # Prepend the scaffold logic to the YAML output securely
-                return (f"=== PYTHON STATE MACHINE SCAFFOLD ===\n"
-                        f"IMPORTANT: You MUST use the exact scaffold below to run the framework steps.\n\n"
-                        f"{scaffold_content}\n\n"
-                        f"=== FRAMEWORK YAML PIPELINE DAG ===\n"
-                        f"IMPORTANT: Execute the scaffold mapped strictly to these steps:\n\n"
-                        f"{yaml_content}")
-            except Exception as e:
-                return f"Error loading framework YAML or scaffold for {algorithm_id}: {str(e)}"
-    
-    return f"Knowledge skill not configured yet for {algorithm_id}."
+    if algorithm_id not in valid_algos:
+        return f"Unknown algorithm_id: '{algorithm_id}'. Valid: {', '.join(sorted(valid_algos.keys()))}"
+
+    base_dir = Path(__file__).resolve().parent
+    algo_type = valid_algos[algorithm_id]
+
+    if algo_type == "PURE":
+        file_path = base_dir / algorithm_id / "knowledge.md"
+        try:
+            return file_path.read_text(encoding='utf-8')
+        except FileNotFoundError:
+            return f"File not found: {file_path}"
+        except Exception as e:
+            return f"Error loading {file_path}: {e}"
+    else:
+        yaml_path = base_dir / algorithm_id / "framework.yaml"
+        scaffold_path = base_dir / "framework_scaffold.py"
+        try:
+            yaml_content = yaml_path.read_text(encoding='utf-8')
+        except FileNotFoundError:
+            return f"File not found: {yaml_path}"
+        except Exception as e:
+            return f"Error loading {yaml_path}: {e}"
+
+        try:
+            scaffold_content = scaffold_path.read_text(encoding='utf-8')
+        except Exception:
+            scaffold_content = "# Scaffold not found - implement DAG steps manually."
+
+        return (f"=== PYTHON STATE MACHINE SCAFFOLD ===\n"
+                f"IMPORTANT: You MUST use the exact scaffold below to run the framework steps.\n\n"
+                f"{scaffold_content}\n\n"
+                f"=== FRAMEWORK YAML PIPELINE DAG ===\n"
+                f"IMPORTANT: Execute the scaffold mapped strictly to these steps:\n\n"
+                f"{yaml_content}")
 
 
 if __name__ == "__main__":
