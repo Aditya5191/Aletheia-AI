@@ -1,7 +1,7 @@
 import json
 import os
 from typing import List, Dict, Any, Optional, Union
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 
 # Create MCP server instance
 mcp = FastMCP("FairnessAlgorithmsServer")
@@ -309,9 +309,7 @@ if __name__ == "__main__":
     port = os.environ.get("PORT")
     if port:
         # Railway / cloud deployment: run SSE transport over HTTP
-        mcp.settings.host = "0.0.0.0"
-        mcp.settings.port = int(port)
-        mcp.run(transport="sse")
+        mcp.run(transport="sse", host="0.0.0.0", port=int(port))
     else:
         # Local: run stdio transport (Claude Desktop, Cursor)
         mcp.run()
