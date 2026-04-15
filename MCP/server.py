@@ -172,6 +172,54 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
                     }
                 }
             ]
+        },
+        "algo12": {
+            "name": "Fairness Feedback Loops & Algorithmic Reparation (Knowledge Skill)",
+            "type": "FRAMEWORK",
+            "purpose": "Tracks Model-Induced Distribution Shifts (MIDS) across model generations detecting fairness decay, model collapse, and minoritized group erasure. Mitigates via STratified Algorithmic Reparation (STAR) quota-based batch curation enforcing intersectional representation.",
+            "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
+            "not_suited_for": ["Criminal Justice (systemic label bias; uniform quotas misalign with structural inequities)", "Healthcare (clinical harm asymmetry conflicts with uniform STAR quotas)"],
+            "tools_provided": [
+                {
+                    "tool_name": "load_algorithm_knowledge",
+                    "description": "Loads generational MIDS tracking pipeline and STAR reparative batch sampler.",
+                    "inputs_schema": {
+                        "algorithm_id": "String. Set to 'algo12'."
+                    }
+                }
+            ]
+        },
+        "algo13": {
+            "name": "Fairness Without Demographics via DRO (Knowledge Skill)",
+            "type": "FRAMEWORK",
+            "purpose": "Controls worst-case group risk without demographic labels using chi-squared Distributionally Robust Optimization. Detects disparity amplification via retention dynamics simulation and Jacobian spectral analysis. Mitigates via dual-variable SGD that automatically upweights high-loss examples.",
+            "best_suited_for": ["Healthcare", "Lending & Finance", "Education"],
+            "not_suited_for": ["Criminal Justice (legally mandated parity requires explicit labels)", "Hiring & HR (discrete cycles limit feedback dynamics)"],
+            "tools_provided": [
+                {
+                    "tool_name": "load_algorithm_knowledge",
+                    "description": "Loads DRO dual optimization pipeline and disparity amplification auditor.",
+                    "inputs_schema": {
+                        "algorithm_id": "String. Set to 'algo13'."
+                    }
+                }
+            ]
+        },
+        "algo14": {
+            "name": "Fairness in Relational Domains - FairPSL (Knowledge Skill)",
+            "type": "FRAMEWORK",
+            "purpose": "Audits and enforces fairness in relational/networked domains using First-Order Logic discrimination patterns and convex MAP inference with linear fairness constraints (Risk Difference, Risk Ratio, Relative Chance).",
+            "best_suited_for": ["Hiring & HR", "Education", "Lending & Finance"],
+            "not_suited_for": ["Criminal Justice (structural bias and label validity issues)", "Healthcare (relational patterns may encode legitimate clinical pathways)"],
+            "tools_provided": [
+                {
+                    "tool_name": "load_algorithm_knowledge",
+                    "description": "Loads FOL-based relational fairness detection and constrained PSL MAP inference pipeline.",
+                    "inputs_schema": {
+                        "algorithm_id": "String. Set to 'algo14'."
+                    }
+                }
+            ]
         }
     }
     
@@ -201,7 +249,10 @@ def list_algorithms() -> str:
         "algo7": "SHAP Values for Proxy Detection",
         "algo9": "Causal Fair Inference",
         "algo10": "Counterfactual Fairness (Orthogonal to Bias)",
-        "algo11": "Causal Explanation Formula"
+        "algo11": "Causal Explanation Formula",
+        "algo12": "Fairness Feedback Loops & Algorithmic Reparation",
+        "algo13": "Fairness Without Demographics via DRO",
+        "algo14": "Fairness in Relational Domains (FairPSL)"
     }
     return json.dumps({"algorithms": registry}, indent=2)
 
@@ -219,7 +270,8 @@ def load_algorithm_knowledge(algorithm_id: str) -> str:
     valid_algos = {
         "algo1": "PURE", "algo2": "PURE", "algo3": "PURE", "algo4": "FRAMEWORK", 
         "algo5": "FRAMEWORK", "algo6": "PURE", "algo7": "FRAMEWORK", "algo9": "PURE",
-        "algo10": "FRAMEWORK", "algo11": "PURE"
+        "algo10": "FRAMEWORK", "algo11": "PURE", "algo12": "FRAMEWORK", "algo13": "FRAMEWORK",
+        "algo14": "FRAMEWORK"
     }
     
     if algorithm_id in valid_algos:

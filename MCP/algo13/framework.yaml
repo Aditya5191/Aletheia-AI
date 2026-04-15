@@ -1,0 +1,178 @@
+algorithm_id: 13
+name: Fairness Without Demographics via Distributionally Robust Optimization
+type: FRAMEWORK
+agent_parameter_tuning_guide:
+  - parameter: "alpha_min"
+    default: 0.1
+    impact: "Lower bound on smallest latent group proportion. Conservative values (0.05) protect tiny minorities but degrade majority utility. Optimistic values (0.3) risk failing to protect. Inspect dataset class balance before setting."
+  - parameter: "n_steps"
+    default: 50
+    impact: "Simulation horizon for disparity dynamics. Increase to 100+ for long-lived production systems. Keep at 20 for quick audits on small datasets."
+  - parameter: "retention_fn"
+    default: "lambda r: max(0.0, 1.0 - r)"
+    impact: "Maps group risk to user retention probability. Linear decay is default. Use exponential decay (lambda r: exp(-2*r)) for systems where small risk increases cause rapid user churn."
+  - parameter: "lr_theta"
+    default: 0.001
+    impact: "Model parameter learning rate. Standard Adam default. Reduce to 1e-4 for large models or noisy gradients."
+  - parameter: "lr_eta"
+    default: 0.01
+    impact: "Dual variable learning rate. Too high causes oscillation; too low causes slow convergence. Scale inversely with batch_size."
+  - parameter: "n_epochs"
+    default: 20
+    impact: "DRO training epochs. Increase for complex models or large datasets. Monitor dual convergence; if loss plateaus early, reduce."
+  - parameter: "batch_size"
+    default: 64
+    impact: "Training batch size. Larger batches (256+) give more stable weight estimates but require more memory. For datasets < 1,000 rows use 32."
+pipeline_dag:
+  - step_id: 1
+    name: "Compute Group-Specific Risks"
+    sub_skill: "risk_estimation"
+    pseudo_code: |
+      def compute_group_risks(model, X, y, groups):
+          import numpy as np
+          from sklearn.metrics import log_loss
+          unique_groups = np.unique(groups)
+          risks = {}
+          for g in unique_groups:
+              mask = groups == g
+              if np.sum(mask) == 0:
+                  risks[g] = np.nan
+              else:
+                  probs = model.predict_proba(X[mask])[:, 1]
+                  risks[g] = log_loss(y[mask], probs, labels=[0, 1])
+          return risks
+    constraints: ["model must expose predict_proba method", "groups array must match X row count"]
+    output: "initial_risks"
+  - step_id: 2
+    name: "Simulate Disparity Amplification Dynamics"
+    sub_skill: "dynamics_simulation"
+    depends_on: ["initial_risks"]
+    pseudo_code: |
+      def simulate_disparity_dynamics(initial_risks, initial_counts, retention_fn, new_user_rates, n_steps=50):
+          import numpy as np
+          groups = list(initial_risks.keys())
+          K = len(groups)
+          lambda_hist = np.zeros((n_steps + 1, K))
+          risk_hist = np.zeros((n_steps + 1, K))
+
+          lambda_hist[0] = [initial_counts[g] for g in groups]
+          risk_hist[0] = [initial_risks[g] for g in groups]
+
+          for t in range(n_steps):
+              lam = lambda_hist[t]
+              total = lam.sum()
+              if total == 0:
+                  break
+              alpha = lam / total
+
+              # ERM risk scales with group imbalance
+              imbalance = 1.0 / np.minimum(alpha + 1e-8, 1.0)
+              risk_hist[t+1] = risk_hist[t] * (0.9 + 0.1 * imbalance / K)
+
+              for k in range(K):
+                  lambda_hist[t+1, k] = lam[k] * retention_fn(risk_hist[t+1, k]) + new_user_rates[groups[k]]
+
+          return risk_hist, lambda_hist
+    constraints: ["retention_fn must be strictly decreasing", "new_user_rates must contain all group keys"]
+    output: "trajectories"
+  - step_id: 3
+    name: "Compute Jacobian Spectral Radius"
+    sub_skill: "stability_check"
+    depends_on: ["trajectories"]
+    pseudo_code: |
+      def compute_spectral_radius(risk_hist, lambda_hist, retention_fn):
+          import numpy as np
+          K = risk_hist.shape[1]
+          J = np.zeros((K, K))
+          for i in range(K):
+              for j in range(K):
+                  if i == j:
+                      J[i, j] = retention_fn(risk_hist[-1, i])
+          spectral_radius = float(np.max(np.abs(np.linalg.eigvals(J))))
+          amplification_risk = spectral_radius > 1.0
+          minority_shrinkage = bool(np.any(lambda_hist[-1] / (lambda_hist[0] + 1e-8) < 0.5))
+          return {
+              "spectral_radius": spectral_radius,
+              "amplification_risk": amplification_risk,
+              "minority_shrinkage": minority_shrinkage
+          }
+    constraints: ["eigenvalue computation requires numpy.linalg"]
+    output: "stability_report"
+  - step_id: 4
+    name: "Compute DRO Radius and Constant"
+    sub_skill: "dro_parameters"
+    depends_on: ["stability_report"]
+    pseudo_code: |
+      def compute_dro_params(alpha_min=0.1):
+          import numpy as np
+          r = (1.0 / alpha_min - 1.0) ** 2
+          C = np.sqrt(2 * r + 1)
+          return {"r": float(r), "C": float(C), "alpha_min": alpha_min}
+    constraints: ["alpha_min must be in (0, 1]", "smaller alpha_min increases conservatism"]
+    output: "dro_params"
+  - step_id: 5
+    name: "DRO Dual Optimization Training Loop"
+    sub_skill: "dro_training"
+    depends_on: ["dro_params"]
+    pseudo_code: |
+      def train_dro_model(X_train, y_train, dro_params, n_epochs=20, batch_size=64, lr_theta=1e-3, lr_eta=1e-2):
+          import numpy as np
+          import torch
+          import torch.nn as nn
+          import torch.optim as optim
+
+          C = dro_params["C"]
+
+          dataset = torch.utils.data.TensorDataset(
+              torch.tensor(X_train, dtype=torch.float32),
+              torch.tensor(y_train, dtype=torch.float32)
+          )
+          dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+          input_dim = X_train.shape[1]
+          model = nn.Sequential(
+              nn.Linear(input_dim, 64), nn.ReLU(),
+              nn.Linear(64, 32), nn.ReLU(),
+              nn.Linear(32, 1)
+          )
+          optimizer = optim.Adam(model.parameters(), lr=lr_theta)
+          criterion = nn.BCEWithLogitsLoss(reduction='none')
+
+          eta = 0.0
+          loss_history = []
+
+          for epoch in range(n_epochs):
+              model.train()
+              epoch_loss = 0.0
+              n_batches = 0
+              for X_b, y_b in dataloader:
+                  logits = model(X_b).squeeze()
+                  losses = criterion(logits, y_b)
+
+                  # Dual variable update
+                  excess = torch.clamp(losses - eta, min=0.0)
+                  grad_eta = C * torch.mean(torch.sign(excess)).item() if torch.mean(excess).item() > 1e-6 else 0.0
+                  eta = eta + lr_eta * grad_eta
+
+                  # Compute DRO sample weights
+                  excess = torch.clamp(losses - eta, min=0.0)
+                  denom = torch.sqrt(torch.mean(excess ** 2) + 1e-8)
+                  weights = C * excess / denom
+                  weights = weights / (torch.mean(weights) + 1e-8)
+
+                  weighted_loss = torch.mean(weights.detach() * losses)
+                  optimizer.zero_grad()
+                  weighted_loss.backward()
+                  optimizer.step()
+
+                  epoch_loss += weighted_loss.item()
+                  n_batches += 1
+
+              loss_history.append(epoch_loss / max(n_batches, 1))
+
+          return model, {"loss_history": loss_history, "final_eta": eta}
+    constraints: ["requires torch installed", "X_train must be numeric float array", "y_train must be binary 0/1"]
+    output: "final_result"
+orchestration_pattern: "sequential_with_conditional_skip"
+sandbox_requirements: ["numpy", "scikit-learn", "scipy", "torch"]
+failure_handling: "return_partial_state_on_timeout"
