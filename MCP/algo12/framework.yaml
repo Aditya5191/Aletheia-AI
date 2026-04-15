@@ -32,6 +32,17 @@ pipeline_dag:
     sub_skill: "demographic_parity"
     pseudo_code: |
       def compute_demographic_parity_diff(predictions, sensitive_attr, positive_class=1):
+          """
+          Compute the maximum difference in positive prediction rates across
+          all sensitive attribute groups (Demographic Parity Difference).
+
+          Args:
+              predictions: np.ndarray, shape (n_samples,). Model predictions.
+              sensitive_attr: np.ndarray, shape (n_samples,). Sensitive attribute.
+              positive_class: int. Label value representing favorable outcome.
+          Returns:
+              float. Max difference in positive prediction rates across groups.
+          """
           import numpy as np
           groups = np.unique(sensitive_attr)
           rates = []
@@ -51,6 +62,18 @@ pipeline_dag:
     sub_skill: "equalized_odds"
     pseudo_code: |
       def compute_equalized_odds_diff(y_true, predictions, sensitive_attr, positive_class=1):
+          """
+          Compute the maximum difference in TPR and FPR across sensitive
+          attribute groups. Returns the larger of the two differences.
+
+          Args:
+              y_true: np.ndarray, shape (n_samples,). Ground truth labels.
+              predictions: np.ndarray, shape (n_samples,). Model predictions.
+              sensitive_attr: np.ndarray, shape (n_samples,). Sensitive attribute.
+              positive_class: int. Favorable outcome label.
+          Returns:
+              float. Max of (TPR difference, FPR difference) across groups.
+          """
           import numpy as np
           from sklearn.metrics import confusion_matrix
           groups = np.unique(sensitive_attr)
@@ -74,6 +97,17 @@ pipeline_dag:
     sub_skill: "accuracy_gap"
     pseudo_code: |
       def compute_max_accuracy_gap(y_true, predictions, sensitive_attr):
+          """
+          Compute the maximum accuracy gap between any two sensitive
+          attribute groups.
+
+          Args:
+              y_true: np.ndarray, shape (n_samples,). Ground truth labels.
+              predictions: np.ndarray, shape (n_samples,). Model predictions.
+              sensitive_attr: np.ndarray, shape (n_samples,). Sensitive attribute.
+          Returns:
+              float. Max accuracy difference across groups.
+          """
           import numpy as np
           groups = np.unique(sensitive_attr)
           accs = []
@@ -93,24 +127,41 @@ pipeline_dag:
     sub_skill: "kl_divergence"
     pseudo_code: |
       def compute_strata_kl_divergence(predictions, sensitive_attr, ideal='uniform', epsilon=1e-10):
+          """
+          Compute KL-divergence between the actual strata distribution
+          (prediction x sensitive group) and the target fairness ideal.
+
+          Args:
+              predictions: np.ndarray, shape (n_samples,). Model predictions.
+              sensitive_attr: np.ndarray, shape (n_samples,). Sensitive attribute.
+              ideal: str. Target distribution. Currently only 'uniform' is supported.
+              epsilon: float. Clipping value to prevent log(0).
+          Returns:
+              float. KL-divergence from actual to ideal strata distribution.
+          """
           import numpy as np
           import pandas as pd
           from scipy.stats import entropy
+
           df = pd.DataFrame({'pred': predictions, 'sens': sensitive_attr})
           strata_counts = df.groupby(['pred', 'sens']).size().reset_index(name='counts')
           total = strata_counts['counts'].sum()
-          actual_dist = (strata_counts['counts'] / total).values
 
-          n_pred = len(np.unique(predictions))
-          n_sens = len(np.unique(sensitive_attr))
+          pred_classes = sorted(np.unique(predictions))
+          sens_classes = sorted(np.unique(sensitive_attr))
+          n_pred = len(pred_classes)
+          n_sens = len(sens_classes)
           n_strata = n_pred * n_sens
 
+          # Build lookup maps for canonical flat indexing
+          pred_to_idx = {v: i for i, v in enumerate(pred_classes)}
+          sens_to_idx = {v: i for i, v in enumerate(sens_classes)}
+
           if ideal == 'uniform':
-              # Pad actual_dist to full strata count if some strata are missing
               full_actual = np.full(n_strata, epsilon)
-              for idx, row in strata_counts.iterrows():
-                  # Map to flat index
-                  full_actual[idx % n_strata] = row['counts'] / total
+              for _, row in strata_counts.iterrows():
+                  flat_idx = pred_to_idx[row['pred']] * n_sens + sens_to_idx[row['sens']]
+                  full_actual[flat_idx] = row['counts'] / total
               ideal_dist = np.full(n_strata, 1.0 / n_strata)
           else:
               raise ValueError("Only 'uniform' ideal is currently supported")
@@ -126,6 +177,21 @@ pipeline_dag:
     depends_on: ["dp_diff", "eodds_diff", "acc_gap", "kl_div"]
     pseudo_code: |
       def track_generational_mids(models_per_gen, X_test, y_test, sensitive_attr_test, positive_class=1):
+          """
+          Track fairness metrics across multiple model generations to detect
+          Model-Induced Distribution Shifts (MIDS), fairness decay, and
+          representation erasure.
+
+          Args:
+              models_per_gen: list of fitted sklearn-compatible models, one per generation.
+              X_test: np.ndarray, shape (n_samples, n_features). Held-out test features.
+              y_test: np.ndarray, shape (n_samples,). Held-out test labels.
+              sensitive_attr_test: np.ndarray, shape (n_samples,). Sensitive attribute.
+              positive_class: int. Favorable outcome label value.
+          Returns:
+              pd.DataFrame with columns: generation, accuracy, dp_difference,
+              eodds_difference, accuracy_gap, kl_divergence_to_ideal.
+          """
           import numpy as np
           import pandas as pd
           history = []
@@ -153,6 +219,23 @@ pipeline_dag:
     depends_on: ["mids_metrics"]
     pseudo_code: |
       def star_batch_sampler(data_pool, batch_size, reparation_budget, label_col, sensitive_col, n_label_classes=2, n_sens_groups=2, random_state=42):
+          """
+          STratified Algorithmic Reparation (STAR) batch sampler. Curates training
+          batches enforcing intersectional representation quotas across
+          label x sensitive-group strata.
+
+          Args:
+              data_pool: pd.DataFrame. Full training pool to sample from.
+              batch_size: int. Target batch size.
+              reparation_budget: int. Extra pool samples beyond batch_size to fill quotas.
+              label_col: str. Column name of the outcome label.
+              sensitive_col: str. Column name of the sensitive attribute.
+              n_label_classes: int. Number of distinct outcome labels.
+              n_sens_groups: int. Number of distinct sensitive attribute groups.
+              random_state: int. Random seed for reproducibility.
+          Returns:
+              tuple of (batch DataFrame, strata distribution dict, metadata dict).
+          """
           import numpy as np
           import pandas as pd
           rng = np.random.RandomState(random_state)

@@ -29,6 +29,18 @@ pipeline_dag:
     sub_skill: "risk_estimation"
     pseudo_code: |
       def compute_group_risks(model, X, y, groups):
+          """
+          Compute per-group log-loss risk to identify which latent groups
+          the model underserves.
+
+          Args:
+              model: fitted sklearn model with .predict_proba() method.
+              X: np.ndarray, shape (n_samples, n_features). Feature matrix.
+              y: np.ndarray, shape (n_samples,). Binary labels.
+              groups: np.ndarray, shape (n_samples,). Group identifiers.
+          Returns:
+              dict mapping group_id -> float log-loss risk.
+          """
           import numpy as np
           from sklearn.metrics import log_loss
           unique_groups = np.unique(groups)
@@ -49,6 +61,19 @@ pipeline_dag:
     depends_on: ["initial_risks"]
     pseudo_code: |
       def simulate_disparity_dynamics(initial_risks, initial_counts, retention_fn, new_user_rates, n_steps=50):
+          """
+          Simulate how group risks and population sizes evolve over time
+          under ERM retraining with user retention feedback loops.
+
+          Args:
+              initial_risks: dict mapping group_id -> float initial risk.
+              initial_counts: dict mapping group_id -> int initial population.
+              retention_fn: callable(risk) -> float in [0,1]. User retention probability.
+              new_user_rates: dict mapping group_id -> float new users per step.
+              n_steps: int. Number of simulation steps.
+          Returns:
+              tuple of (risk_hist, lambda_hist) np.ndarrays, shape (n_steps+1, K).
+          """
           import numpy as np
           groups = list(initial_risks.keys())
           K = len(groups)
@@ -81,6 +106,18 @@ pipeline_dag:
     depends_on: ["trajectories"]
     pseudo_code: |
       def compute_spectral_radius(risk_hist, lambda_hist, retention_fn):
+          """
+          Compute the Jacobian spectral radius to determine if the ERM
+          feedback loop amplifies or dampens disparity over time.
+          Spectral radius > 1.0 indicates unstable amplification.
+
+          Args:
+              risk_hist: np.ndarray, shape (n_steps+1, K). Risk trajectory.
+              lambda_hist: np.ndarray, shape (n_steps+1, K). Population trajectory.
+              retention_fn: callable(risk) -> float. Same retention function.
+          Returns:
+              dict with spectral_radius, amplification_risk bool, minority_shrinkage bool.
+          """
           import numpy as np
           K = risk_hist.shape[1]
           J = np.zeros((K, K))
@@ -104,6 +141,15 @@ pipeline_dag:
     depends_on: ["stability_report"]
     pseudo_code: |
       def compute_dro_params(alpha_min=0.1):
+          """
+          Compute the chi-squared DRO uncertainty radius and scaling
+          constant from the minimum acceptable group proportion.
+
+          Args:
+              alpha_min: float in (0, 1]. Lower bound on smallest group proportion.
+          Returns:
+              dict with r (radius), C (constant), and alpha_min.
+          """
           import numpy as np
           r = (1.0 / alpha_min - 1.0) ** 2
           C = np.sqrt(2 * r + 1)
@@ -116,6 +162,21 @@ pipeline_dag:
     depends_on: ["dro_params"]
     pseudo_code: |
       def train_dro_model(X_train, y_train, dro_params, n_epochs=20, batch_size=64, lr_theta=1e-3, lr_eta=1e-2):
+          """
+          Train a neural network using DRO dual optimization that automatically
+          upweights high-loss samples to control worst-case group risk.
+
+          Args:
+              X_train: np.ndarray, shape (n_samples, n_features). Training features.
+              y_train: np.ndarray, shape (n_samples,). Binary labels (0/1).
+              dro_params: dict from step 4 with keys r, C, alpha_min.
+              n_epochs: int. Number of training epochs.
+              batch_size: int. Mini-batch size.
+              lr_theta: float. Learning rate for model parameters.
+              lr_eta: float. Learning rate for dual variable eta.
+          Returns:
+              tuple of (trained model, metadata dict with loss_history and final_eta).
+          """
           import numpy as np
           import torch
           import torch.nn as nn

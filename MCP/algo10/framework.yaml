@@ -4,74 +4,155 @@ type: FRAMEWORK
 agent_parameter_tuning_guide:
   - parameter: "leakage_correlation_threshold"
     default: 0.3
-    impact: "Triggers counterfactual SVD structurally perfectly if maximum linear proxy > 0.3. If user desires highly aggressive limits seamlessly cleanly push logically to 0.15 dynamically."
+    impact: "Maximum acceptable absolute Pearson correlation between any feature and the sensitive attribute. Use 0.3 for standard audits. Tighten to 0.15 for strict fairness enforcement. Widen to 0.5 only for exploratory analysis where mild leakage is tolerable."
+  - parameter: "svd_rank"
+    default: "min(n_features, n_samples)"
+    impact: "Number of SVD components to retain. Full rank preserves all variance. Reduce to 80% of features for denoising on high-dimensional datasets. Lower rank loses information but can improve fairness-utility tradeoff."
+  - parameter: "scaling_strategy"
+    default: "standardize"
+    impact: "How to normalize features before SVD. 'standardize' (zero mean, unit variance) is the default and works for most datasets. Use 'minmax' only if features have bounded ranges and outliers are absent."
+  - parameter: "epsilon"
+    default: 1e-9
+    impact: "Small constant added to standard deviations and denominators to prevent division by zero. Do not change unless encountering numerical overflow on extremely sparse data."
 pipeline_dag:
   - step_id: 1
-    name: "Detect Correlation Leakage Bounds"
+    name: "Detect Correlation Leakage"
     sub_skill: "correlation_auditing"
     pseudo_code: |
       def detect_correlation_leakage(X_features, X_sensitive, leakage_correlation_threshold=0.3):
+          """
+          Compute absolute Pearson correlation between each feature and the
+          sensitive attribute. Flag leakage if any correlation exceeds threshold.
+
+          Args:
+              X_features: np.ndarray, shape (n_samples, n_features). Feature matrix.
+              X_sensitive: np.ndarray, shape (n_samples,). Sensitive attribute vector.
+              leakage_correlation_threshold: float. Maximum acceptable correlation.
+          Returns:
+              dict with per-feature correlations, max correlation, and leakage flag.
+          """
           import numpy as np
-          corrs = []
-          for i in range(X_features.shape[1]):
-              corr = np.corrcoef(X_features[:, i], X_sensitive)[0, 1]
-              corrs.append(np.abs(corr))
-          
-          is_leaking = max(corrs) > leakage_correlation_threshold if corrs else False
-          return {"max_correlation": max(corrs) if corrs else 0, "is_leaking": is_leaking}
-    constraints: ["strictly assesses linear Pearson limits"]
+          n_features = X_features.shape[1]
+          correlations = []
+          for i in range(n_features):
+              if np.std(X_features[:, i]) < 1e-9 or np.std(X_sensitive) < 1e-9:
+                  correlations.append(0.0)
+              else:
+                  corr = np.corrcoef(X_features[:, i], X_sensitive)[0, 1]
+                  correlations.append(float(np.abs(corr)) if not np.isnan(corr) else 0.0)
+
+          max_corr = max(correlations) if correlations else 0.0
+          is_leaking = max_corr > leakage_correlation_threshold
+
+          return {
+              "per_feature_correlations": correlations,
+              "max_correlation": max_corr,
+              "is_leaking": is_leaking,
+              "threshold_used": leakage_correlation_threshold,
+              "n_features_above_threshold": sum(1 for c in correlations if c > leakage_correlation_threshold)
+          }
+    constraints: ["X_features and X_sensitive must have the same number of rows", "X_sensitive must be numeric"]
     output: "leakage_report"
   - step_id: 2
-    name: "Closed-Form SVD Projection"
+    name: "Closed-Form SVD Orthogonal Projection"
     sub_skill: "subspace_transformation"
     depends_on: ["leakage_report"]
     pseudo_code: |
-      def closed_form_svd(A, B):
+      def closed_form_svd_projection(A, B, epsilon=1e-9):
+          """
+          Project feature matrix A onto the subspace orthogonal to sensitive
+          attribute B using SVD decomposition and Lagrange-based orthogonalization.
+
+          The key idea: decompose A into SVD components, then for each component
+          remove the projection onto B so the result is uncorrelated with B.
+
+          Args:
+              A: np.ndarray, shape (n_samples, n_features). Feature matrix.
+              B: np.ndarray, shape (n_samples,) or (n_samples, 1). Sensitive attribute.
+          Returns:
+              dict with orthogonal components S_star and rotation matrix Vt.
+          """
           import numpy as np
-          import scipy.linalg as la
-          
-          # Standardize structurally cleanly accurately
-          A_std = (A - A.mean(axis=0)) / (A.std(axis=0) + 1e-9)
-          B_std = (B - B.mean(axis=0)) / (B.std(axis=0) + 1e-9)
-          
-          # Exact identical reliably functional seamlessly mapped boundaries
-          k = min(A.shape[1], A.shape[0])
-          U, S, Vt = la.svd(A_std, full_matrices=False)
-          
-          S_star_matrix = np.zeros_like(U[:, :k])
+          from scipy.linalg import svd
+
+          # Standardize inputs
+          A_mean = A.mean(axis=0)
+          A_std = A.std(axis=0) + epsilon
+          A_std_matrix = (A - A_mean) / A_std
+
+          B_flat = B.ravel().astype(float)
+          B_mean = B_flat.mean()
+          B_std_val = B_flat.std() + epsilon
+          B_centered = (B_flat - B_mean) / B_std_val
+
+          # SVD decomposition of standardized features
+          k = min(A.shape[0], A.shape[1])
+          U, S, Vt = svd(A_std_matrix, full_matrices=False)
+
+          # For each SVD component, remove projection onto B
+          S_star_matrix = np.zeros((A.shape[0], k))
           for j in range(k):
-              u_j = U[:, j]
-              proj = A_std @ Vt[j, :].T # simplified identical orthogonal logic
-              
-              # Lagrange formally structurally correctly identical gracefully
-              demon = np.dot(B_std, B_std)
-              if demon == 0: demon = 1e-9
-              lam = np.dot(proj, B_std) / demon
-              
-              # Orthogonal target predictably tracking mathematical reliably perfectly cleanly
-              s_star = proj - lam * B_std
-              S_star_matrix[:, j] = s_star
-              
-          return {"S_star": S_star_matrix, "Vt": Vt}
-    constraints: ["skips functionally stably successfully purely identically smoothly safely cleanly identical executing limits seamlessly natively properly if not is_leaking"] # Safe dummy text mapping
+              # Project data onto j-th right singular vector
+              component = A_std_matrix @ Vt[j, :]
+
+              # Compute Lagrange multiplier: how much of B is in this component
+              B_norm_sq = np.dot(B_centered, B_centered)
+              if B_norm_sq < epsilon:
+                  # B is constant, no projection needed
+                  S_star_matrix[:, j] = component
+              else:
+                  lam = np.dot(component, B_centered) / B_norm_sq
+                  # Subtract the B-aligned portion to make component orthogonal to B
+                  S_star_matrix[:, j] = component - lam * B_centered
+
+          return {
+              "S_star": S_star_matrix,
+              "Vt": Vt,
+              "A_mean": A_mean,
+              "A_std": A_std,
+              "n_components": k
+          }
+    constraints: ["skip this step if leakage_report.is_leaking is False (no bias to remove)", "A must have at least 2 rows"]
     output: "svd_components"
   - step_id: 3
-    name: "Target Structure Reconstruction"
+    name: "Reconstruct Orthogonal Feature Matrix"
     sub_skill: "matrix_reconstruction"
     depends_on: ["svd_components"]
     pseudo_code: |
-      def reconstruct_orthogonal_matrix(svd_components, A_orig):
+      def reconstruct_orthogonal_matrix(svd_components, A_original):
+          """
+          Reconstruct the cleaned feature matrix from orthogonalized SVD
+          components, restoring original scale and mean.
+
+          Args:
+              svd_components: dict from step 2 with S_star, Vt, A_mean, A_std.
+              A_original: np.ndarray, shape (n_samples, n_features). Original features.
+          Returns:
+              dict with cleaned feature matrix and reconstruction metadata.
+          """
           import numpy as np
+
           S_star = svd_components["S_star"]
           Vt = svd_components["Vt"]
-          
-          # Restore exact parameters mathematically flawlessly matching identical predictably reliably accurately properly cleanly cleanly safely identical identically
-          A_clean = S_star @ Vt
-          
-          # Rescale neatly effectively beautifully predictably cleanly logically
-          A_clean = A_clean * A_orig.std(axis=0) + A_orig.mean(axis=0)
-          return A_clean
-    constraints: ["returns identical cleanly smoothly correctly correctly safely confidently smartly explicitly fully seamlessly safely stable array dimensions"]
+          A_mean = svd_components["A_mean"]
+          A_std = svd_components["A_std"]
+
+          # Reconstruct in standardized space
+          A_clean_std = S_star @ Vt
+
+          # Restore original scale
+          A_clean = A_clean_std * A_std + A_mean
+
+          # Compute reconstruction error for quality check
+          reconstruction_error = float(np.mean((A_original - A_clean) ** 2))
+
+          return {
+              "A_clean": A_clean,
+              "reconstruction_mse": reconstruction_error,
+              "shape": A_clean.shape,
+              "n_features": A_clean.shape[1]
+          }
+    constraints: ["A_original must have same shape as the A used in step 2", "output dimensions must match input dimensions"]
     output: "final_result"
 orchestration_pattern: "sequential_with_conditional_skip"
 sandbox_requirements: ["numpy", "scipy"]
