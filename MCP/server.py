@@ -1,13 +1,13 @@
 import json
 import os
 from typing import List, Dict, Any, Optional, Union
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 
 # Create MCP server instance
 mcp = FastMCP("FairnessAlgorithmsServer")
 
 @mcp.tool()
-def get_algorithm_info(algorithm_id: str = "algo1") -> str:
+def get_algorithm_info(algorithm_id: str = "all") -> str:
     """
     Get detailed documentation about an algorithmic knowledge skill.
     Call this tool to learn what the algorithm calculates and what domains it applies to.
@@ -172,13 +172,89 @@ def get_algorithm_info(algorithm_id: str = "algo1") -> str:
                     }
                 }
             ]
+        },
+        "algo12": {
+            "name": "Fairness Feedback Loops & Algorithmic Reparation (Knowledge Skill)",
+            "type": "FRAMEWORK",
+            "purpose": "Tracks Model-Induced Distribution Shifts (MIDS) across model generations detecting fairness decay, model collapse, and minoritized group erasure. Mitigates via STratified Algorithmic Reparation (STAR) quota-based batch curation enforcing intersectional representation.",
+            "best_suited_for": ["Hiring & HR", "Lending & Finance", "Education"],
+            "not_suited_for": ["Criminal Justice (systemic label bias; uniform quotas misalign with structural inequities)", "Healthcare (clinical harm asymmetry conflicts with uniform STAR quotas)"],
+            "tools_provided": [
+                {
+                    "tool_name": "load_algorithm_knowledge",
+                    "description": "Loads generational MIDS tracking pipeline and STAR reparative batch sampler.",
+                    "inputs_schema": {
+                        "algorithm_id": "String. Set to 'algo12'."
+                    }
+                }
+            ]
+        },
+        "algo13": {
+            "name": "Fairness Without Demographics via DRO (Knowledge Skill)",
+            "type": "FRAMEWORK",
+            "purpose": "Controls worst-case group risk without demographic labels using chi-squared Distributionally Robust Optimization. Detects disparity amplification via retention dynamics simulation and Jacobian spectral analysis. Mitigates via dual-variable SGD that automatically upweights high-loss examples.",
+            "best_suited_for": ["Healthcare", "Lending & Finance", "Education"],
+            "not_suited_for": ["Criminal Justice (legally mandated parity requires explicit labels)", "Hiring & HR (discrete cycles limit feedback dynamics)"],
+            "tools_provided": [
+                {
+                    "tool_name": "load_algorithm_knowledge",
+                    "description": "Loads DRO dual optimization pipeline and disparity amplification auditor.",
+                    "inputs_schema": {
+                        "algorithm_id": "String. Set to 'algo13'."
+                    }
+                }
+            ]
+        },
+        "algo14": {
+            "name": "Fairness in Relational Domains - FairPSL (Knowledge Skill)",
+            "type": "FRAMEWORK",
+            "purpose": "Audits and enforces fairness in relational/networked domains using First-Order Logic discrimination patterns and convex MAP inference with linear fairness constraints (Risk Difference, Risk Ratio, Relative Chance).",
+            "best_suited_for": ["Hiring & HR", "Education", "Lending & Finance"],
+            "not_suited_for": ["Criminal Justice (structural bias and label validity issues)", "Healthcare (relational patterns may encode legitimate clinical pathways)"],
+            "tools_provided": [
+                {
+                    "tool_name": "load_algorithm_knowledge",
+                    "description": "Loads FOL-based relational fairness detection and constrained PSL MAP inference pipeline.",
+                    "inputs_schema": {
+                        "algorithm_id": "String. Set to 'algo14'."
+                    }
+                }
+            ]
         }
     }
     
     algorithm_id = algorithm_id.strip()
+    if algorithm_id.lower() == "all":
+        menu = {k: {"name": v["name"], "type": v["type"], "purpose": v["purpose"]} for k, v in registry.items()}
+        return json.dumps({"available_algorithms": menu}, indent=2)
+        
     if algorithm_id in registry:
         return json.dumps(registry[algorithm_id], indent=2)
     return json.dumps({"error": f"Algorithm '{algorithm_id}' not found in registry."})
+
+
+@mcp.tool()
+def list_algorithms() -> str:
+    """
+    Lists all available fairness algorithms registered in the Lusitània MCP server.
+    Use this to see the full menu of IDs before calling get_algorithm_info or load_algorithm_knowledge.
+    """
+    registry = {
+        "algo1": "Certifying and Removing Disparate Impact",
+        "algo2": "Equality of Opportunity in Supervised Learning",
+        "algo3": "Fair Prediction with Disparate Impact - Recidivism",
+        "algo4": "Intersectional Subgroup Scan",
+        "algo5": "Mutual Information Proxy Scanner",
+        "algo6": "Brownian Distance Covariance Scanner",
+        "algo7": "SHAP Values for Proxy Detection",
+        "algo9": "Causal Fair Inference",
+        "algo10": "Counterfactual Fairness (Orthogonal to Bias)",
+        "algo11": "Causal Explanation Formula",
+        "algo12": "Fairness Feedback Loops & Algorithmic Reparation",
+        "algo13": "Fairness Without Demographics via DRO",
+        "algo14": "Fairness in Relational Domains (FairPSL)"
+    }
+    return json.dumps({"algorithms": registry}, indent=2)
 
 
 @mcp.tool()
@@ -190,43 +266,59 @@ def load_algorithm_knowledge(algorithm_id: str) -> str:
     Args:
         algorithm_id: Identifier of the algorithm (e.g., "algo1", "algo2", "algo3").
     """
-    algorithm_id = algorithm_id.strip()
+    from pathlib import Path
+
+    algorithm_id = algorithm_id.strip().lower()
     valid_algos = {
         "algo1": "PURE", "algo2": "PURE", "algo3": "PURE", "algo4": "FRAMEWORK", 
         "algo5": "FRAMEWORK", "algo6": "PURE", "algo7": "FRAMEWORK", "algo9": "PURE",
-        "algo10": "FRAMEWORK", "algo11": "PURE"
+        "algo10": "FRAMEWORK", "algo11": "PURE", "algo12": "FRAMEWORK", "algo13": "FRAMEWORK",
+        "algo14": "FRAMEWORK"
     }
     
-    if algorithm_id in valid_algos:
-        algo_type = valid_algos[algorithm_id]
-        if algo_type == "PURE":
-            file_path = os.path.join(os.path.dirname(__file__), algorithm_id, "knowledge.md")
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    return f.read()
-            except Exception as e:
-                return f"Error loading knowledge MD file for {algorithm_id}: {str(e)}"
-        elif algo_type == "FRAMEWORK":
-            yaml_path = os.path.join(os.path.dirname(__file__), algorithm_id, "framework.yaml")
-            scaffold_path = os.path.join(os.path.dirname(__file__), "framework_scaffold.py")
-            try:
-                with open(yaml_path, 'r', encoding='utf-8') as f:
-                    yaml_content = f.read()
-                with open(scaffold_path, 'r', encoding='utf-8') as f:
-                    scaffold_content = f.read()
-                
-                # Prepend the scaffold logic to the YAML output securely
-                return (f"=== PYTHON STATE MACHINE SCAFFOLD ===\n"
-                        f"IMPORTANT: You MUST use the exact scaffold below to run the framework steps.\n\n"
-                        f"{scaffold_content}\n\n"
-                        f"=== FRAMEWORK YAML PIPELINE DAG ===\n"
-                        f"IMPORTANT: Execute the scaffold mapped strictly to these steps:\n\n"
-                        f"{yaml_content}")
-            except Exception as e:
-                return f"Error loading framework YAML or scaffold for {algorithm_id}: {str(e)}"
-    
-    return f"Knowledge skill not configured yet for {algorithm_id}."
+    if algorithm_id not in valid_algos:
+        return f"Unknown algorithm_id: '{algorithm_id}'. Valid: {', '.join(sorted(valid_algos.keys()))}"
+
+    base_dir = Path(__file__).resolve().parent
+    algo_type = valid_algos[algorithm_id]
+
+    if algo_type == "PURE":
+        file_path = base_dir / algorithm_id / "knowledge.md"
+        try:
+            return file_path.read_text(encoding='utf-8')
+        except FileNotFoundError:
+            return f"File not found: {file_path}"
+        except Exception as e:
+            return f"Error loading {file_path}: {e}"
+    else:
+        yaml_path = base_dir / algorithm_id / "framework.yaml"
+        scaffold_path = base_dir / "framework_scaffold.py"
+        try:
+            yaml_content = yaml_path.read_text(encoding='utf-8')
+        except FileNotFoundError:
+            return f"File not found: {yaml_path}"
+        except Exception as e:
+            return f"Error loading {yaml_path}: {e}"
+
+        try:
+            scaffold_content = scaffold_path.read_text(encoding='utf-8')
+        except Exception:
+            scaffold_content = "# Scaffold not found - implement DAG steps manually."
+
+        return (f"=== PYTHON STATE MACHINE SCAFFOLD ===\n"
+                f"IMPORTANT: You MUST use the exact scaffold below to run the framework steps.\n\n"
+                f"{scaffold_content}\n\n"
+                f"=== FRAMEWORK YAML PIPELINE DAG ===\n"
+                f"IMPORTANT: Execute the scaffold mapped strictly to these steps:\n\n"
+                f"{yaml_content}")
 
 
 if __name__ == "__main__":
-    mcp.run()
+    port = os.environ.get("PORT")
+    if port:
+        # Railway / cloud deployment: run SSE transport over HTTP
+        mcp.run(transport="sse", host="0.0.0.0", port=int(port))
+    else:
+        # Local: run stdio transport (Claude Desktop, Cursor)
+        mcp.run()
+

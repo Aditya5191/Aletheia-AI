@@ -4,80 +4,226 @@ type: FRAMEWORK
 agent_parameter_tuning_guide:
   - parameter: "proxy_threshold"
     default: 0.25
-    impact: "Determines what is labeled a redundant proxy. If the model accuracy completely drops after mitigation dynamically, increase securely to 0.4 formally gracefully executing safer constraints."
-  - parameter: "alpha"
-    default: 1.5
-    impact: "Limits the exponent penalty bounding structurally. If proxy influence cleanly resists reweighting optimally, identically push gracefully to 2.5."
+    impact: "Minimum proxy score to flag a feature as a redundant proxy. The proxy score is computed as abs(mean_shap) * abs(correlation_with_sensitive). Lower values (0.10) flag more features including weak proxies. Higher values (0.40) flag only strong proxies. Start at 0.25 and adjust based on the number of flagged features relative to total features."
   - parameter: "mitigation_type"
     default: "reweight"
-    impact: "Choose 'remove' to drop proxy entirely, 'residualize' for linear decoupling, or 'reweight' for exponent decay."
+    impact: "Strategy to mitigate proxy influence. 'reweight' applies exponential sample weight decay proportional to proxy strength (preserves all features). 'residualize' removes proxy dependence via regression residuals (modifies features). 'remove' drops flagged features entirely (simplest but loses information). Use 'reweight' for model retraining, 'residualize' for feature debiasing, 'remove' only as a last resort."
+  - parameter: "alpha"
+    default: 1.5
+    impact: "Exponent controlling reweight decay strength. Higher values (2.5-3.0) apply stronger penalties to proxy-correlated samples. Lower values (0.5-1.0) apply gentler penalties. Increase if proxy influence persists after mitigation. Decrease if model accuracy drops significantly."
+  - parameter: "n_background_samples"
+    default: 10
+    impact: "Number of k-means clusters for SHAP KernelExplainer background data. More clusters (50-100) give more accurate SHAP values but dramatically increase computation time. 10 is sufficient for most audits. Increase to 50 for production-grade reports on datasets with complex feature interactions."
+  - parameter: "weight_clamp"
+    default: [0.1, 5.0]
+    impact: "Min and max bounds for sample weights after reweighting. Prevents any single sample from being effectively zeroed out (< 0.1) or dominating (> 5.0). Widen to [0.05, 10.0] for aggressive debiasing. Narrow to [0.5, 2.0] for stability."
 pipeline_dag:
   - step_id: 1
-    name: "Baseline Expectation Calculation"
+    name: "Compute Baseline Expected Prediction"
     sub_skill: "compute_baseline"
     pseudo_code: |
       def compute_baseline_expectation(model, X_background):
-          return model.predict(X_background).mean()
-    constraints: ["model input is fitted classifier/regressor"]
+          """
+          Compute the average model prediction on background data.
+          This serves as the SHAP base value (expected output).
+
+          Args:
+              model: fitted sklearn-compatible model with .predict() method.
+              X_background: np.ndarray, shape (n_background, n_features).
+          Returns:
+              float. Mean prediction on background data.
+          """
+          import numpy as np
+          predictions = model.predict(X_background)
+          return float(np.mean(predictions))
+    constraints: ["model must be a fitted classifier or regressor with .predict() method"]
     output: "baseline_pred"
   - step_id: 2
-    name: "Kernel SHAP Subsetting Approximation"
-    sub_skill: "shap_ridge_regression"
+    name: "Compute SHAP Values via Kernel Explainer"
+    sub_skill: "shap_computation"
     depends_on: ["baseline_pred"]
     pseudo_code: |
-      def compute_shap_values(model, X, baseline_pred):
-          # Since full Kernel SHAP is complex to write natively perfectly,
-          # The agent may use the SHAP library structurally for speed
+      def compute_shap_values(model, X, n_background_samples=10):
+          """
+          Compute SHAP values for all samples using KernelExplainer with
+          k-means summarized background data.
+
+          Args:
+              model: fitted sklearn-compatible model.
+              X: np.ndarray, shape (n_samples, n_features). Data to explain.
+              n_background_samples: int. Number of k-means clusters for background.
+          Returns:
+              np.ndarray, shape (n_samples, n_features). SHAP values per feature.
+          """
           import shap
-          explainer = shap.KernelExplainer(model.predict, shap.kmeans(X, 10))
+          import numpy as np
+
+          if X.shape[0] < n_background_samples:
+              n_background_samples = X.shape[0]
+
+          background = shap.kmeans(X, n_background_samples)
+          explainer = shap.KernelExplainer(model.predict, background)
           shap_values = explainer.shap_values(X)
-          return shap_values
-    constraints: ["securely bounds subset approximations"]
+
+          # Handle multi-output models (take first output class)
+          if isinstance(shap_values, list):
+              shap_values = shap_values[0]
+
+          return np.array(shap_values)
+    constraints: ["requires shap package installed", "X must have at least n_background_samples rows"]
     output: "shap_values"
   - step_id: 3
-    name: "Structural Proxy Scoring"
+    name: "Score Features as Potential Proxies"
     sub_skill: "proxy_scoring"
     depends_on: ["shap_values"]
     pseudo_code: |
-      def compute_proxy_scores(X, protected_attr, shap_values, proxy_threshold=0.25):
+      def compute_proxy_scores(X, protected_attr, shap_values, feature_names, proxy_threshold=0.25):
+          """
+          Score each feature as a potential proxy for the protected attribute.
+          Proxy score = abs(mean SHAP value) * abs(Pearson correlation with sensitive attr).
+          Features with high SHAP importance AND high correlation to the sensitive
+          attribute are flagged as proxies.
+
+          Args:
+              X: np.ndarray, shape (n_samples, n_features).
+              protected_attr: np.ndarray, shape (n_samples,).
+              shap_values: np.ndarray, shape (n_samples, n_features).
+              feature_names: list of str. Column names. If None, uses indices.
+              proxy_threshold: float. Minimum score to flag as proxy.
+          Returns:
+              dict with all scores and flagged proxies list.
+          """
           import numpy as np
-          scores = []
+
+          all_scores = []
+          flagged = []
           for i in range(X.shape[1]):
               feat_vals = X[:, i]
               s_vals = shap_values[:, i]
-              
-              # Pearson correlation logically 
-              corr = np.corrcoef(feat_vals, protected_attr)[0, 1]
-              if np.isnan(corr): corr = 0
-              
-              proxy_score = np.abs(s_vals.mean()) * np.abs(corr)
+              name = feature_names[i] if feature_names else f"feature_{i}"
+
+              # Pearson correlation with protected attribute
+              if np.std(feat_vals) < 1e-9 or np.std(protected_attr) < 1e-9:
+                  corr = 0.0
+              else:
+                  corr = np.corrcoef(feat_vals, protected_attr)[0, 1]
+                  if np.isnan(corr):
+                      corr = 0.0
+
+              # SHAP magnitude: mean absolute SHAP value for this feature
+              shap_magnitude = float(np.mean(np.abs(s_vals)))
+
+              # Proxy score: combines importance with correlation
+              proxy_score = shap_magnitude * abs(corr)
+
+              entry = {
+                  "feature_idx": i,
+                  "feature_name": name,
+                  "shap_magnitude": shap_magnitude,
+                  "correlation": float(corr),
+                  "proxy_score": float(proxy_score),
+                  "is_proxy": proxy_score > proxy_threshold
+              }
+              all_scores.append(entry)
               if proxy_score > proxy_threshold:
-                  scores.append({"feature_idx": i, "proxy_score": proxy_score, "shap_magnitude": np.abs(s_vals.mean())})
-          return scores
-    constraints: ["proxy_threshold strictly bounding limits >= 0.1"]
-    output: "flagged_scored_proxies"
+                  flagged.append(entry)
+
+          return {
+              "all_scores": sorted(all_scores, key=lambda x: x["proxy_score"], reverse=True),
+              "flagged_proxies": sorted(flagged, key=lambda x: x["proxy_score"], reverse=True),
+              "n_proxies_detected": len(flagged),
+              "threshold_used": proxy_threshold
+          }
+    constraints: ["proxy_threshold must be >= 0", "protected_attr must be numeric"]
+    output: "proxy_report"
   - step_id: 4
-    name: "Attribution Mitigation Router"
-    sub_skill: "reweighting_engine"
-    depends_on: ["flagged_scored_proxies"]
+    name: "Mitigate Proxy Influence"
+    sub_skill: "mitigation_engine"
+    depends_on: ["proxy_report"]
     pseudo_code: |
-      def mitigate_proxy_attribution(X, flagged_scored_proxies, mitigation_type="reweight", alpha=1.5):
+      def mitigate_proxy_attribution(X, protected_attr, proxy_report, mitigation_type="reweight", alpha=1.5, weight_clamp=(0.1, 5.0)):
+          """
+          Apply the selected mitigation strategy to reduce proxy influence.
+
+          Three strategies:
+            - reweight: Exponential decay sample weights proportional to proxy strength.
+            - residualize: Replace flagged features with regression residuals.
+            - remove: Drop flagged feature columns entirely.
+
+          Args:
+              X: np.ndarray, shape (n_samples, n_features).
+              protected_attr: np.ndarray, shape (n_samples,).
+              proxy_report: dict from step 3.
+              mitigation_type: str. One of 'reweight', 'residualize', 'remove'.
+              alpha: float. Decay exponent for reweighting.
+              weight_clamp: tuple of (min, max) for weight bounds.
+          Returns:
+              dict with mitigation results (weights, cleaned matrix, or reduced matrix).
+          """
           import numpy as np
+          from sklearn.linear_model import Ridge
+
+          flagged = proxy_report["flagged_proxies"]
+          if not flagged:
+              return {"action": "no_proxies_detected", "mitigation_type": mitigation_type}
+
           if mitigation_type == "reweight":
               sample_weights = np.ones(X.shape[0])
-              for proxy in flagged_scored_proxies:
+              for proxy in flagged:
                   idx = proxy["feature_idx"]
-                  norm_feat = (X[:, idx] - X[:, idx].min()) / (X[:, idx].max() - X[:, idx].min() + 1e-9)
-                  
-                  # Exponential scaling decay bounding cleanly gracefully
+                  feat = X[:, idx]
+                  feat_range = feat.max() - feat.min()
+                  if feat_range < 1e-9:
+                      continue
+                  norm_feat = (feat - feat.min()) / (feat_range + 1e-9)
                   decay = np.exp(-alpha * proxy["proxy_score"] * norm_feat)
                   sample_weights *= decay
-                  
-              # Normalize weights cleanly locking structural parameters matching constraints inside [0.1, 5]
-              sample_weights = np.clip(sample_weights, 0.1, 5.0)
-              return {"action": "reweighted", "sample_weights": sample_weights}
-          return {"action": "skipped"}
-    constraints: ["sample_weights perfectly clamped inside [0.1, 5.0] limits"]
+
+              sample_weights = np.clip(sample_weights, weight_clamp[0], weight_clamp[1])
+              # Normalize so mean weight = 1.0
+              sample_weights = sample_weights / (np.mean(sample_weights) + 1e-9)
+              return {
+                  "action": "reweighted",
+                  "mitigation_type": "reweight",
+                  "sample_weights": sample_weights,
+                  "n_proxies_mitigated": len(flagged)
+              }
+
+          elif mitigation_type == "residualize":
+              X_clean = X.copy()
+              for proxy in flagged:
+                  idx = proxy["feature_idx"]
+                  feat = X[:, idx]
+                  model = Ridge(alpha=1.0).fit(protected_attr.reshape(-1, 1), feat)
+                  predicted = model.predict(protected_attr.reshape(-1, 1))
+                  residual = feat - predicted
+                  orig_std = np.std(feat)
+                  res_std = np.std(residual)
+                  if res_std > 1e-9:
+                      residual = residual * (orig_std / res_std)
+                  X_clean[:, idx] = residual
+              return {
+                  "action": "residualized",
+                  "mitigation_type": "residualize",
+                  "X_clean": X_clean,
+                  "n_proxies_mitigated": len(flagged)
+              }
+
+          elif mitigation_type == "remove":
+              keep_indices = [i for i in range(X.shape[1]) if i not in {p["feature_idx"] for p in flagged}]
+              X_reduced = X[:, keep_indices]
+              return {
+                  "action": "removed",
+                  "mitigation_type": "remove",
+                  "X_reduced": X_reduced,
+                  "removed_features": [p["feature_name"] for p in flagged],
+                  "n_features_removed": len(flagged),
+                  "n_features_remaining": len(keep_indices)
+              }
+
+          else:
+              raise ValueError(f"Unknown mitigation_type: {mitigation_type}. Must be 'reweight', 'residualize', or 'remove'.")
+    constraints: ["mitigation_type must be one of: reweight, residualize, remove", "weight_clamp[0] must be > 0"]
     output: "final_result"
 orchestration_pattern: "sequential_with_conditional_skip"
 sandbox_requirements: ["numpy", "scikit-learn", "shap"]
