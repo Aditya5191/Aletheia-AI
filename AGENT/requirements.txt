@@ -1,0 +1,33 @@
+# Lustitia — Agentic Bias Detector
+# Python 3.10.9
+
+# ── Agentic framework ──────────────────────────────────────────
+crewai
+crewai-tools
+
+# ── LLM ────────────────────────────────────────────────────────
+groq==0.18.0
+anthropic==0.94.0
+
+# ── Sandbox (requires Docker running locally) ──────────────────
+llm-sandbox[docker]
+docker
+
+# ── MCP client (for bias algorithm server) ─────────────────────
+mcp
+
+# ── Data (host-side only — profiling result parsing) ───────────
+# NOTE: fairlearn, aif360, shap, scikit-learn, seaborn are NOT here.
+# They install inside the sandbox container at runtime via session.run(libraries=[...])
+pandas
+numpy
+
+# ── Report generation ──────────────────────────────────────────
+reportlab
+Pillow
+
+# ── HTTP + env ─────────────────────────────────────────────────
+httpx
+python-dotenv
+nest_asyncio
+fastapi==0.114.2

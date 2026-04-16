@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "skills": {
+    "ask-docs": {
+      "source": "crewaiinc/skills",
+      "sourceType": "github",
+      "computedHash": "8a027e621b612006535e49e3bb273ee6bb642daa77442396a41852a840803cdf"
+    },
+    "design-agent": {
+      "source": "crewaiinc/skills",
+      "sourceType": "github",
+      "computedHash": "aa3fade4f948edac849089389d4540b01a5de91118517e5d06adda94b671675a"
+    },
+    "design-task": {
+      "source": "crewaiinc/skills",
+      "sourceType": "github",
+      "computedHash": "08ab2896ec75bab810f2726ec3ed6d85f52603f83f06b3b490e6f54b9c540f0c"
+    },
+    "getting-started": {
+      "source": "crewaiinc/skills",
+      "sourceType": "github",
+      "computedHash": "9a10e2f3c38b66b2c963815d1d0ee80e49b794da63a144a4d0c9609bc8275ce6"
+    }
+  }
+}
