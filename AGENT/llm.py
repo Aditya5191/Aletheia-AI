@@ -4,30 +4,38 @@ from crewai import LLM
 
 load_dotenv()
 
-# Custom LM Studio endpoint via Dev Tunnels
-# LM Studio uses the OpenAI-compatible format at /v1
-CUSTOM_LLM_URL = "https://7x73n9pq-1234.inc1.devtunnels.ms/v1"
-# We use 'custom_openai/' to prevent LiteLLM from stripping the 'openai/' part of the model name
-CUSTOM_MODEL = "custom_openai/openai/gpt-oss-20b"
+# Gemini Configuration
+GEMINI_MODEL = "gemini/gemini-1.5-pro"
+PROFILER_MODEL = "gemini/gemini-1.5-flash"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Configure environment variables for LiteLLM (used by CrewAI)
-os.environ["OPENAI_API_BASE"] = CUSTOM_LLM_URL
-os.environ["OPENAI_API_KEY"] = "lm-studio" 
+os.environ["GEMINI_API_KEY"] = GEMINI_API_KEY
 
 def get_llm(temperature=0.1) -> LLM:
     """
-    LLM for Data Profiler and Bias Analyst.
-    Configured for LM Studio via OpenAI-compatible endpoint.
+    LLM for Bias Analyst.
+    Configured for Gemini Pro.
     """
     return LLM(
-        model=CUSTOM_MODEL,
-        base_url=CUSTOM_LLM_URL,
+        model=GEMINI_MODEL,
         temperature=temperature,
-        api_key="lm-studio"
+        api_key=GEMINI_API_KEY
+    )
+
+def get_profiler_llm(temperature=0.1) -> LLM:
+    """
+    LLM for Data Profiler.
+    Configured for Gemini Flash.
+    """
+    return LLM(
+        model=PROFILER_MODEL,
+        temperature=temperature,
+        api_key=GEMINI_API_KEY
     )
 
 def get_fallback_llm() -> LLM:
-    """Fallback to the same custom model for consistency."""
+    """Fallback to the same Gemini model for consistency."""
     return get_llm(temperature=0.1)
 
 def get_creative_llm() -> LLM:

@@ -1,0 +1,345 @@
+{
+  "nodes": [
+    {
+      "id": "paper_algo7_readme_shapproxydetection",
+      "label": "SHAP Proxy Detection & Redundancy Auditor",
+      "file_type": "document",
+      "source_file": "PAPER/Algo7/ReadMe.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo7_readme_kernelshap",
+      "label": "Kernel SHAP approximation",
+      "file_type": "document",
+      "source_file": "PAPER/Algo7/ReadMe.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo7_readme_proxydiscrimination",
+      "label": "Proxy discrimination",
+      "file_type": "document",
+      "source_file": "PAPER/Algo7/ReadMe.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo9_readme_causalfairinference",
+      "label": "Causal Fair Inference",
+      "file_type": "document",
+      "source_file": "PAPER/Algo9/Readme.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo9_readme_pse",
+      "label": "Path-Specific Effects (PSEs)",
+      "file_type": "document",
+      "source_file": "PAPER/Algo9/Readme.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "agent_reports_compas_scores_bias_report_biasauditreport",
+      "label": "Bias Audit Report",
+      "file_type": "document",
+      "source_file": "AGENT/reports/compas-scores_bias_report.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "agent_reports_compas_scores_bias_report_verdict_clean",
+      "label": "Verdict: CLEAN",
+      "file_type": "document",
+      "source_file": "AGENT/reports/compas-scores_bias_report.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "dataset_healthcare_description_hba1c",
+      "label": "HbA1c Measurement",
+      "file_type": "paper",
+      "source_file": "dataset/HealthCare/description.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "dataset_healthcare_description_hospitalreadmission",
+      "label": "Hospital Readmission Rates",
+      "file_type": "paper",
+      "source_file": "dataset/HealthCare/description.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo1_algo_1_statistical_parity_ratio_disparateimpact",
+      "label": "Disparate Impact",
+      "file_type": "paper",
+      "source_file": "PAPER/Algo1/algo-1 Statistical Parity Ratio.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo10_algo10_counterfactual_shap_attribution_orthogonal_to_bias",
+      "label": "Orthogonal to Bias (OB)",
+      "file_type": "paper",
+      "source_file": "PAPER/ALgo10/algo10-Counterfactual SHAP Attribution.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo10_algo10_counterfactual_shap_attribution_counterfactualfairness",
+      "label": "Counterfactual Fairness",
+      "file_type": "paper",
+      "source_file": "PAPER/ALgo10/algo10-Counterfactual SHAP Attribution.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo11_algo11_causal_mediation_proportion_causalexplanationformula",
+      "label": "Causal Explanation Formula",
+      "file_type": "paper",
+      "source_file": "PAPER/Algo11/algo11-Causal Mediation Proportion.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo12_facct24_144_fairnessfeedbackloops",
+      "label": "Fairness Feedback Loops",
+      "file_type": "paper",
+      "source_file": "PAPER/Algo12/facct24-144.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo12_facct24_144_modelcollapse",
+      "label": "Model Collapse",
+      "file_type": "paper",
+      "source_file": "PAPER/Algo12/facct24-144.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo13_1806_08010v2_dro",
+      "label": "Distributionally Robust Optimization (DRO)",
+      "file_type": "paper",
+      "source_file": "PAPER/Algo13/1806.08010v2.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo14_aies_2018_paper_27_fairpsl",
+      "label": "FairPSL",
+      "file_type": "paper",
+      "source_file": "PAPER/algo14/AIES_2018_paper_27.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo2_algo_2_equalized_odds_difference_equalizedodds",
+      "label": "Equalized Odds",
+      "file_type": "paper",
+      "source_file": "PAPER/Algo2/Algo-2 Equalized Odds Difference.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo2_algo_2_equalized_odds_difference_equalopportunity",
+      "label": "Equal Opportunity",
+      "file_type": "paper",
+      "source_file": "PAPER/Algo2/Algo-2 Equalized Odds Difference.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo3_algo_3_group_calibration_error_ece_predictiveparity",
+      "label": "Predictive Parity",
+      "file_type": "paper",
+      "source_file": "PAPER/Algo3/algo-3 Group Calibration Error (ECE).pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo4_algo4_intersectional_subgroup_scan_unconstrainedlearning",
+      "label": "Unconstrained Learning",
+      "file_type": "paper",
+      "source_file": "PAPER/Algo4/Algo4 Intersectional Subgroup Scan.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo5_algo5_mutual_information_proxy_scanner_inequalityindices",
+      "label": "Inequality Indices",
+      "file_type": "paper",
+      "source_file": "PAPER/Algo5/Algo5-Mutual Information Proxy Scanner.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo6_algo6_distance_correlation_non_linear_test_distancecovariance",
+      "label": "Distance Covariance",
+      "file_type": "paper",
+      "source_file": "PAPER/Algo6/Algo6-Distance Correlation & Non-Linear Test.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo7_algo7_proxy_shap_redundancy_check_shap",
+      "label": "SHAP (SHapley Additive exPlanations)",
+      "file_type": "paper",
+      "source_file": "PAPER/Algo7/algo7-Proxy-SHAP Redundancy Check.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo9_algo9_11553_article_text_15081_1_2_20201228_fairinference",
+      "label": "Fair Inference on Outcomes",
+      "file_type": "paper",
+      "source_file": "PAPER/Algo9/algo9-11553-Article Text-15081-1-2-20201228.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paper_algo9_algo9_11553_article_text_15081_1_2_20201228_pse",
+      "label": "Path-Specific Effect (PSE)",
+      "file_type": "paper",
+      "source_file": "PAPER/Algo9/algo9-11553-Article Text-15081-1-2-20201228.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "paper_algo7_readme_shapproxydetection",
+      "target": "paper_algo7_readme_kernelshap",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PAPER/Algo7/ReadMe.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "paper_algo9_readme_causalfairinference",
+      "target": "paper_algo9_readme_pse",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PAPER/Algo9/Readme.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "paper_algo9_readme_pse",
+      "target": "paper_algo9_algo9_11553_article_text_15081_1_2_20201228_pse",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "PAPER/Algo9/Readme.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "paper_algo7_readme_shapproxydetection",
+      "target": "paper_algo7_algo7_proxy_shap_redundancy_check_shap",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "PAPER/Algo7/ReadMe.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "paper_algo11_algo11_causal_mediation_proportion_causalexplanationformula",
+      "target": "paper_algo9_algo9_11553_article_text_15081_1_2_20201228_pse",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "PAPER/Algo11/algo11-Causal Mediation Proportion.pdf",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,674 @@
+{
+  "communities": {
+    "0": [
+      "curingalgo5_rationale_14",
+      "curingalgo5_residualize_proxy_features",
+      "curingalgo7_mitigate_proxy_shap",
+      "curingalgo7_rationale_14",
+      "detectionalgo11_estimate_causal_mechanisms",
+      "detectionalgo11_estimate_conditional_probs",
+      "detectionalgo11_rationale_26",
+      "detectionalgo11_rationale_9",
+      "detectionalgo1_beroptimizedclassifier_fit",
+      "detectionalgo1_beroptimizedclassifier_get_model",
+      "detectionalgo1_rationale_63",
+      "detectionalgo9_compute_ipw_weights",
+      "detectionalgo9_detect_causal_bias",
+      "detectionalgo9_estimate_nde_ipw",
+      "detectionalgo9_rationale_15",
+      "detectionalgo9_rationale_44",
+      "detectionalgo9_rationale_71",
+      "paper_algo11_detectionalgo11_py",
+      "paper_algo5_curingalgo5_py",
+      "paper_algo7_curingalgo7_py",
+      "paper_algo9_detectionalgo9_py"
+    ],
+    "1": [
+      "curingalgo1_combinatorial_repair_feature",
+      "curingalgo1_compute_median_distribution",
+      "curingalgo1_empirical_cdf",
+      "curingalgo1_geometric_repair_feature",
+      "curingalgo1_rationale_120",
+      "curingalgo1_rationale_175",
+      "curingalgo1_rationale_35",
+      "curingalgo1_rationale_64",
+      "curingalgo1_rationale_8",
+      "curingalgo1_repair_disparate_impact",
+      "detectionalgo10_approximate_counterfactual_stability",
+      "detectionalgo10_audit_bias",
+      "detectionalgo10_compute_pairwise_correlations",
+      "detectionalgo10_rationale_10",
+      "detectionalgo10_rationale_32",
+      "detectionalgo10_rationale_64",
+      "paper_algo10_detectionalgo10_py",
+      "paper_algo1_curingalgo1_py"
+    ],
+    "2": [
+      "curingalgo6_mitigate_dcor_proxies",
+      "curingalgo6_rationale_14",
+      "detectionalgo1_beroptimizedclassifier_predict",
+      "detectionalgo7_approximate_conditional_expectation",
+      "detectionalgo7_compute_kernel_shap_weights",
+      "detectionalgo7_detect_proxy_shap",
+      "detectionalgo7_rationale_14",
+      "detectionalgo7_rationale_35",
+      "detectionalgo7_rationale_47",
+      "detectionalgo7_rationale_67",
+      "detectionalgo7_rationale_8",
+      "detectionalgo7_sample_feature_subsets",
+      "detectionalgo7_solve_kernel_shap_regression",
+      "paper_algo6_curingalgo6_py",
+      "paper_algo7_detectionalgo7_py"
+    ],
+    "3": [
+      "agent_tools_py",
+      "basemodel",
+      "basetool",
+      "tools_mcpalgorithmtool",
+      "tools_mcpalgorithmtool_get_fallback",
+      "tools_mcpalgorithmtool_run",
+      "tools_mcpalgorithmtoolinput",
+      "tools_pdfreporttool",
+      "tools_pdfreporttool_run",
+      "tools_pdfreporttoolinput",
+      "tools_sandboxtool",
+      "tools_sandboxtool_run",
+      "tools_sandboxtoolinput"
+    ],
+    "4": [
+      "baseestimator",
+      "classifiermixin",
+      "detectionalgo1_balanced_error_rate",
+      "detectionalgo1_beroptimizedclassifier",
+      "detectionalgo1_beroptimizedclassifier_init",
+      "detectionalgo1_beroptimizedclassifier_score",
+      "detectionalgo1_calculate_disparate_impact_ratio",
+      "detectionalgo1_certify_disparate_impact",
+      "detectionalgo1_rationale_11",
+      "detectionalgo1_rationale_29",
+      "detectionalgo1_rationale_52",
+      "detectionalgo1_rationale_91",
+      "paper_algo1_detectionalgo1_py"
+    ],
+    "5": [
+      "detectionalgo3_calculate_penalty_disparity",
+      "detectionalgo3_check_error_rate_balance",
+      "detectionalgo3_check_predictive_parity",
+      "detectionalgo3_compute_group_metrics",
+      "detectionalgo3_detect_fairness_disparities",
+      "detectionalgo3_rationale_105",
+      "detectionalgo3_rationale_12",
+      "detectionalgo3_rationale_141",
+      "detectionalgo3_rationale_49",
+      "detectionalgo3_rationale_63",
+      "detectionalgo3_rationale_85",
+      "detectionalgo3_validate_prevalence_error_relationship",
+      "paper_algo3_detectionalgo3_py"
+    ],
+    "6": [
+      "curingalgo2_compute_expected_loss",
+      "curingalgo2_compute_group_roc_curves",
+      "curingalgo2_interpolate_threshold_for_tpr",
+      "curingalgo2_mitigate_equal_opportunity",
+      "curingalgo2_mitigate_equalized_odds_approx",
+      "curingalgo2_rationale_152",
+      "curingalgo2_rationale_27",
+      "curingalgo2_rationale_43",
+      "curingalgo2_rationale_56",
+      "curingalgo2_rationale_6",
+      "paper_algo2_curingalgo2_py"
+    ],
+    "7": [
+      "detectionalgo4_compute_ci",
+      "detectionalgo4_compute_positive_rate",
+      "detectionalgo4_compute_violation_score",
+      "detectionalgo4_rationale_20",
+      "detectionalgo4_rationale_27",
+      "detectionalgo4_rationale_34",
+      "detectionalgo4_rationale_56",
+      "detectionalgo4_scan_intersectional_subgroups",
+      "detectionalgo4_subgroupresult",
+      "paper_algo4_detectionalgo4_py"
+    ],
+    "8": [
+      "framework_scaffold_aggregate_pipeline_result",
+      "framework_scaffold_execute_framework_pipeline",
+      "framework_scaffold_rationale_11",
+      "framework_scaffold_rationale_18",
+      "framework_scaffold_rationale_2",
+      "framework_scaffold_rationale_25",
+      "framework_scaffold_run_sub_skill",
+      "framework_scaffold_validate_constraints",
+      "mcp_framework_scaffold_py"
+    ],
+    "9": [
+      "detectionalgo6_benjamini_hochberg",
+      "detectionalgo6_compute_dcor",
+      "detectionalgo6_double_center",
+      "detectionalgo6_rationale_15",
+      "detectionalgo6_rationale_36",
+      "detectionalgo6_rationale_52",
+      "detectionalgo6_rationale_8",
+      "detectionalgo6_scan_distance_correlation",
+      "paper_algo6_detectionalgo6_py"
+    ],
+    "10": [
+      "agent_crew_py",
+      "crew_main",
+      "crew_processlogger",
+      "crew_processlogger_as_text",
+      "crew_processlogger_init",
+      "crew_processlogger_log_step",
+      "crew_rationale_14",
+      "crew_rationale_29"
+    ],
+    "11": [
+      "agent_llm_py",
+      "llm_get_creative_llm",
+      "llm_get_fallback_llm",
+      "llm_get_llm",
+      "llm_rationale_15",
+      "llm_rationale_26",
+      "llm_rationale_30"
+    ],
+    "12": [
+      "mcp_server_py",
+      "server_get_algorithm_info",
+      "server_list_algorithms",
+      "server_load_algorithm_knowledge",
+      "server_rationale_11",
+      "server_rationale_238",
+      "server_rationale_262"
+    ],
+    "13": [
+      "curingalgo10_inverse_standardize",
+      "curingalgo10_orthogonal_to_bias",
+      "curingalgo10_rationale_13",
+      "curingalgo10_rationale_25",
+      "curingalgo10_rationale_7",
+      "curingalgo10_standardize_matrix",
+      "paper_algo10_curingalgo10_py"
+    ],
+    "14": [
+      "detectionalgo5_benjamini_hochberg",
+      "detectionalgo5_estimate_mi_knn",
+      "detectionalgo5_rationale_38",
+      "detectionalgo5_rationale_54",
+      "detectionalgo5_rationale_8",
+      "detectionalgo5_scan_proxy_features",
+      "paper_algo5_detectionalgo5_py"
+    ],
+    "15": [
+      "curingalgo9_mitigate_causal_bias",
+      "curingalgo9_neg_log_likelihood",
+      "curingalgo9_pse_constraint_function",
+      "curingalgo9_rationale_23",
+      "curingalgo9_rationale_59",
+      "curingalgo9_rationale_8",
+      "paper_algo9_curingalgo9_py"
+    ],
+    "16": [
+      "1806_08010v2_disparity_amplification",
+      "1806_08010v2_distributionally_robust_optimization_dro",
+      "1806_08010v2_representation_disparity",
+      "facct24_144_fairness_feedback_loops",
+      "facct24_144_model_collapse",
+      "facct24_144_model_induced_distribution_shift_mids"
+    ],
+    "17": [
+      "detectionalgo2_calculate_equalized_odds_difference",
+      "detectionalgo2_compute_group_conditional_rates",
+      "detectionalgo2_rationale_58",
+      "detectionalgo2_rationale_6",
+      "paper_algo2_detectionalgo2_py"
+    ],
+    "18": [
+      "curingalgo3_calibrate_fairness_thresholds",
+      "curingalgo3_group_threshold_metrics",
+      "curingalgo3_rationale_10",
+      "curingalgo3_rationale_34",
+      "paper_algo3_curingalgo3_py"
+    ],
+    "19": [
+      "curingalgo4_mitigate_subgroup_bias",
+      "curingalgo4_rationale_19",
+      "curingalgo4_subgroupresult",
+      "namedtuple",
+      "paper_algo4_curingalgo4_py"
+    ],
+    "20": [
+      "knowledge_algo1",
+      "knowledge_algo2",
+      "readme_algo1",
+      "readme_algo2",
+      "readme_lustitia"
+    ],
+    "21": [
+      "paper_algo11_algo11_causal_mediation_proportion_causalexplanationformula",
+      "paper_algo9_algo9_11553_article_text_15081_1_2_20201228_pse",
+      "paper_algo9_readme_causalfairinference",
+      "paper_algo9_readme_pse"
+    ],
+    "22": [
+      "algo11_causal_mediation_proportion_causal_explanation_formula",
+      "algo11_causal_mediation_proportion_counterfactual_direct_effect",
+      "algo11_causal_mediation_proportion_counterfactual_indirect_effect",
+      "algo11_causal_mediation_proportion_counterfactual_spurious_effect"
+    ],
+    "23": [
+      "algo4_intersectional_subgroup_scan_group_calibration",
+      "algo_3_group_calibration_error_ece_calibration",
+      "algo_3_group_calibration_error_ece_disparate_impact_from_predictive_parity",
+      "algo_3_group_calibration_error_ece_predictive_parity"
+    ],
+    "24": [
+      "init_rationale_1",
+      "mcp_algo2_init_py",
+      "mcp_algo3_init_py"
+    ],
+    "25": [
+      "curingalgo11_design_reparatory_policy",
+      "curingalgo11_rationale_11",
+      "paper_algo11_curingalgo11_py"
+    ],
+    "26": [
+      "design_architecture",
+      "gemini_lustitia_agent_bias_detector",
+      "requirement_lustitia"
+    ],
+    "27": [
+      "paper_algo7_algo7_proxy_shap_redundancy_check_shap",
+      "paper_algo7_readme_kernelshap",
+      "paper_algo7_readme_shapproxydetection"
+    ],
+    "28": [
+      "algo_1_certifying_removing",
+      "readme_kernel_shap",
+      "readme_shap_proxy_detection"
+    ],
+    "29": [
+      "algo10_counterfactual_shap_attribution_counterfactual_fairness",
+      "algo10_counterfactual_shap_attribution_orthogonal_to_bias_ob",
+      "algo10_counterfactual_shap_attribution_sparse_orthogonal_to_bias_sob"
+    ],
+    "30": [
+      "aies_2018_paper_27_fairpsl",
+      "aies_2018_paper_27_probabilistic_soft_logic_psl",
+      "aies_2018_paper_27_relational_fairness"
+    ],
+    "31": [
+      "algo4_intersectional_subgroup_scan_separation",
+      "algo_2_equalized_odds_difference_equalized_odds",
+      "algo_3_group_calibration_error_ece_error_rate_balance"
+    ],
+    "32": [
+      "algo7_proxy_shap_redundancy_check_additive_feature_attribution",
+      "algo7_proxy_shap_redundancy_check_shap_unified_framework",
+      "algo7_proxy_shap_redundancy_check_shap_values"
+    ],
+    "33": [
+      "requirements_agent",
+      "requirements_root"
+    ],
+    "34": [
+      "knowledge_algo3",
+      "readme_algo3"
+    ],
+    "35": [
+      "knowledge_algo6",
+      "readme_algo6"
+    ],
+    "36": [
+      "knowledge_algo11",
+      "readme_algo11"
+    ],
+    "37": [
+      "readme_causal_fair_inference",
+      "readme_nabi_shpitser_2018"
+    ],
+    "38": [
+      "facct24_144_algorithmic_reparation_ar",
+      "facct24_144_stratified_ar_star"
+    ],
+    "39": [
+      "algo_2_equalized_odds_difference_demographic_parity",
+      "algo_2_equalized_odds_difference_demographic_parity_flaws"
+    ],
+    "40": [
+      "algo4_intersectional_subgroup_scan_unconstrained_learning",
+      "algo4_intersectional_subgroup_scan_unconstrained_learning_implicit_fairness"
+    ],
+    "41": [
+      "algo5_mutual_information_proxy_scanner_generalized_entropy_indices",
+      "algo5_mutual_information_proxy_scanner_inequality_indices_for_unfairness"
+    ],
+    "42": [
+      "algo6_distance_correlation_non_linear_test_distance_correlation",
+      "algo6_distance_correlation_non_linear_test_distance_correlation_advantages"
+    ],
+    "43": [
+      "algo9_11553_article_text_15081_1_2_20201228_discrimination_as_path_specific_effect",
+      "algo9_11553_article_text_15081_1_2_20201228_path_specific_effects"
+    ],
+    "44": [
+      "agent_agents_py"
+    ],
+    "45": [
+      "agent_tasks_py"
+    ],
+    "46": [
+      "graphify_out_step3a_py"
+    ],
+    "47": [
+      "graphify_out_stepb0_py"
+    ],
+    "48": [
+      "mcp_algo1_init_py"
+    ],
+    "49": [
+      "knowledge_algo9"
+    ],
+    "50": [
+      "readme_algo10"
+    ],
+    "51": [
+      "readme_algo4"
+    ],
+    "52": [
+      "readme_algo5"
+    ],
+    "53": [
+      "paper_algo7_readme_proxydiscrimination"
+    ],
+    "54": [
+      "agent_reports_compas_scores_bias_report_biasauditreport"
+    ],
+    "55": [
+      "agent_reports_compas_scores_bias_report_verdict_clean"
+    ],
+    "56": [
+      "dataset_healthcare_description_hba1c"
+    ],
+    "57": [
+      "dataset_healthcare_description_hospitalreadmission"
+    ],
+    "58": [
+      "paper_algo1_algo_1_statistical_parity_ratio_disparateimpact"
+    ],
+    "59": [
+      "paper_algo10_algo10_counterfactual_shap_attribution_orthogonal_to_bias"
+    ],
+    "60": [
+      "paper_algo10_algo10_counterfactual_shap_attribution_counterfactualfairness"
+    ],
+    "61": [
+      "paper_algo12_facct24_144_fairnessfeedbackloops"
+    ],
+    "62": [
+      "paper_algo12_facct24_144_modelcollapse"
+    ],
+    "63": [
+      "paper_algo13_1806_08010v2_dro"
+    ],
+    "64": [
+      "paper_algo14_aies_2018_paper_27_fairpsl"
+    ],
+    "65": [
+      "paper_algo2_algo_2_equalized_odds_difference_equalizedodds"
+    ],
+    "66": [
+      "paper_algo2_algo_2_equalized_odds_difference_equalopportunity"
+    ],
+    "67": [
+      "paper_algo3_algo_3_group_calibration_error_ece_predictiveparity"
+    ],
+    "68": [
+      "paper_algo4_algo4_intersectional_subgroup_scan_unconstrainedlearning"
+    ],
+    "69": [
+      "paper_algo5_algo5_mutual_information_proxy_scanner_inequalityindices"
+    ],
+    "70": [
+      "paper_algo6_algo6_distance_correlation_non_linear_test_distancecovariance"
+    ],
+    "71": [
+      "paper_algo9_algo9_11553_article_text_15081_1_2_20201228_fairinference"
+    ],
+    "72": [
+      "compas_scores_bias_report"
+    ],
+    "73": [
+      "description_impact_hba1c"
+    ],
+    "74": [
+      "algo_2_equalized_odds_difference_equal_opportunity"
+    ],
+    "75": [
+      "algo4_intersectional_subgroup_scan_sufficiency"
+    ],
+    "76": [
+      "algo5_mutual_information_proxy_scanner_between_group_unfairness"
+    ],
+    "77": [
+      "algo5_mutual_information_proxy_scanner_within_group_unfairness"
+    ],
+    "78": [
+      "algo6_distance_correlation_non_linear_test_distance_covariance"
+    ],
+    "79": [
+      "algo6_distance_correlation_non_linear_test_brownian_covariance"
+    ],
+    "80": [
+      "algo9_11553_article_text_15081_1_2_20201228_causal_inference"
+    ]
+  },
+  "cohesion": {
+    "0": 0.11,
+    "1": 0.15,
+    "2": 0.19,
+    "3": 0.22,
+    "4": 0.21,
+    "5": 0.22,
+    "6": 0.25,
+    "7": 0.29,
+    "8": 0.31,
+    "9": 0.33,
+    "10": 0.32,
+    "11": 0.38,
+    "12": 0.29,
+    "13": 0.38,
+    "14": 0.38,
+    "15": 0.33,
+    "16": 0.33,
+    "17": 0.5,
+    "18": 0.5,
+    "19": 0.4,
+    "20": 0.4,
+    "21": 0.5,
+    "22": 0.5,
+    "23": 0.5,
+    "24": 0.67,
+    "25": 0.67,
+    "26": 0.67,
+    "27": 0.67,
+    "28": 0.67,
+    "29": 0.67,
+    "30": 0.67,
+    "31": 0.67,
+    "32": 0.67,
+    "33": 1.0,
+    "34": 1.0,
+    "35": 1.0,
+    "36": 1.0,
+    "37": 1.0,
+    "38": 1.0,
+    "39": 1.0,
+    "40": 1.0,
+    "41": 1.0,
+    "42": 1.0,
+    "43": 1.0,
+    "44": 1.0,
+    "45": 1.0,
+    "46": 1.0,
+    "47": 1.0,
+    "48": 1.0,
+    "49": 1.0,
+    "50": 1.0,
+    "51": 1.0,
+    "52": 1.0,
+    "53": 1.0,
+    "54": 1.0,
+    "55": 1.0,
+    "56": 1.0,
+    "57": 1.0,
+    "58": 1.0,
+    "59": 1.0,
+    "60": 1.0,
+    "61": 1.0,
+    "62": 1.0,
+    "63": 1.0,
+    "64": 1.0,
+    "65": 1.0,
+    "66": 1.0,
+    "67": 1.0,
+    "68": 1.0,
+    "69": 1.0,
+    "70": 1.0,
+    "71": 1.0,
+    "72": 1.0,
+    "73": 1.0,
+    "74": 1.0,
+    "75": 1.0,
+    "76": 1.0,
+    "77": 1.0,
+    "78": 1.0,
+    "79": 1.0,
+    "80": 1.0
+  },
+  "gods": [
+    {
+      "id": "detectionalgo1_beroptimizedclassifier",
+      "label": "BEROptimizedClassifier",
+      "degree": 10
+    },
+    {
+      "id": "detectionalgo1_certify_disparate_impact",
+      "label": "certify_disparate_impact()",
+      "degree": 7
+    },
+    {
+      "id": "detectionalgo3_detect_fairness_disparities",
+      "label": "detect_fairness_disparities()",
+      "degree": 7
+    },
+    {
+      "id": "detectionalgo4_scan_intersectional_subgroups",
+      "label": "scan_intersectional_subgroups()",
+      "degree": 6
+    },
+    {
+      "id": "detectionalgo7_detect_proxy_shap",
+      "label": "detect_proxy_shap()",
+      "degree": 6
+    },
+    {
+      "id": "crew_processlogger",
+      "label": "ProcessLogger",
+      "degree": 5
+    },
+    {
+      "id": "framework_scaffold_execute_framework_pipeline",
+      "label": "execute_framework_pipeline()",
+      "degree": 5
+    },
+    {
+      "id": "curingalgo1_empirical_cdf",
+      "label": "empirical_cdf()",
+      "degree": 5
+    },
+    {
+      "id": "detectionalgo10_audit_bias",
+      "label": "audit_bias()",
+      "degree": 5
+    },
+    {
+      "id": "curingalgo2_mitigate_equal_opportunity",
+      "label": "mitigate_equal_opportunity()",
+      "degree": 5
+    }
+  ],
+  "surprises": [
+    {
+      "source": "Path-Specific Effects (PSEs)",
+      "target": "Path-Specific Effect (PSE)",
+      "source_files": [
+        "PAPER/Algo9/Readme.md",
+        "PAPER/Algo9/algo9-11553-Article Text-15081-1-2-20201228.pdf"
+      ],
+      "confidence": "INFERRED",
+      "relation": "semantically_similar_to",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (doc \u2194 paper); semantically similar concepts with no structural link"
+    },
+    {
+      "source": "SHAP Proxy Detection & Redundancy Auditor",
+      "target": "Certifying and removing disparate impact",
+      "source_files": [
+        "PAPER/Algo7/ReadMe.md",
+        "PAPER/Algo1/algo-1 Statistical Parity Ratio.pdf"
+      ],
+      "confidence": "INFERRED",
+      "relation": "semantically_similar_to",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (doc \u2194 paper); semantically similar concepts with no structural link"
+    },
+    {
+      "source": "approximate_counterfactual_stability()",
+      "target": "empirical_cdf()",
+      "source_files": [
+        "PAPER\\ALgo10\\detectionAlgo10.py",
+        "PAPER\\Algo1\\CuringAlgo1.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories"
+    },
+    {
+      "source": "Root Dependencies",
+      "target": "Agent-side Dependencies",
+      "source_files": [
+        "requirements.txt",
+        "AGENT/requirements.txt"
+      ],
+      "confidence": "INFERRED",
+      "relation": "conceptually_related_to",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories"
+    },
+    {
+      "source": "SHAP Proxy Detection & Redundancy Auditor",
+      "target": "SHAP (SHapley Additive exPlanations)",
+      "source_files": [
+        "PAPER/Algo7/ReadMe.md",
+        "PAPER/Algo7/algo7-Proxy-SHAP Redundancy Check.pdf"
+      ],
+      "confidence": "INFERRED",
+      "relation": "conceptually_related_to",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (doc \u2194 paper)"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `audit_bias()` connect `Community 1` to `Community 2`?",
+      "why": "High betweenness centrality (0.019) - this node is a cross-community bridge."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `Callback for each step in the Crew execution.`, `Formatted string for PDF + stdout.`, `LLM for Data Profiler and Bias Analyst.     Configured for Google Gemini.` to the rest of the system?",
+      "why": "153 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 0` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.11 - nodes in this community are weakly interconnected."
+    }
+  ]
+}

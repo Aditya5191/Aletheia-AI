@@ -5,6 +5,9 @@ import io
 import asyncio
 import concurrent.futures
 import datetime
+import tempfile
+import subprocess
+import shutil
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 from crewai.tools import BaseTool
@@ -19,7 +22,6 @@ class SandboxToolInput(BaseModel):
     csv_path: str = Field(..., description="Local path to the CSV file.")
     code_blocks: List[str] = Field(..., description="List of Python scripts to run in sequence.")
     libraries: List[str] = Field(..., description="Pip packages to install before the first run.")
-    attempt: int = Field(1, description="Retry attempt number (1-3).")
 
 class SandboxTool(BaseTool):
     name: str = "run_python_in_sandbox"
@@ -33,23 +35,38 @@ class SandboxTool(BaseTool):
     )
     args_schema: type[BaseModel] = SandboxToolInput
 
-    def _run(self, csv_path: str, code_blocks: List[str], libraries: List[str], attempt: int = 1) -> str:
+    def _run(self, csv_path: str, code_blocks: List[str], libraries: List[str]) -> str:
+        attempt = 1
         image = os.getenv("SANDBOX_IMAGE", "ghcr.io/vndee/sandbox-python-311-bullseye")
         runs = []
         plot_index = 0
 
+        print(f"\n[DOCKER] Starting Sandbox Container (Image: {image})")
+        if libraries:
+            print(f"[DOCKER] Requested Libraries: {', '.join(libraries)}")
+
         try:
-            with ArtifactSandboxSession(lang="python", image=image, verbose=False) as session:
-                # Upload CSV once
+            # Set verbose=True to see llm-sandbox internal logs
+            with ArtifactSandboxSession(lang="python", image=image, verbose=True) as session:
+                print(f"[DOCKER] Container Ready. Uploading {csv_path} to /sandbox/dataset.csv")
                 session.copy_to_runtime(csv_path, "/sandbox/dataset.csv")
 
                 for i, code in enumerate(code_blocks):
+                    print(f"[DOCKER] Executing Code Block {i+1}/{len(code_blocks)}...")
+                    
                     result = session.run(
                         code=code,
                         libraries=libraries if i == 0 else None,
                         timeout=300,
                         clear_plots=True,
                     )
+                    
+                    # Print container stdout/stderr directly to terminal for user
+                    if result.stdout:
+                        print(f"[DOCKER STDOUT] {result.stdout}")
+                    if result.stderr:
+                        print(f"[DOCKER STDERR] {result.stderr}")
+
                     plots = []
                     for plot in result.plots:
                         plots.append({
@@ -67,7 +84,10 @@ class SandboxTool(BaseTool):
                     })
 
                     if result.exit_code != 0:
+                        print(f"[DOCKER] Execution Failed with Exit Code {result.exit_code}")
                         break
+                
+                print(f"[DOCKER] Session Complete. Total Plots Captured: {plot_index}")
 
             return json.dumps({
                 "runs": runs,
@@ -75,7 +95,128 @@ class SandboxTool(BaseTool):
                 "attempt": attempt
             })
         except Exception as e:
+            print(f"[DOCKER ERROR] {str(e)}")
             return json.dumps({"error": str(e), "success": False})
+
+class LocalPythonTool(BaseTool):
+    name: str = "run_python_locally"
+    description: str = (
+        "Execute Python code locally on the host machine. USE THIS ONLY AS A FALLBACK IF DOCKER FAILS. "
+        "The CSV path is provided. Use the actual csv_path in your code. "
+        "Results MUST be printed to stdout as a single JSON object. "
+        "This tool supports capturing plots if they are displayed with plt.show()."
+    )
+    args_schema: type[BaseModel] = SandboxToolInput
+
+    def _run(self, csv_path: str, code_blocks: List[str], libraries: List[str], attempt: int = 1) -> str:
+        print(f"\n[LOCAL] Running Python locally. Fallback mode.")
+        runs = []
+        plot_index = 0
+        
+        # In local mode, we replace "/sandbox/dataset.csv" with the actual path
+        # to ensure code written for the sandbox still works.
+        processed_csv_path = csv_path.replace('\\', '/')
+        
+        for i, code in enumerate(code_blocks):
+            # Replace sandbox path with local path in the code
+            local_code = code.replace("/sandbox/dataset.csv", processed_csv_path)
+            
+            # Wrapper to capture plots
+            wrapper_code = f"""
+import os
+import base64
+import io
+import matplotlib.pyplot as plt
+
+# Intercept plt.show() to capture plots
+original_show = plt.show
+_captured_plots = []
+
+def custom_show(*args, **kwargs):
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    _captured_plots.append(base64.b64encode(buf.read()).decode('utf-8'))
+    plt.close()
+
+plt.show = custom_show
+
+{local_code}
+
+if _captured_plots:
+    # Print a marker and the base64 data for the wrapper to pick up
+    print("---PLOT_DATA_START---")
+    print(json.dumps(_captured_plots))
+    print("---PLOT_DATA_END---")
+"""
+            
+            with tempfile.NamedTemporaryFile(suffix=".py", delete=False, mode="w", encoding="utf-8") as f:
+                f.write(wrapper_code)
+                temp_script = f.name
+
+            try:
+                # Run the script using the current python interpreter
+                result = subprocess.run(
+                    [sys.executable, temp_script],
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    timeout=300
+                )
+                
+                stdout = result.stdout
+                stderr = result.stderr
+                
+                # Extract plot data
+                plots = []
+                if "---PLOT_DATA_START---" in stdout:
+                    parts = stdout.split("---PLOT_DATA_START---")
+                    stdout = parts[0]
+                    plot_part = parts[1].split("---PLOT_DATA_END---")
+                    if len(plot_part) > 1:
+                        stdout += plot_part[1]
+                    
+                    try:
+                        plot_list = json.loads(plot_part[0].strip())
+                        for p_b64 in plot_list:
+                            plots.append({
+                                "index": plot_index,
+                                "data_b64": p_b64
+                            })
+                            plot_index += 1
+                    except:
+                        pass
+
+                runs.append({
+                    "index": i,
+                    "success": result.returncode == 0,
+                    "stdout": stdout,
+                    "stderr": stderr,
+                    "plots": plots,
+                })
+
+                if result.returncode != 0:
+                    break
+            except Exception as e:
+                runs.append({
+                    "index": i,
+                    "success": False,
+                    "stdout": "",
+                    "stderr": str(e),
+                    "plots": [],
+                })
+                break
+            finally:
+                if os.path.exists(temp_script):
+                    os.remove(temp_script)
+
+        return json.dumps({
+            "runs": runs,
+            "total_plots": plot_index,
+            "attempt": attempt
+        })
+
+import sys # needed for sys.executable in LocalPythonTool
 
 class MCPAlgorithmToolInput(BaseModel):
     action: str = Field(..., description="'list', 'info', or 'knowledge'")
@@ -106,10 +247,8 @@ class MCPAlgorithmTool(BaseTool):
                         await session.initialize()
                         
                         if action == "list":
-                            # server.py doesn't have a list tool, but we know the IDs
-                            return json.dumps({
-                                "algorithms": ["algo1", "algo2", "algo3", "algo4", "algo5", "algo6", "algo7", "algo9", "algo10", "algo11"]
-                            })
+                            result = await session.call_tool("list_algorithms", {})
+                            return result.content[0].text if result.content else "{}"
                         
                         elif action == "info":
                             result = await session.call_tool("get_algorithm_info", {"algorithm_id": algorithm_id or "algo1"})

@@ -1,11 +1,9 @@
 from crewai import Task
-from Lustitia.AGENT.agents import data_profiler_agent, bias_analyst_agent, report_writer_agent
+from agents import data_profiler_agent, bias_analyst_agent, report_writer_agent
 
 # Task 1: Profile Dataset
 profile_task = Task(
     description="""
-        Profile the CSV at: {csv_path}
-
         Write Python code that does all of the following — then run it with
         run_python_in_sandbox.
 

@@ -3,8 +3,8 @@ import argparse
 import json
 import datetime
 from crewai import Crew, Process
-from Lustitia.AGENT.agents import data_profiler_agent, bias_analyst_agent, report_writer_agent
-from Lustitia.AGENT.tasks import profile_task, analysis_task, report_task
+from agents import data_profiler_agent, bias_analyst_agent, report_writer_agent
+from tasks import profile_task, analysis_task, report_task
 
 class ProcessLogger:
     def __init__(self):
