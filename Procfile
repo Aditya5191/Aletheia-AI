@@ -1,1 +1,1 @@
-web: python MCP/server.py
+web: python mcps/auditor/server.py
