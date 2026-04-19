@@ -1,5 +1,33 @@
 # Lustitia: MCP Fairness Auditing Server
 
+## 🚀 Quick Start (Fresh Setup)
+
+Follow these steps to get the full automated multi-agent pipeline running:
+
+1. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Build the Sandbox**:
+   ```bash
+   # Compiles the clean data-science environment for the agent to use
+   docker build -t sandbox-python:latest ./mcps/sandbox
+   ```
+
+3. **Configure Secrets**:
+   - Place your Google Cloud Vertex AI service account JSON file at:
+     `.secrets/vertex-credentials.json`
+
+4. **Add Data**:
+   - Place your target dataset at:
+     `dataset/data.csv`
+
+5. **Run the Audit**:
+   ```bash
+   python main.py
+   ```
+
 ## Overview
 
 **Lustitia** is a production-ready Model Context Protocol (MCP) server that delivers algorithmic fairness auditing capabilities directly to LLM agents. Instead of exposing rigid API endpoints, the server uses a **Knowledge Skill Delivery Model** -- providing runnable pseudo-code, mathematical specifications, parameter tuning guides, and causal constraints dynamically to any MCP-compatible agent (Claude Desktop, Cursor, LM Studio, or any MCP client).
@@ -7,6 +35,67 @@
 This allows agents to compile, execute, and sandbox fairness models aligned with user datasets without relying on external web services or pre-built libraries.
 
 ## Architecture
+
+```
+.
+├── .secrets/             # Secure credentials (Vertex AI JSON)
+├── agents/               # LangGraph Orchestration
+│   ├── prompts/          # Externalized Markdown prompts
+│   └── graph.py          # Dual-MCP state machine logic
+├── dataset/              # Source data (data.csv)
+├── mcps/                 # Unified MCP Servers
+│   ├── auditor/          # Lustitia Algorithm Knowledge Delivery
+│   └── sandbox/          # Dockerized Python Execution Environment
+├── outputs/              # Host-synced bias graphs and summaries
+├── main.py               # Unified entry point
+├── Procfile              # Railway deployment config
+└── requirements.txt      # Python dependencies
+```
+
+### Agent Workflow Diagram
+
+```mermaid
+graph TD
+    START((Start)) --> DS[Data Surveyor Agent]
+    DS --> DS_ROUT{Router}
+    
+    %% Surveyor Loop
+    DS_ROUT -->|Tool Call| ST[Sandbox tools: bash, read_file]
+    ST --> DS
+    
+    %% Handoff
+    DS_ROUT -->|No tools + Answer| FA[Fairness Adjudicator Agent]
+    
+    %% Adjudicator Loop
+    FA --> FA_ROUT{Router}
+    FA_ROUT -->|Tool Call| AT[All Tools: Lustitia + Sandbox]
+    AT --> FA
+    
+    %% End
+    FA_ROUT -->|Final Answer| END((End))
+
+    subgraph "Docker Sandbox Container"
+    data[(data.csv)]
+    audit_file(audit.py)
+    profile_file(summary.txt)
+    end
+
+    subgraph "Lustitia MCP (Remote)"
+    algo_db[(13 Algorithms)]
+    end
+
+    %% Interactions
+    ST -.->|Analyzes| data
+    AT -.->|Loads Algo| algo_db
+    AT -.->|Writes/Runs| audit_file
+```
+
+### Agent Roles
+
+| Agent | Purpose | Tools Used |
+|-------|---------|------------|
+| **Data Surveyor** | Profiles raw data, verifies column types, and checks for missing values or correlations. | Sandbox `bash`, `read_file` |
+| **Fairness Adjudicator** | Selects the best bias-audit algorithm, writes implementation code, and executes the audit inside the sandbox. | Lustitia `auditor`, Sandbox `bash` |
 
 ### Dual-Knowledge Delivery Model
 
@@ -20,22 +109,14 @@ The server differentiates between two algorithm delivery types:
 ### Server Components
 
 ```
-MCP/
+mcps/auditor/
   server.py               # FastMCP server with tool registry
   framework_scaffold.py   # State-machine executor for FRAMEWORK DAGs
   algo1/knowledge.md      # PURE: Disparate Impact (80% Rule)
-  algo2/knowledge.md      # PURE: Equality of Opportunity
-  algo3/knowledge.md      # PURE: Recidivism Fairness (Impossibility Theorem)
-  algo4/framework.yaml    # FRAMEWORK: Intersectional Subgroup Scan
-  algo5/framework.yaml    # FRAMEWORK: Mutual Information Proxy Scanner
-  algo6/knowledge.md      # PURE: Brownian Distance Covariance (dCor)
-  algo7/framework.yaml    # FRAMEWORK: SHAP Feature Attribution Auditing
-  algo9/knowledge.md      # PURE: Causal Fair Inference (PSE)
-  algo10/framework.yaml   # FRAMEWORK: Counterfactual Fairness (OB via SVD)
-  algo11/knowledge.md     # PURE: Causal Explanation Formula
-  algo12/framework.yaml   # FRAMEWORK: Fairness Feedback Loops (MIDS + STAR)
-  algo13/framework.yaml   # FRAMEWORK: DRO Fairness Without Demographics
-  algo14/framework.yaml   # FRAMEWORK: Relational Fairness (FairPSL)
+  ...
+mcps/sandbox/
+  Dockerfile              # Clean environment with statsmodels/scipy
+  mcp_server.py           # SSE-based Sandbox interface
 ```
 
 ### MCP Tools Exposed
@@ -118,7 +199,11 @@ Add to `claude_desktop_config.json` (located in `%APPDATA%\Claude`):
   "mcpServers": {
     "lustitia-auditor": {
       "command": "python",
-      "args": ["C:\\path\\to\\your\\MCP\\server.py"]
+      "args": ["C:\\path\\to\\your\\mcps\\auditor\\server.py"]
+    },
+    "lustitia-sandbox": {
+      "command": "python",
+      "args": ["C:\\path\\to\\your\\mcps\\sandbox\\mcp_server.py"]
     }
   }
 }
@@ -133,7 +218,7 @@ Add to your MCP configuration file:
   "mcpServers": {
     "lustitia-auditor": {
       "command": "python",
-      "args": ["C:\\path\\to\\your\\MCP\\server.py"]
+      "args": ["C:\\path\\to\\your\\mcps\\auditor\\server.py"]
     }
   }
 }
