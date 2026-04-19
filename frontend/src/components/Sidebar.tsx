@@ -41,9 +41,10 @@ export const Sidebar: React.FC = () => {
   return (
     <aside className="w-64 h-screen bg-surface-lowest flex flex-col p-6 border-r border-outline-variant/5">
       <div className="flex flex-col gap-1 mb-10 px-4">
-        <h1 className="font-display font-bold text-2xl tracking-tight text-on-surface uppercase">AletheiaAI</h1>
-        <p className="text-xs uppercase tracking-[0.3em] text-on-surface-variant font-label font-medium opacity-80">Clinical AI Audit</p>
+        <h1 className="font-display font-bold text-2xl tracking-tight text-on-surface">Aletheia AI</h1>
+        <p className="text-xs tracking-[0.3em] text-on-surface-variant font-label font-medium opacity-80 uppercase">Clinical AI Audit</p>
       </div>
+
 
       <nav className="flex-1 flex flex-col gap-2">
         <NavItem icon={<LayoutDashboard size={20} />} label="Dashboard Overview" to="/dashboard" />

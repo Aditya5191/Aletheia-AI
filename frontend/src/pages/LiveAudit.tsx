@@ -17,11 +17,12 @@ export const LiveAudit: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex-1 h-screen flex flex-col bg-background relative overflow-hidden">
+    <div className="flex-1 h-screen flex flex-col bg-transparent relative overflow-hidden">
       {/* Top Nav */}
       <header className="flex items-center justify-between px-8 py-4 border-b border-outline-variant/10 bg-surface-container/30 backdrop-blur-md z-20">
         <div className="flex items-center gap-12">
-          <h1 className="text-xl font-display font-bold text-primary uppercase tracking-wider">AletheiaAI</h1>
+          <h1 className="text-xl font-display font-bold text-primary uppercase tracking-wider">Aletheia AI</h1>
+
           <nav className="flex gap-8">
             {['Overview', 'Audits', 'Models', 'Reports'].map((item) => (
               <button key={item} className={`text-[10px] uppercase font-bold tracking-[0.2em] ${item === 'Audits' ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>

@@ -13,7 +13,7 @@ export const Configuring: React.FC = () => {
   }, [navigate]);
 
   return (
-    <div className="flex-1 h-screen flex flex-col items-center justify-center bg-background p-10 relative">
+    <div className="flex-1 h-screen flex flex-col items-center justify-center p-10 relative bg-transparent">
       <div className="flex flex-col items-center gap-12 max-w-lg w-full">
         <div className="flex flex-col items-center gap-2">
           <span className="text-[10px] text-primary uppercase tracking-[0.4em] font-label font-bold">System Configuration</span>

@@ -1,5 +1,29 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Manrope:wght@200..800&family=Inter:wght@100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+/* @import url('...');  <-- Google Fonts removed to favor local files */
 @import "tailwindcss";
+
+/* 
+  INSTRUCTIONS FOR CUSTOM FONTS:
+  1. Place your font files in: frontend/public/fonts/
+  2. Rename them to match the filenames below or update the 'src' paths.
+*/
+
+@font-face {
+  font-family: 'HeadingCustom';
+  src: url('/fonts/heading.woff2') format('woff2'),
+       url('/fonts/heading.ttf') format('truetype');
+  font-weight: 700 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'BodyCustom';
+  src: url('/fonts/body.woff2') format('woff2'),
+       url('/fonts/body.ttf') format('truetype');
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}
 
 @theme {
   --color-background: #121316;
@@ -20,16 +44,16 @@
   --color-surface-variant: #343538;
   
   --color-outline: #85948f;
-  --color-outline-variant: rgba(133, 148, 143, 0.15);
+  --color-outline-variant: #3c4a46;
   
   --color-on-background: #e3e2e6;
   --color-on-surface: #e3e2e6;
   --color-on-surface-variant: #bbcac4;
   --color-on-primary: #00382e;
 
-  --font-display: "Space Grotesk", sans-serif;
-  --font-sans: "Manrope", sans-serif;
-  --font-label: "Inter", sans-serif;
+  /* Using local font families */
+  --font-display: "HeadingCustom", "Syne", sans-serif;
+  --font-sans: "BodyCustom", "DM Sans", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   
   --radius-md: 4px;
@@ -37,11 +61,15 @@
 
 @layer base {
   body {
-    @apply bg-background text-on-surface font-sans antialiased text-base;
+    @apply bg-background text-on-surface font-sans antialiased text-base selection:bg-primary selection:text-on-primary overflow-x-hidden;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display;
+    @apply font-display font-extrabold tracking-tight;
+    transform: scaleY(0.85);
+    transform-origin: center;
+    display: inline-block;
+    line-height: 1.1;
   }
 }
 
@@ -51,14 +79,18 @@
   }
   
   .btn-primary {
-    @apply bg-gradient-to-br from-primary to-primary-container text-on-primary font-display font-bold py-3 px-6 rounded-md transition-all hover:opacity-90 active:scale-[0.98] text-sm tracking-widest uppercase;
+    @apply bg-gradient-to-br from-primary to-primary-container text-on-primary font-display font-extrabold py-4 px-8 rounded-md transition-all hover:opacity-90 active:scale-[0.98] text-sm tracking-[0.2em];
   }
   
   .btn-secondary {
-    @apply border border-outline-variant text-primary font-display font-bold py-2.5 px-5 rounded-md transition-all hover:bg-surface-high text-xs tracking-wider uppercase;
+    @apply border border-outline-variant text-primary font-display font-extrabold py-2.5 px-6 rounded-md transition-all hover:bg-surface-high text-xs tracking-[0.1em];
   }
   
   .card {
     @apply bg-surface-container rounded-md overflow-hidden border border-white/[0.03];
+  }
+
+  .text-clinical {
+    @apply font-display font-extrabold;
   }
 }

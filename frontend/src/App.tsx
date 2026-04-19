@@ -4,26 +4,32 @@ import { Dashboard } from './pages/Dashboard';
 import { Upload } from './pages/Upload';
 import { Configuring } from './pages/Configuring';
 import { LiveAudit } from './pages/LiveAudit';
+import { BackgroundHalo } from './components/BackgroundHalo';
 
 function App() {
   return (
     <Router>
-      <div className="flex w-full min-h-screen bg-background text-on-surface">
-        <Routes>
-          {/* Main Layout wrapper for routes that have a sidebar */}
-          <Route path="/" element={<Upload />} />
-          <Route path="/configuring" element={<Configuring />} />
-          <Route path="/live-audit" element={<LiveAudit />} />
-          <Route 
-            path="/dashboard" 
-            element={
-              <>
-                <Sidebar />
-                <Dashboard />
-              </>
-            } 
-          />
-        </Routes>
+      <div className="flex w-full min-h-screen bg-background text-on-surface relative">
+        {/* Interactive Background Layer */}
+        <BackgroundHalo />
+        
+        {/* Content Layer */}
+        <div className="relative z-10 flex w-full">
+          <Routes>
+            <Route path="/" element={<Upload />} />
+            <Route path="/configuring" element={<Configuring />} />
+            <Route path="/live-audit" element={<LiveAudit />} />
+            <Route 
+              path="/dashboard" 
+              element={
+                <>
+                  <Sidebar />
+                  <Dashboard />
+                </>
+              } 
+            />
+          </Routes>
+        </div>
       </div>
     </Router>
   );

@@ -7,7 +7,7 @@ import { ShieldCheck } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
   return (
-    <div className="flex-1 h-screen overflow-y-auto bg-background p-10">
+    <div className="flex-1 h-screen overflow-y-auto bg-transparent p-10">
       <div className="max-w-6xl mx-auto">
         <AuditHeader />
         
