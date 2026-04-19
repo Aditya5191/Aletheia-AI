@@ -1,4 +1,4 @@
-# Lustitia: MCP Fairness Auditing Server
+# Lustitia: Fairness Auditing Agent
 
 ## 🚀 Quick Start (Fresh Setup)
 
