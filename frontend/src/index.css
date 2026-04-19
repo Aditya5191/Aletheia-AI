@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Manrope:wght@200..800&family=Inter:wght@100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-background: #121316;
+  
+  --color-primary: #50dcc0;
+  --color-primary-container: #14b89e;
+  --color-primary-fixed: #71f9dc;
+  --color-primary-dim: #50dcc0;
+  
+  --color-secondary: #ffb961;
+  --color-secondary-container: #cb8000;
+  
+  --color-surface-lowest: #0d0e11;
+  --color-surface-low: #1b1b1f;
+  --color-surface-container: #1f1f23;
+  --color-surface-high: #292a2d;
+  --color-surface-highest: #343538;
+  --color-surface-variant: #343538;
+  
+  --color-outline: #85948f;
+  --color-outline-variant: rgba(133, 148, 143, 0.15);
+  
+  --color-on-background: #e3e2e6;
+  --color-on-surface: #e3e2e6;
+  --color-on-surface-variant: #bbcac4;
+  --color-on-primary: #00382e;
+
+  --font-display: "Space Grotesk", sans-serif;
+  --font-sans: "Manrope", sans-serif;
+  --font-label: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --radius-md: 4px;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-on-surface font-sans antialiased text-base;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-surface-variant/60 backdrop-blur-[12px];
+  }
+  
+  .btn-primary {
+    @apply bg-gradient-to-br from-primary to-primary-container text-on-primary font-display font-bold py-3 px-6 rounded-md transition-all hover:opacity-90 active:scale-[0.98] text-sm tracking-widest uppercase;
+  }
+  
+  .btn-secondary {
+    @apply border border-outline-variant text-primary font-display font-bold py-2.5 px-5 rounded-md transition-all hover:bg-surface-high text-xs tracking-wider uppercase;
+  }
+  
+  .card {
+    @apply bg-surface-container rounded-md overflow-hidden border border-white/[0.03];
+  }
+}
