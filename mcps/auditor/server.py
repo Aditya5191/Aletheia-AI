@@ -13,7 +13,7 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
     Call this tool to learn what the algorithm calculates and what domains it applies to.
     """
     registry = {
-        "algo1": {
+        "disparate_impact_repair": {
             "name": "Certifying and Removing Disparate Impact (Knowledge Skill)",
             "type": "PURE",
             "purpose": "Detects and removes disparate impact in datasets via pre-processing by equalizing distributions across protected groups while preserving candidate ranks.",
@@ -24,12 +24,12 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
                     "tool_name": "load_algorithm_knowledge",
                     "description": "Loads the algorithmic pseudo-code and schemas into the agent context.",
                     "inputs_schema": {
-                        "algorithm_id": "String. Set to 'algo1'."
+                        "algorithm_id": "String. Set to 'disparate_impact_repair'."
                     }
                 }
             ]
         },
-        "algo2": {
+        "equality_of_opportunity": {
             "name": "Equality of Opportunity in Supervised Learning (Knowledge Skill)",
             "type": "PURE",
             "purpose": "Provides post-processing threshold optimizations to enforce equalized odds (TPR/FPR equalized) or equal opportunity (TPR equalized) directly on outputs without retraining.",
@@ -40,12 +40,12 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
                     "tool_name": "load_algorithm_knowledge",
                     "description": "Loads the mathematical logic guiding TPR/FPR ROC post-processing.",
                     "inputs_schema": {
-                        "algorithm_id": "String. Set to 'algo2'."
+                        "algorithm_id": "String. Set to 'equality_of_opportunity'."
                     }
                 }
             ]
         },
-        "algo3": {
+        "recidivism_fairness_calibration": {
             "name": "Fair Prediction with Disparate Impact - Recidivism (Knowledge Skill)",
             "type": "PURE",
             "purpose": "Framework diagnosing the theoretical impossibility of balancing Predictive Parity and Error Rate Balance when base rates differ, calibrating optimal tradeoff thresholds.",
@@ -56,12 +56,12 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
                     "tool_name": "load_algorithm_knowledge",
                     "description": "Loads the mathematical theorem proof logic governing cost-calibrated strategy boundaries.",
                     "inputs_schema": {
-                        "algorithm_id": "String. Set to 'algo3'."
+                        "algorithm_id": "String. Set to 'recidivism_fairness_calibration'."
                     }
                 }
             ]
         },
-        "algo4": {
+        "intersectional_subgroup_scan": {
             "name": "Intersectional Subgroup Scan for Fairness Auditing & Mitigation (Knowledge Skill)",
             "type": "FRAMEWORK",
             "purpose": "Efficiently identifies and remediates fairness gerrymandering manifesting exclusively inside highly specific, intersecting demographic subgroups via combinatorial scanning.",
@@ -72,12 +72,12 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
                     "tool_name": "load_algorithm_knowledge",
                     "description": "Loads algorithmic rules for scanning and mutating boolean subgroup structures.",
                     "inputs_schema": {
-                        "algorithm_id": "String. Set to 'algo4'."
+                        "algorithm_id": "String. Set to 'intersectional_subgroup_scan'."
                     }
                 }
             ]
         },
-        "algo5": {
+        "mutual_info_proxy_scanner": {
             "name": "Mutual Information Proxy Scanner for Algorithmic Fairness (Knowledge Skill)",
             "type": "FRAMEWORK",
             "purpose": "Detects and residualizes non-linear proxy discrimination features leaking protected attribute intelligence using formal information theory and conditionally decorrelating residuals.",
@@ -88,12 +88,12 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
                     "tool_name": "load_algorithm_knowledge",
                     "description": "Loads rules for detecting predictive proxy dependencies formally via MI estimators.",
                     "inputs_schema": {
-                        "algorithm_id": "String. Set to 'algo5'."
+                        "algorithm_id": "String. Set to 'mutual_info_proxy_scanner'."
                     }
                 }
             ]
         },
-        "algo6": {
+        "brownian_distance_covariance": {
             "name": "Brownian Distance Covariance Scanner (Knowledge Skill)",
             "type": "PURE",
             "purpose": "Assumption-free detection and non-linear decorrelation of arbitrary proxy relationships between features and protected attributes using pairwise Euclidean distance matrices. Capable of mapping U-shaped proxy bounds.",
@@ -104,12 +104,12 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
                     "tool_name": "load_algorithm_knowledge",
                     "description": "Loads rules for double-centering distance matrices computing pure dCor independence limits.",
                     "inputs_schema": {
-                        "algorithm_id": "String. Set to 'algo6'."
+                        "algorithm_id": "String. Set to 'brownian_distance_covariance'."
                     }
                 }
             ]
         },
-        "algo7": {
+        "shap_proxy_detection": {
             "name": "SHAP Values for Proxy Detection & Redundancy Auditing (Knowledge Skill)",
             "type": "FRAMEWORK",
             "purpose": "Axiomatic, game-theoretic feature attribution identifying covert proxies natively by exactly quantifying model reliance and penalizing biased dependency via structural reweighting.",
@@ -120,12 +120,12 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
                     "tool_name": "load_algorithm_knowledge",
                     "description": "Loads rules for calculating weighted Kernel SHAP matrices detecting redundant proxies.",
                     "inputs_schema": {
-                        "algorithm_id": "String. Set to 'algo7'."
+                        "algorithm_id": "String. Set to 'shap_proxy_detection'."
                     }
                 }
             ]
         },
-        "algo9": {
+        "causal_fair_inference": {
             "name": "Causal Fair Inference & Path-Specific Effect Mitigation (Knowledge Skill)",
             "type": "PURE",
             "purpose": "Estimates and mitigates direct causal discrimination pathways (Path-Specific Effects) using Inverse Probability Weighting (IPW) and Constrained Maximum Likelihood Estimation.",
@@ -136,12 +136,12 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
                     "tool_name": "load_algorithm_knowledge",
                     "description": "Loads strict causal estimation rules bounding NDE/PSE optimization constraints.",
                     "inputs_schema": {
-                        "algorithm_id": "String. Set to 'algo9'."
+                        "algorithm_id": "String. Set to 'causal_fair_inference'."
                     }
                 }
             ]
         },
-        "algo10": {
+        "counterfactual_orthogonalization": {
             "name": "Counterfactual Fairness through Data Orthogonalization (Knowledge Skill)",
             "type": "FRAMEWORK",
             "purpose": "A model-agnostic pre-processing technique ensuring mathematical Counterfactual Fairness by executing closed-form SVD transformations generating features mathematically orthogonal to bias.",
@@ -152,12 +152,12 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
                     "tool_name": "load_algorithm_knowledge",
                     "description": "Loads strictly executed closed-form OB tracking zero-covariance limits.",
                     "inputs_schema": {
-                        "algorithm_id": "String. Set to 'algo10'."
+                        "algorithm_id": "String. Set to 'counterfactual_orthogonalization'."
                     }
                 }
             ]
         },
-        "algo11": {
+        "causal_explanation_formula": {
             "name": "Causal Explanation Formula Mechanism Decomposition (Knowledge Skill)",
             "type": "PURE",
             "purpose": "Isolates and mathematically decomposes Total Variation into Direct, Indirect, and Spurious Counterfactual effects, enabling Narrow Tailoring Affirmative Action policy design.",
@@ -168,12 +168,12 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
                     "tool_name": "load_algorithm_knowledge",
                     "description": "Loads decomposition tracking math models enabling Affirmative Action bounds.",
                     "inputs_schema": {
-                        "algorithm_id": "String. Set to 'algo11'."
+                        "algorithm_id": "String. Set to 'causal_explanation_formula'."
                     }
                 }
             ]
         },
-        "algo12": {
+        "fairness_feedback_reparation": {
             "name": "Fairness Feedback Loops & Algorithmic Reparation (Knowledge Skill)",
             "type": "FRAMEWORK",
             "purpose": "Tracks Model-Induced Distribution Shifts (MIDS) across model generations detecting fairness decay, model collapse, and minoritized group erasure. Mitigates via STratified Algorithmic Reparation (STAR) quota-based batch curation enforcing intersectional representation.",
@@ -184,12 +184,12 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
                     "tool_name": "load_algorithm_knowledge",
                     "description": "Loads generational MIDS tracking pipeline and STAR reparative batch sampler.",
                     "inputs_schema": {
-                        "algorithm_id": "String. Set to 'algo12'."
+                        "algorithm_id": "String. Set to 'fairness_feedback_reparation'."
                     }
                 }
             ]
         },
-        "algo13": {
+        "dro_fairness_no_demographics": {
             "name": "Fairness Without Demographics via DRO (Knowledge Skill)",
             "type": "FRAMEWORK",
             "purpose": "Controls worst-case group risk without demographic labels using chi-squared Distributionally Robust Optimization. Detects disparity amplification via retention dynamics simulation and Jacobian spectral analysis. Mitigates via dual-variable SGD that automatically upweights high-loss examples.",
@@ -200,12 +200,12 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
                     "tool_name": "load_algorithm_knowledge",
                     "description": "Loads DRO dual optimization pipeline and disparity amplification auditor.",
                     "inputs_schema": {
-                        "algorithm_id": "String. Set to 'algo13'."
+                        "algorithm_id": "String. Set to 'dro_fairness_no_demographics'."
                     }
                 }
             ]
         },
-        "algo14": {
+        "relational_fairness_psl": {
             "name": "Fairness in Relational Domains - FairPSL (Knowledge Skill)",
             "type": "FRAMEWORK",
             "purpose": "Audits and enforces fairness in relational/networked domains using First-Order Logic discrimination patterns and convex MAP inference with linear fairness constraints (Risk Difference, Risk Ratio, Relative Chance).",
@@ -216,7 +216,7 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
                     "tool_name": "load_algorithm_knowledge",
                     "description": "Loads FOL-based relational fairness detection and constrained PSL MAP inference pipeline.",
                     "inputs_schema": {
-                        "algorithm_id": "String. Set to 'algo14'."
+                        "algorithm_id": "String. Set to 'relational_fairness_psl'."
                     }
                 }
             ]
@@ -237,22 +237,22 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
 def list_algorithms() -> str:
     """
     Lists all available fairness algorithms registered in the Lusitània MCP server.
-    Use this to see the full menu of IDs before calling get_algorithm_info or load_algorithm_knowledge.
+    Use this to see the full menu of IDs and their basic descriptions before calling get_algorithm_info or load_algorithm_knowledge.
     """
     registry = {
-        "algo1": "Certifying and Removing Disparate Impact",
-        "algo2": "Equality of Opportunity in Supervised Learning",
-        "algo3": "Fair Prediction with Disparate Impact - Recidivism",
-        "algo4": "Intersectional Subgroup Scan",
-        "algo5": "Mutual Information Proxy Scanner",
-        "algo6": "Brownian Distance Covariance Scanner",
-        "algo7": "SHAP Values for Proxy Detection",
-        "algo9": "Causal Fair Inference",
-        "algo10": "Counterfactual Fairness (Orthogonal to Bias)",
-        "algo11": "Causal Explanation Formula",
-        "algo12": "Fairness Feedback Loops & Algorithmic Reparation",
-        "algo13": "Fairness Without Demographics via DRO",
-        "algo14": "Fairness in Relational Domains (FairPSL)"
+        "disparate_impact_repair": "Certifying and Removing Disparate Impact (Pre-processing distribution alignment)",
+        "equality_of_opportunity": "Equality of Opportunity in Supervised Learning (Post-processing threshold optimization)",
+        "recidivism_fairness_calibration": "Fair Prediction with Disparate Impact - Recidivism (Tradeoff calibration for base rate differences)",
+        "intersectional_subgroup_scan": "Intersectional Subgroup Scan (Combinatorial gerrymandering detection)",
+        "mutual_info_proxy_scanner": "Mutual Information Proxy Scanner (Non-linear proxy residualization)",
+        "brownian_distance_covariance": "Brownian Distance Covariance Scanner (Non-linear decorrelation via distance matrices)",
+        "shap_proxy_detection": "SHAP Values for Proxy Detection (Axiomatic feature attribution auditing)",
+        "causal_fair_inference": "Causal Fair Inference (Path-Specific Effect mitigation)",
+        "counterfactual_orthogonalization": "Counterfactual Fairness (Data Orthogonalization via SVD)",
+        "causal_explanation_formula": "Causal Explanation Formula (Mechanism decomposition SE/IE/DE)",
+        "fairness_feedback_reparation": "Fairness Feedback Loops & Algorithmic Reparation (Generational MIDS tracking & STAR quotas)",
+        "dro_fairness_no_demographics": "Fairness Without Demographics via DRO (Distributionally Robust Optimization)",
+        "relational_fairness_psl": "Fairness in Relational Domains (FairPSL - Probabilistic Soft Logic)"
     }
     return json.dumps({"algorithms": registry}, indent=2)
 
@@ -264,16 +264,25 @@ def load_algorithm_knowledge(algorithm_id: str) -> str:
     window so the agent can write the implementation securely into the user's local script.
     
     Args:
-        algorithm_id: Identifier of the algorithm (e.g., "algo1", "algo2", "algo3").
+        algorithm_id: Identifier of the algorithm (e.g., "disparate_impact_repair", "intersectional_subgroup_scan").
     """
     from pathlib import Path
 
     algorithm_id = algorithm_id.strip().lower()
     valid_algos = {
-        "algo1": "PURE", "algo2": "PURE", "algo3": "PURE", "algo4": "FRAMEWORK", 
-        "algo5": "FRAMEWORK", "algo6": "PURE", "algo7": "FRAMEWORK", "algo9": "PURE",
-        "algo10": "FRAMEWORK", "algo11": "PURE", "algo12": "FRAMEWORK", "algo13": "FRAMEWORK",
-        "algo14": "FRAMEWORK"
+        "disparate_impact_repair": "PURE", 
+        "equality_of_opportunity": "PURE", 
+        "recidivism_fairness_calibration": "PURE", 
+        "intersectional_subgroup_scan": "FRAMEWORK", 
+        "mutual_info_proxy_scanner": "FRAMEWORK", 
+        "brownian_distance_covariance": "PURE", 
+        "shap_proxy_detection": "FRAMEWORK", 
+        "causal_fair_inference": "PURE",
+        "counterfactual_orthogonalization": "FRAMEWORK", 
+        "causal_explanation_formula": "PURE", 
+        "fairness_feedback_reparation": "FRAMEWORK", 
+        "dro_fairness_no_demographics": "FRAMEWORK",
+        "relational_fairness_psl": "FRAMEWORK"
     }
     
     if algorithm_id not in valid_algos:
@@ -321,4 +330,3 @@ if __name__ == "__main__":
     else:
         # Local: run stdio transport (Claude Desktop, Cursor)
         mcp.run()
-
