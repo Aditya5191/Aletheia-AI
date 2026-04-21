@@ -1,0 +1,105 @@
+/* @import url('...');  <-- Google Fonts removed to favor local files */
+@import "tailwindcss";
+
+/* 
+  INSTRUCTIONS FOR CUSTOM FONTS:
+  1. Place your font files in: frontend/public/fonts/
+  2. Rename them to match the filenames below or update the 'src' paths.
+*/
+
+@font-face {
+  font-family: 'HeadingCustom';
+  src: url('/fonts/heading.woff2') format('woff2'),
+       url('/fonts/heading.ttf') format('truetype');
+  font-weight: 700 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'BodyCustom';
+  src: url('/fonts/body.woff2') format('woff2'),
+       url('/fonts/body.ttf') format('truetype');
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-background: #121316;
+  
+  --color-primary: #50dcc0;
+  --color-primary-container: #14b89e;
+  --color-primary-fixed: #71f9dc;
+  --color-primary-dim: #50dcc0;
+  
+  --color-secondary: #ffb961;
+  --color-secondary-container: #cb8000;
+  
+  --color-surface-lowest: #0d0e11;
+  --color-surface-low: #1b1b1f;
+  --color-surface-container: #1f1f23;
+  --color-surface-high: #292a2d;
+  --color-surface-highest: #343538;
+  --color-surface-variant: #343538;
+  
+  --color-outline: #85948f;
+  --color-outline-variant: #3c4a46;
+  
+  --color-on-background: #e3e2e6;
+  --color-on-surface: #e3e2e6;
+  --color-on-surface-variant: #bbcac4;
+  --color-on-primary: #00382e;
+
+  /* Using local font families */
+  --font-display: "HeadingCustom", "Syne", sans-serif;
+  --font-sans: "BodyCustom", "DM Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --radius-md: 4px;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-on-surface font-sans antialiased text-base selection:bg-primary selection:text-on-primary overflow-x-hidden;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-extrabold tracking-tight;
+    transform: scaleY(0.85);
+    transform-origin: center;
+    display: inline-block;
+    line-height: 1.1;
+  }
+}
+
+@layer utilities {
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .animate-spin-slow {
+    animation: spin 8s linear infinite;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-surface-variant/60 backdrop-blur-[12px];
+  }
+  
+  .btn-primary {
+    @apply bg-gradient-to-br from-primary to-primary-container text-on-primary font-display font-extrabold py-4 px-8 rounded-md transition-all hover:opacity-90 active:scale-[0.98] text-sm tracking-[0.2em];
+  }
+  
+  .btn-secondary {
+    @apply border border-outline-variant text-primary font-display font-extrabold py-2.5 px-6 rounded-md transition-all hover:bg-surface-high text-xs tracking-[0.1em];
+  }
+  
+  .card {
+    @apply bg-surface-container rounded-md overflow-hidden border border-white/[0.03];
+  }
+
+  .text-clinical {
+    @apply font-display font-extrabold;
+  }
+}

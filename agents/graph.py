@@ -1,6 +1,7 @@
 import asyncio
 import os
-from typing import TypedDict, Annotated, Sequence
+import json
+from typing import TypedDict, Annotated, Sequence, AsyncGenerator
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, ToolMessage, AIMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
@@ -18,7 +19,11 @@ class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
     sender: str
 
-async def run_langgraph_agent(container_id: str, sandbox_url: str = "http://localhost:8000/sse", lustitia_url: str = "https://web-production-6c63b.up.railway.app/sse"):
+async def run_langgraph_agent(
+    container_id: str, 
+    sandbox_url: str = "http://localhost:8000/sse", 
+    lustitia_url: str = "https://web-production-6c63b.up.railway.app/sse"
+) -> AsyncGenerator[dict, None]:
     
     print(f"[NETWORK] Connecting to Sandbox MCP at {sandbox_url}...")
     async with sse_client(sandbox_url) as (sandbox_r, sandbox_w):
@@ -43,7 +48,7 @@ async def run_langgraph_agent(container_id: str, sandbox_url: str = "http://loca
                     
                     # Ensure we have our shared model
                     llm = ChatVertexAI(
-                        model="gemini-2.5-flash",
+                        model="gemini-2.5-pro",
                         temperature=0.2,
                         safety_settings={
                             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
@@ -53,9 +58,8 @@ async def run_langgraph_agent(container_id: str, sandbox_url: str = "http://loca
                         }
                     )
 
-                    # Bind specific tools to specific agents
-                    llm_surveyor = llm.bind_tools(sandbox_tools)
-                    llm_adjudicator = llm.bind_tools(all_tools)
+                        llm_surveyor = llm.bind_tools(sandbox_tools)
+                        llm_adjudicator = llm.bind_tools(all_tools)
 
                     # AGENT 1: Data Surveyor
                     def data_surveyor(state: AgentState):
@@ -64,7 +68,7 @@ async def run_langgraph_agent(container_id: str, sandbox_url: str = "http://loca
                             raw_prompt = f.read()
                         
                         system_prompt = SystemMessage(
-                            content=raw_prompt.replace("{container_id}", container_id)
+                            content=raw_prompt.format(container_id=container_id)
                         )
                         response = llm_surveyor.invoke([system_prompt] + state["messages"])
                         return {"messages": [response], "sender": "data_surveyor"}
@@ -76,7 +80,7 @@ async def run_langgraph_agent(container_id: str, sandbox_url: str = "http://loca
                             raw_prompt = f.read()
                             
                         system_prompt = SystemMessage(
-                            content=raw_prompt.replace("{container_id}", container_id)
+                            content=raw_prompt.format(container_id=container_id)
                         )
                         response = llm_adjudicator.invoke([system_prompt] + state["messages"])
                         return {"messages": [response], "sender": "fairness_adjudicator"}
@@ -97,61 +101,51 @@ async def run_langgraph_agent(container_id: str, sandbox_url: str = "http://loca
                         # If Adjudicator finished, execution ends
                         return END
 
-                    # STANDARD TOOL EXECUTION NODE
-                    tools_node = ToolNode(all_tools)
+                        tools_node = ToolNode(all_tools)
 
-                    # BUILD GRAPH
-                    workflow = StateGraph(AgentState)
-                    workflow.add_node("data_surveyor", data_surveyor)
-                    workflow.add_node("fairness_adjudicator", fairness_adjudicator)
-                    workflow.add_node("tools", tools_node)
-                    
-                    # Link Start -> Surveyor
-                    workflow.add_edge(START, "data_surveyor")
-                    
-                    # Link Agents to their router logic
-                    workflow.add_conditional_edges("data_surveyor", router, {"tools": "tools", "fairness_adjudicator": "fairness_adjudicator"})
-                    workflow.add_conditional_edges("fairness_adjudicator", router, {"tools": "tools", END: END})
-                    
-                    # Link Tools back to the sender
-                    workflow.add_conditional_edges("tools", lambda x: x["sender"], {"data_surveyor": "data_surveyor", "fairness_adjudicator": "fairness_adjudicator"})
+                        workflow = StateGraph(AgentState)
+                        workflow.add_node("data_surveyor", data_surveyor)
+                        workflow.add_node("fairness_adjudicator", fairness_adjudicator)
+                        workflow.add_node("tools", tools_node)
+                        workflow.add_edge(START, "data_surveyor")
+                        workflow.add_conditional_edges("data_surveyor", router, {"tools": "tools", "fairness_adjudicator": "fairness_adjudicator"})
+                        workflow.add_conditional_edges("fairness_adjudicator", router, {"tools": "tools", END: END})
+                        workflow.add_conditional_edges("tools", lambda x: x["sender"], {"data_surveyor": "data_surveyor", "fairness_adjudicator": "fairness_adjudicator"})
 
-                    app = workflow.compile()
-                    
-                    initial_message = HumanMessage(
-                        content="Please begin the execution. Surveyor, map out the data. Adjudicator, follow up with the fairness audit."
-                    )
-                    
-                    print("\n\033[1m\033[96m" + "="*50 + "\nStarting Unified Agent Workflow...\n" + "="*50 + "\033[0m\n")
-                    async for event in app.astream({"messages": [initial_message], "sender": "user"}, stream_mode="values"):
-                        last_message = event["messages"][-1]
-                        sender = event.get("sender", "SYSTEM").upper()
+                        app = workflow.compile()
                         
-                        if isinstance(last_message, HumanMessage):
-                            print(f"\033[1m\033[92m[USER]\033[0m\n{last_message.content}\n")
-                        elif isinstance(last_message, AIMessage):
-                            if last_message.tool_calls:
-                                tools_str = ", ".join([t['name'] for t in last_message.tool_calls])
-                                print(f"\033[1m\033[93m[{sender} ACTION]\033[0m Decided to use: {tools_str}")
-                                for t in last_message.tool_calls:
-                                    args_str = str(t.get('args', {}))
-                                    if len(args_str) > 1500:
-                                        args_str = args_str[:1500] + " ... [TRUNCATED]"
-                                    print(f"  \033[90m↳ args: {args_str}\033[0m")
-                            else:
-                                print(f"\033[1m\033[95m[{sender} FINAL RESPONSE]\033[0m\n{last_message.content}\n")
-                        elif isinstance(last_message, ToolMessage):
-                            limit = 350
-                            res_str = str(last_message.content)
-                            if len(res_str) > limit:
-                                res_str = res_str[:limit] + f"\n... [TRUNCATED {len(res_str)-limit} bytes]"
-                            print(f"\n\033[1m\033[94m[TOOL RESULT: {last_message.name}]\033[0m\n{res_str}\n" + "-"*50 + "\n")
+                        initial_message = HumanMessage(content="Please begin the execution. Surveyor, map out the data. Adjudicator, follow up with the fairness audit.")
+                        
+                        yield {"type": "status", "message": "Workflow initiated."}
 
+                        async for event in app.astream({"messages": [initial_message], "sender": "user"}, stream_mode="values"):
+                            last_message = event["messages"][-1]
+                            sender = event.get("sender", "user").upper()
+                            
+                            if isinstance(last_message, AIMessage):
+                                if last_message.tool_calls:
+                                    yield {
+                                        "type": "thought",
+                                        "sender": sender,
+                                        "content": f"Decided to use: {', '.join([t['name'] for t in last_message.tool_calls])}",
+                                        "tool_calls": last_message.tool_calls
+                                    }
+                                else:
+                                    yield {
+                                        "type": "response",
+                                        "sender": sender,
+                                        "content": last_message.content
+                                    }
+                            elif isinstance(last_message, ToolMessage):
+                                yield {
+                                    "type": "tool_result",
+                                    "tool_name": last_message.name,
+                                    "content": str(last_message.content)
+                                }
+                            
+                        yield {"type": "status", "message": "Audit complete."}
+    finally:
+        # Explicit cleanup if needed, but 'async with' handles most of it.
+        # This block ensures that even if GeneratorExit is raised, we exit the context managers cleanly.
+        pass
 
-if __name__ == "__main__":
-    test_container_id = "29a0f85bdeb85f93c9e1ba2397a0b90223b18cee0f0fcf305a2b2bacf6a1474a"
-    try:
-        asyncio.run(run_langgraph_agent(test_container_id))
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
