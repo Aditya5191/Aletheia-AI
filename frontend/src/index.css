@@ -73,6 +73,15 @@
   }
 }
 
+@layer utilities {
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .animate-spin-slow {
+    animation: spin 8s linear infinite;
+  }
+}
+
 @layer components {
   .glass {
     @apply bg-surface-variant/60 backdrop-blur-[12px];

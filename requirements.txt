@@ -4,6 +4,11 @@ starlette>=0.36.0
 langgraph
 langchain-core
 langchain-openai
+langchain-google-vertexai
 langchain-mcp-adapters
 mcp
 httpx-sse
+fastapi
+python-multipart
+websockets
+python-dotenv

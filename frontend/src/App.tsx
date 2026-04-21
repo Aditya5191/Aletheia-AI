@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './pages/Dashboard';
+import { Landing } from './pages/Landing';
 import { Upload } from './pages/Upload';
 import { Configuring } from './pages/Configuring';
 import { LiveAudit } from './pages/LiveAudit';
@@ -16,7 +17,8 @@ function App() {
         {/* Content Layer */}
         <div className="relative z-10 flex w-full">
           <Routes>
-            <Route path="/" element={<Upload />} />
+            <Route path="/" element={<Landing />} />
+            <Route path="/upload" element={<Upload />} />
             <Route path="/configuring" element={<Configuring />} />
             <Route path="/live-audit" element={<LiveAudit />} />
             <Route 
