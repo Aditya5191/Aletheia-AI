@@ -43,7 +43,7 @@ async def run_langgraph_agent(container_id: str, sandbox_url: str = "http://loca
                     
                     # Ensure we have our shared model
                     llm = ChatVertexAI(
-                        model="gemini-2.5-pro",
+                        model="gemini-2.5-flash",
                         temperature=0.2,
                         safety_settings={
                             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
@@ -64,7 +64,7 @@ async def run_langgraph_agent(container_id: str, sandbox_url: str = "http://loca
                             raw_prompt = f.read()
                         
                         system_prompt = SystemMessage(
-                            content=raw_prompt.format(container_id=container_id)
+                            content=raw_prompt.replace("{container_id}", container_id)
                         )
                         response = llm_surveyor.invoke([system_prompt] + state["messages"])
                         return {"messages": [response], "sender": "data_surveyor"}
@@ -76,7 +76,7 @@ async def run_langgraph_agent(container_id: str, sandbox_url: str = "http://loca
                             raw_prompt = f.read()
                             
                         system_prompt = SystemMessage(
-                            content=raw_prompt.format(container_id=container_id)
+                            content=raw_prompt.replace("{container_id}", container_id)
                         )
                         response = llm_adjudicator.invoke([system_prompt] + state["messages"])
                         return {"messages": [response], "sender": "fairness_adjudicator"}
