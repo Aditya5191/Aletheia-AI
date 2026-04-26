@@ -1,8 +1,8 @@
 # Lustitia: Fairness Auditing Agent
 
-## 🚀 Quick Start (Fresh Setup)
+## Quick Start (CLI Pipeline)
 
-Follow these steps to get the full automated multi-agent pipeline running:
+Follow these steps to get the full automated multi-agent pipeline running via the terminal:
 
 1. **Install Dependencies**:
    ```bash
@@ -28,11 +28,31 @@ Follow these steps to get the full automated multi-agent pipeline running:
    python main.py
    ```
 
-## Overview
+## AgenticFlow Dashboard Setup (Web UI)
+
+If you prefer to use the live React observability dashboard instead of the CLI:
+
+1. **Start the FastAPI Backend**:
+   ```bash
+   python backend/api.py
+   ```
+   *Note: Ensure the dataset directory exists. The frontend will upload the CSV directly to `dataset/data.csv`.*
+
+2. **Start the Frontend**:
+   ```bash
+   cd frontend/agenticflow
+   npm install
+   npm run dev
+   ```
+   Open `http://localhost:3000` in your browser. Drag and drop your CSV dataset, click "Run" on the Data Inspector, and watch the agents execute live!
+
+---
 
 **Lustitia** is a production-ready Model Context Protocol (MCP) server that delivers algorithmic fairness auditing capabilities directly to LLM agents. Instead of exposing rigid API endpoints, the server uses a **Knowledge Skill Delivery Model** -- providing runnable pseudo-code, mathematical specifications, parameter tuning guides, and causal constraints dynamically to any MCP-compatible agent (Claude Desktop, Cursor, LM Studio, or any MCP client).
 
 This allows agents to compile, execute, and sandbox fairness models aligned with user datasets without relying on external web services or pre-built libraries.
+
+The **AgenticFlow Frontend** pairs with this backend to provide a live, real-time forensic observability dashboard powered by WebSocket streaming and LangGraph orchestration.
 
 ## Architecture
 
@@ -42,12 +62,16 @@ This allows agents to compile, execute, and sandbox fairness models aligned with
 ├── agents/               # LangGraph Orchestration
 │   ├── prompts/          # Externalized Markdown prompts
 │   └── graph.py          # Dual-MCP state machine logic
+├── backend/              # FastAPI Server (WebSocket Streaming)
+│   └── api.py            # Main API serving frontend execution requests
 ├── dataset/              # Source data (data.csv)
+├── frontend/             # AgenticFlow React/Next.js UI
+│   └── agenticflow/      # Live dashboard, interactive nodes, deep-dive modal
 ├── mcps/                 # Unified MCP Servers
 │   ├── auditor/          # Lustitia Algorithm Knowledge Delivery
 │   └── sandbox/          # Dockerized Python Execution Environment
 ├── outputs/              # Host-synced bias graphs and summaries
-├── main.py               # Unified entry point
+├── main.py               # Legacy CLI entry point
 ├── Procfile              # Railway deployment config
 └── requirements.txt      # Python dependencies
 ```
@@ -56,7 +80,9 @@ This allows agents to compile, execute, and sandbox fairness models aligned with
 
 ```mermaid
 graph TD
-    START((Start)) --> DS[Data Surveyor Agent]
+    UI[AgenticFlow Frontend] -->|WebSocket/Upload| API[FastAPI Server]
+    API -->|Spawns| START((Start LangGraph))
+    START --> DS[Data Surveyor Agent]
     DS --> DS_ROUT{Router}
     
     %% Surveyor Loop
@@ -71,8 +97,17 @@ graph TD
     FA_ROUT -->|Tool Call| AT[All Tools: Lustitia + Sandbox]
     AT --> FA
     
+    %% Mitigation Handoff
+    FA_ROUT -->|Final Audit| MA[Mitigation Agent]
+
+    %% Mitigation Loop
+    MA --> MA_ROUT{Router}
+    MA_ROUT -->|Tool Call| MT[All Tools: Lustitia + Sandbox]
+    MT --> MA
+
     %% End
-    FA_ROUT -->|Final Answer| END((End))
+    MA_ROUT -->|Final Answer| END((End))
+    END -->|Streams Results| UI
 
     subgraph "Docker Sandbox Container"
     data[(data.csv)]
@@ -88,6 +123,7 @@ graph TD
     ST -.->|Analyzes| data
     AT -.->|Loads Algo| algo_db
     AT -.->|Writes/Runs| audit_file
+    MT -.->|Repairs Data| data
 ```
 
 ### Agent Roles
@@ -96,6 +132,7 @@ graph TD
 |-------|---------|------------|
 | **Data Surveyor** | Profiles raw data, verifies column types, and checks for missing values or correlations. | Sandbox `bash`, `read_file` |
 | **Fairness Adjudicator** | Selects the best bias-audit algorithm, writes implementation code, and executes the audit inside the sandbox. | Lustitia `auditor`, Sandbox `bash` |
+| **Mitigation Agent** | Takes the detected biases and applies algorithms to residualize or remove proxy biases in the dataset. | Lustitia `auditor`, Sandbox `bash` |
 
 ### Dual-Knowledge Delivery Model
 
@@ -121,11 +158,26 @@ mcps/sandbox/
 
 ### MCP Tools Exposed
 
+### Lustitia Auditor Tools
+
 | Tool | Purpose |
 |------|---------|
 | `list_algorithms()` | Returns a JSON menu of all 13 registered algorithms with IDs and names |
 | `get_algorithm_info(algorithm_id)` | Returns full metadata: name, type, purpose, sector suitability, and tool schemas. Pass `"all"` for the complete registry |
 | `load_algorithm_knowledge(algorithm_id)` | Loads the algorithm's knowledge skill (markdown or YAML+scaffold) directly into the agent's context window |
+
+### Sandbox Execution Tools
+
+| Tool | Purpose |
+|------|---------|
+| `bash(command)` | Executes shell commands inside the Docker sandbox for data manipulation or setup |
+| `execute_cell(code)` | Runs a Jupyter-style Python cell within the Docker sandbox and streams the output |
+| `read_file(path)` | Reads a file from the sandbox container |
+| `write_file(path, content)` | Writes a completely new file to the sandbox container |
+| `edit_file(path, target, replacement)` | Surgically edits specific blocks of code within a file inside the sandbox |
+| `grep(pattern, path)` | Searches for text patterns within the sandbox files |
+| `list_files(path)` | Lists the contents of a directory in the sandbox |
+| `lint_code(path)` | Runs syntax checking on Python files within the sandbox to catch execution errors early |
 
 ## Implemented Algorithms
 
@@ -133,42 +185,42 @@ mcps/sandbox/
 
 | ID | Name | Detection | Mitigation | Key Technique |
 |----|------|-----------|------------|---------------|
-| `algo1` | Disparate Impact (80% Rule) | BER certification against epsilon threshold | Geometric repair via quantile-aligned CDF transformation | Balanced Error Rate, Empirical CDF |
-| `algo2` | Equality of Opportunity | TPR/FPR parity measurement across groups | Group-specific threshold optimization via grid search | Equalized Odds, loss-weighted threshold |
-| `algo3` | Recidivism Fairness | Impossibility theorem validation (Eq. 2.6) | Explicit tradeoff calibration (FPR/FNR/PPV strategies) | Base rate divergence, penalty disparity |
-| `algo6` | Brownian Distance Covariance | Non-linear proxy detection via dCor with permutation FDR | Non-linear residualization (GBR regression) | Double-centered distance matrices, BH correction |
-| `algo9` | Causal Fair Inference (PSE) | Path-Specific Effect estimation via IPW with bootstrap CI | Constrained Maximum Likelihood (SLSQP with PSE bounds) | Inverse Probability Weighting, NDE |
-| `algo11` | Causal Explanation Formula | Mechanism decomposition: TV = SE + IE - DE | Narrow Tailoring optimization with legal feasibility bounds | Counterfactual direct/indirect/spurious effects |
+| `disparate_impact_repair` | Disparate Impact (80% Rule) | BER certification against epsilon threshold | Geometric repair via quantile-aligned CDF transformation | Balanced Error Rate, Empirical CDF |
+| `equality_of_opportunity` | Equality of Opportunity | TPR/FPR parity measurement across groups | Group-specific threshold optimization via grid search | Equalized Odds, loss-weighted threshold |
+| `recidivism_fairness_calibration` | Recidivism Fairness | Impossibility theorem validation (Eq. 2.6) | Explicit tradeoff calibration (FPR/FNR/PPV strategies) | Base rate divergence, penalty disparity |
+| `brownian_distance_covariance` | Brownian Distance Covariance | Non-linear proxy detection via dCor with permutation FDR | Non-linear residualization (GBR regression) | Double-centered distance matrices, BH correction |
+| `causal_fair_inference` | Causal Fair Inference (PSE) | Path-Specific Effect estimation via IPW with bootstrap CI | Constrained Maximum Likelihood (SLSQP with PSE bounds) | Inverse Probability Weighting, NDE |
+| `causal_explanation_formula` | Causal Explanation Formula | Mechanism decomposition: TV = SE + IE - DE | Narrow Tailoring optimization with legal feasibility bounds | Counterfactual direct/indirect/spurious effects |
 
 ### FRAMEWORK Algorithms (7)
 
 | ID | Name | Pipeline Steps | Key Technique |
 |----|------|---------------|---------------|
-| `algo4` | Intersectional Subgroup Scan | 4 steps: Combinatorial generation, DIR + chi-squared, BH FDR, Ranking | Intersectional group fairness, multiple testing correction |
-| `algo5` | Mutual Information Proxy Scanner | 4 steps: KSG MI estimation, Null permutations, FDR correction, Residualization | Information-theoretic dependence, Ridge residuals |
-| `algo7` | SHAP Feature Attribution Auditing | 4 steps: Baseline, KernelSHAP, Proxy scoring, Mitigation (reweight/residualize/remove) | Game-theoretic attribution, exponential sample reweighting |
-| `algo10` | Counterfactual Fairness (OB) | 3 steps: Correlation audit, SVD orthogonal projection, Matrix reconstruction | Lagrange orthogonalization, SVD decomposition |
-| `algo12` | Fairness Feedback Loops (MIDS + STAR) | 6 steps: DP, EOdds, AccGap, KL-divergence, Generational tracking, STAR batch sampling | Model-Induced Distribution Shifts, quota-based reparation |
-| `algo13` | DRO Fairness Without Demographics | 5 steps: Group risks, Disparity dynamics, Spectral radius, DRO params, Dual SGD training | Chi-squared DRO, Jacobian stability analysis |
-| `algo14` | Relational Fairness (FairPSL) | 4 steps: FOL grounding, RD/RR/RC metrics, Linear constraints, Convex MAP inference | First-Order Logic, Probabilistic Soft Logic, CVXPY |
+| `intersectional_subgroup_scan` | Intersectional Subgroup Scan | 4 steps: Combinatorial generation, DIR + chi-squared, BH FDR, Ranking | Intersectional group fairness, multiple testing correction |
+| `mutual_info_proxy_scanner` | Mutual Information Proxy Scanner | 4 steps: KSG MI estimation, Null permutations, FDR correction, Residualization | Information-theoretic dependence, Ridge residuals |
+| `shap_proxy_detection` | SHAP Feature Attribution Auditing | 4 steps: Baseline, KernelSHAP, Proxy scoring, Mitigation (reweight/residualize/remove) | Game-theoretic attribution, exponential sample reweighting |
+| `counterfactual_orthogonalization` | Counterfactual Fairness (OB) | 3 steps: Correlation audit, SVD orthogonal projection, Matrix reconstruction | Lagrange orthogonalization, SVD decomposition |
+| `fairness_feedback_reparation` | Fairness Feedback Loops (MIDS + STAR) | 6 steps: DP, EOdds, AccGap, KL-divergence, Generational tracking, STAR batch sampling | Model-Induced Distribution Shifts, quota-based reparation |
+| `dro_fairness_no_demographics` | DRO Fairness Without Demographics | 5 steps: Group risks, Disparity dynamics, Spectral radius, DRO params, Dual SGD training | Chi-squared DRO, Jacobian stability analysis |
+| `relational_fairness_psl` | Relational Fairness (FairPSL) | 4 steps: FOL grounding, RD/RR/RC metrics, Linear constraints, Convex MAP inference | First-Order Logic, Probabilistic Soft Logic, CVXPY |
 
 ## Sector Suitability Matrix
 
 | Algorithm | Hiring | Finance | Healthcare | Criminal Justice | Education |
 |-----------|--------|---------|------------|-----------------|-----------|
-| algo1 | Yes | Yes | -- | Yes | -- |
-| algo2 | Yes | Yes | -- | Yes | -- |
-| algo3 | -- | -- | -- | Yes | -- |
-| algo4 | Yes | Yes | Yes | Yes | Yes |
-| algo5 | Yes | Yes | Yes | -- | Yes |
-| algo6 | Yes | Yes | Yes | -- | Yes |
-| algo7 | Yes | Yes | Yes | -- | Yes |
-| algo9 | Yes | Yes | -- | -- | Yes |
-| algo10 | Yes | Yes | -- | -- | Yes |
-| algo11 | Yes | Yes | -- | -- | Yes |
-| algo12 | Yes | Yes | -- | -- | Yes |
-| algo13 | -- | Yes | Yes | -- | Yes |
-| algo14 | Yes | Yes | -- | -- | Yes |
+| `disparate_impact_repair` | Yes | Yes | -- | Yes | -- |
+| `equality_of_opportunity` | Yes | Yes | -- | Yes | -- |
+| `recidivism_fairness_calibration` | -- | -- | -- | Yes | -- |
+| `intersectional_subgroup_scan` | Yes | Yes | Yes | Yes | Yes |
+| `mutual_info_proxy_scanner` | Yes | Yes | Yes | -- | Yes |
+| `brownian_distance_covariance` | Yes | Yes | Yes | -- | Yes |
+| `shap_proxy_detection` | Yes | Yes | Yes | -- | Yes |
+| `causal_fair_inference` | Yes | Yes | -- | -- | Yes |
+| `counterfactual_orthogonalization` | Yes | Yes | -- | -- | Yes |
+| `causal_explanation_formula` | Yes | Yes | -- | -- | Yes |
+| `fairness_feedback_reparation` | Yes | Yes | -- | -- | Yes |
+| `dro_fairness_no_demographics` | -- | Yes | Yes | -- | Yes |
+| `relational_fairness_psl` | Yes | Yes | -- | -- | Yes |
 
 ## Installation
 
@@ -178,13 +230,13 @@ mcps/sandbox/
 pip install mcp numpy pandas scipy scikit-learn statsmodels shap
 ```
 
-For FRAMEWORK algorithms requiring deep learning (algo12, algo13):
+For FRAMEWORK algorithms requiring deep learning (`fairness_feedback_reparation`, `dro_fairness_no_demographics`):
 
 ```bash
 pip install torch
 ```
 
-For FRAMEWORK algorithms requiring convex optimization (algo14):
+For FRAMEWORK algorithms requiring convex optimization (`relational_fairness_psl`):
 
 ```bash
 pip install cvxpy

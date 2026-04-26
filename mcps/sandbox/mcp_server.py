@@ -1,4 +1,10 @@
-import asyncio
+"""
+Mini Claude Sandbox — MCP Server
+
+Exposes 7 Docker sandbox tools via MCP over SSE:
+  bash, write_file, read_file, edit_file, grep, list_files, quit_sandbox
+"""
+
 import logging
 
 from mcp.server import NotificationOptions, Server
@@ -12,38 +18,55 @@ from starlette.middleware.cors import CORSMiddleware
 
 from sandbox import SandboxManager
 
-# Configure logging to be more verbose
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("mcp_server")
 
 manager = SandboxManager()
 server = Server("sandbox")
 
+
+# ── Tool Definitions ──────────────────────────────────────────────────────
+
 @server.list_tools()
 async def list_tools():
-    logger.debug("Listing tools...")
     return [
+        # ── 1. bash ───────────────────────────────────────────────────
         Tool(
             name="bash",
             description=(
-                "Run a bash command in an existing sandbox container. "
-                "Working directory is /workspace. Shell state does NOT persist between calls."
+                "Run a bash command in the sandbox container. "
+                "Working directory is /workspace. Shell state does NOT persist between calls. "
+                "Output is automatically truncated to 10,000 characters. "
+                "For writing files, prefer write_file. For editing files, prefer edit_file."
             ),
             inputSchema={
                 "type": "object",
                 "properties": {
                     "container_id": {"type": "string"},
-                    "command": {"type": "string"},
+                    "command": {
+                        "type": "string",
+                        "description": "The bash command to execute.",
+                    },
+                    "timeout": {
+                        "type": "integer",
+                        "description": "Timeout in seconds (default: 120).",
+                    },
                 },
                 "required": ["container_id", "command"],
             },
         ),
+
+        # ── 2. write_file ─────────────────────────────────────────────
         Tool(
-            name="read_file",
+            name="write_file",
             description=(
-                "Read a file from /workspace in an existing sandbox container. "
-                "Text files are returned as text. "
-                "Binary files are returned as data:<mime>;base64,<data>."
+                "Create a new file or completely overwrite an existing file in the sandbox. "
+                "Use this for writing NEW files (scripts, reports, configs). "
+                "For small edits to existing files, use edit_file instead — "
+                "it is much more token-efficient. "
+                "The file content is written via Docker API (binary-safe). "
+                "IMPORTANT: In Python code, use double backslashes for escape sequences "
+                "(e.g. write \\n for newline, \\t for tab) since JSON decodes single backslashes."
             ),
             inputSchema={
                 "type": "object",
@@ -51,27 +74,177 @@ async def list_tools():
                     "container_id": {"type": "string"},
                     "file_path": {
                         "type": "string",
-                        "description": "Container path, e.g. /workspace/outputs/plot.png",
+                        "description": "Absolute container path, e.g. /workspace/run_analysis.py",
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "The complete file content to write.",
+                    },
+                },
+                "required": ["container_id", "file_path", "content"],
+            },
+        ),
+
+        # ── 3. read_file ──────────────────────────────────────────────
+        Tool(
+            name="read_file",
+            description=(
+                "Read a file from the sandbox. Returns content with line numbers. "
+                "For large files, use offset and limit to read specific sections — "
+                "this avoids loading 30KB+ files into your context window. "
+                "Example: offset=50, limit=20 reads lines 50-69 only. "
+                "Binary files (images, etc.) are returned as base64."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "container_id": {"type": "string"},
+                    "file_path": {
+                        "type": "string",
+                        "description": "Absolute container path, e.g. /workspace/outputs/summary.txt",
+                    },
+                    "offset": {
+                        "type": "integer",
+                        "description": "Starting line number, 1-indexed (default: 1).",
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Number of lines to read (default: all lines).",
                     },
                 },
                 "required": ["container_id", "file_path"],
             },
         ),
+
+        # ── 4. edit_file ──────────────────────────────────────────────
         Tool(
-            name="list_files",
-            description="List all files under /workspace recursively for an existing sandbox container.",
+            name="edit_file",
+            description=(
+                "Surgically edit a file by replacing a specific text chunk. "
+                "Works like Claude Code's edit_file — only send the old text "
+                "you want to find and the new text to replace it with. "
+                "The old_text must be an EXACT match (including whitespace and indentation). "
+                "NEVER rewrite entire files — use this for fixing bugs, updating imports, "
+                "changing function logic, etc. Use read_file first to see the current content."
+            ),
             inputSchema={
                 "type": "object",
                 "properties": {
                     "container_id": {"type": "string"},
+                    "file_path": {
+                        "type": "string",
+                        "description": "Absolute container path, e.g. /workspace/run_analysis.py",
+                    },
+                    "old_text": {
+                        "type": "string",
+                        "description": "The exact text to find in the file. Must match exactly once.",
+                    },
+                    "new_text": {
+                        "type": "string",
+                        "description": "The replacement text.",
+                    },
+                },
+                "required": ["container_id", "file_path", "old_text", "new_text"],
+            },
+        ),
+
+        # ── 5. grep ───────────────────────────────────────────────────
+        Tool(
+            name="grep",
+            description=(
+                "Search for a text pattern in files inside the sandbox. "
+                "Returns matching lines with file paths and line numbers. "
+                "Use this to find specific code, errors, or variables without "
+                "reading entire files into context."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "container_id": {"type": "string"},
+                    "pattern": {
+                        "type": "string",
+                        "description": "The text pattern to search for (supports regex).",
+                    },
+                    "path": {
+                        "type": "string",
+                        "description": "Path to search in (default: /workspace).",
+                    },
+                    "include": {
+                        "type": "string",
+                        "description": "File glob pattern, e.g. '*.py' to only search Python files.",
+                    },
+                },
+                "required": ["container_id", "pattern"],
+            },
+        ),
+
+        # ── 6. list_files ─────────────────────────────────────────────
+        Tool(
+            name="list_files",
+            description="List all files under /workspace (or a specified path) recursively.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "container_id": {"type": "string"},
+                    "path": {
+                        "type": "string",
+                        "description": "Path to list (default: /workspace).",
+                    },
                 },
                 "required": ["container_id"],
             },
         ),
+
+        # ── 7. lint_code ──────────────────────────────────────────────
+        Tool(
+            name="lint_code",
+            description=(
+                "Check a Python script for syntax errors using py_compile. "
+                "Always run this BEFORE executing any newly written or edited Python script. "
+                "If errors are found, it will return the exact line number and error message. "
+                "Use edit_file to fix any errors before executing."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "container_id": {"type": "string"},
+                    "file_path": {
+                        "type": "string",
+                        "description": "Absolute container path to the python file, e.g. /workspace/run_analysis.py",
+                    },
+                },
+                "required": ["container_id", "file_path"],
+            },
+        ),
+
+        # ── 8. execute_cell ───────────────────────────────────────────
+        Tool(
+            name="execute_cell",
+            description=(
+                "Execute Python code in a persistent interactive REPL session (like a Jupyter Notebook cell). "
+                "Variables, functions, and imports persist between calls. "
+                "Use this instead of write_file for data exploration, testing shapes, and building complex algorithms block-by-block. "
+                "Returns the stdout (print statements) and stderr (Tracebacks). "
+                "Output is automatically truncated if too long."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "container_id": {"type": "string"},
+                    "code": {
+                        "type": "string",
+                        "description": "The Python code to execute in the stateful kernel.",
+                    },
+                },
+                "required": ["container_id", "code"],
+            },
+        ),
+
+        # ── 9. quit_sandbox ───────────────────────────────────────────
         Tool(
             name="quit_sandbox",
             description=(
-                "Stop and remove an existing sandbox container by container_id. "
+                "Stop and remove a sandbox container. "
                 "Retrieve outputs with read_file before calling this."
             ),
             inputSchema={
@@ -84,35 +257,84 @@ async def list_tools():
         ),
     ]
 
+
+# ── Tool Router ───────────────────────────────────────────────────────────
+
 @server.call_tool()
 async def call_tool(name: str, arguments: dict):
-    logger.info(f"Calling tool: {name} with arguments: {arguments}")
+    cid = arguments.get("container_id", "")
+    logger.info(f"[TOOL] {name} | container={cid[:12]}")
+
     if name == "bash":
-        text = manager.bash(arguments["container_id"], arguments["command"])
+        text = manager.bash(
+            cid,
+            arguments["command"],
+            timeout=arguments.get("timeout", 120),
+        )
+        return [TextContent(type="text", text=text)]
+
+    if name == "write_file":
+        text = manager.write_file(cid, arguments["file_path"], arguments["content"])
         return [TextContent(type="text", text=text)]
 
     if name == "read_file":
-        text = manager.read_file(arguments["container_id"], arguments["file_path"])
+        raw_offset = arguments.get("offset", 1)
+        raw_limit = arguments.get("limit")
+        text = manager.read_file(
+            cid,
+            arguments["file_path"],
+            offset=int(raw_offset) if raw_offset is not None else 1,
+            limit=int(raw_limit) if raw_limit is not None else None,
+        )
+        return [TextContent(type="text", text=text)]
+
+    if name == "edit_file":
+        text = manager.edit_file(
+            cid,
+            arguments["file_path"],
+            arguments["old_text"],
+            arguments["new_text"],
+        )
+        return [TextContent(type="text", text=text)]
+
+    if name == "grep":
+        text = manager.grep(
+            cid,
+            arguments["pattern"],
+            path=arguments.get("path", "/workspace"),
+            include=arguments.get("include"),
+        )
         return [TextContent(type="text", text=text)]
 
     if name == "list_files":
-        text = manager.list_files(arguments["container_id"])
+        text = manager.list_files(cid, path=arguments.get("path", "/workspace"))
+        return [TextContent(type="text", text=text)]
+
+    if name == "lint_code":
+        text = manager.lint_code(cid, arguments["file_path"])
+        return [TextContent(type="text", text=text)]
+
+    if name == "execute_cell":
+        text = manager.execute_cell(cid, arguments["code"])
         return [TextContent(type="text", text=text)]
 
     if name == "quit_sandbox":
-        text = manager.quit_sandbox(arguments["container_id"])
+        text = manager.quit_sandbox(cid)
         return [TextContent(type="text", text=text)]
 
     return [TextContent(type="text", text=f"Unknown tool: {name}")]
 
+
+# ── SSE Transport ─────────────────────────────────────────────────────────
+
 sse = SseServerTransport("/messages/")
 
+
 async def handle_sse(request):
-    logger.info(f"New connection request: {request.method} {request.url}")
+    logger.info(f"New connection: {request.method} {request.url}")
     if request.method == "POST":
-        # Some clients probe with POST /sse, return 200 OK
         return JSONResponse({"status": "ready"}, status_code=200)
-    
+
     async with sse.connect_sse(
         request.scope, request.receive, request._send
     ) as streams:
@@ -122,7 +344,7 @@ async def handle_sse(request):
             streams[1],
             InitializationOptions(
                 server_name="sandbox",
-                server_version="1.0.0",
+                server_version="2.0.0",
                 capabilities=server.get_capabilities(
                     notification_options=NotificationOptions(),
                     experimental_capabilities={},
@@ -131,8 +353,10 @@ async def handle_sse(request):
         )
     return Response()
 
+
 async def heartbeat(request):
-    return JSONResponse({"status": "ok", "server": "mcp-sandbox"})
+    return JSONResponse({"status": "ok", "server": "mcp-sandbox", "version": "2.0.0"})
+
 
 starlette_app = Starlette(
     debug=True,
@@ -152,5 +376,5 @@ starlette_app.add_middleware(
 
 if __name__ == "__main__":
     import uvicorn
-    logger.info("Starting MCP server on 0.0.0.0:8000")
+    logger.info("Starting MCP Sandbox Server v2.0.0 on 0.0.0.0:8000")
     uvicorn.run(starlette_app, host="0.0.0.0", port=8000)

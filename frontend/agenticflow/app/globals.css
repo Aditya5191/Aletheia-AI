@@ -1,0 +1,338 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme inline {
+  /* Colors - Design System */
+  --color-surface: #111317;
+  --color-surface-dim: #111317;
+  --color-surface-bright: #37393e;
+  --color-surface-container-lowest: #0c0e12;
+  --color-surface-container-low: #1a1c20;
+  --color-surface-container: #1e2024;
+  --color-surface-container-high: #282a2e;
+  --color-surface-container-highest: #333539;
+
+  --color-on-surface: #e2e2e8;
+  --color-on-surface-variant: #cbc3d7;
+  --color-inverse-surface: #e2e2e8;
+  --color-inverse-on-surface: #2f3035;
+
+  --color-outline: #958ea0;
+  --color-outline-variant: #494454;
+
+  --color-surface-tint: #d0bcff;
+
+  --color-primary: #d0bcff;
+  --color-on-primary: #3c0091;
+  --color-primary-container: #a078ff;
+  --color-on-primary-container: #340080;
+  --color-inverse-primary: #6d3bd7;
+
+  --color-secondary: #4edea3;
+  --color-on-secondary: #003824;
+  --color-secondary-container: #00a572;
+  --color-on-secondary-container: #00311f;
+
+  --color-tertiary: #ffb95f;
+  --color-on-tertiary: #472a00;
+  --color-tertiary-container: #ca8100;
+  --color-on-tertiary-container: #3e2400;
+
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+
+  --color-background: #111317;
+  --color-on-background: #e2e2e8;
+
+  --color-border-dark: #1F2228;
+  --color-card-bg: #15171B;
+  --color-canvas-bg: #0B0D10;
+
+  /* Font */
+  --font-inter: "Inter", sans-serif;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-gutter: 20px;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-on-background);
+  font-family: var(--font-inter);
+  overflow: hidden;
+}
+
+::selection {
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+}
+
+/* Grid Pattern for Canvas */
+.bg-grid-pattern {
+  background-size: 24px 24px;
+  background-image:
+    linear-gradient(to right, rgba(149, 142, 160, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(149, 142, 160, 0.05) 1px, transparent 1px);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-outline-variant);
+  border-radius: 999px;
+}
+
+/* React Flow overrides */
+.react-flow__edge-path {
+  stroke: var(--color-primary) !important;
+  filter: drop-shadow(0 0 4px rgba(208, 188, 255, 0.6));
+}
+
+.react-flow__node {
+  cursor: grab !important;
+}
+
+.react-flow__node:active {
+  cursor: grabbing !important;
+}
+
+.react-flow__node.selected {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Controls buttons styling */
+.react-flow__controls button {
+  background: var(--color-surface) !important;
+  border-color: var(--color-outline-variant) !important;
+  color: var(--color-outline) !important;
+}
+
+.react-flow__controls button:hover {
+  background: var(--color-surface-container) !important;
+  color: var(--color-on-surface) !important;
+}
+
+.react-flow__controls button svg {
+  fill: currentColor !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Hide scrollbar for clean UI elements */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes drawLineX {
+  from {
+    clip-path: polygon(0 0, 0 100%, 0 100%, 0 0);
+  }
+  to {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+@keyframes growBar {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) rotate(-10deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+/* Custom Markdown Styles (VS Code Theme) */
+.custom-markdown {
+  color: var(--color-on-surface-variant);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.custom-markdown h1,
+.custom-markdown h2,
+.custom-markdown h3,
+.custom-markdown h4,
+.custom-markdown h5,
+.custom-markdown h6 {
+  color: var(--color-on-surface);
+  font-weight: 600;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  line-height: 1.25;
+}
+
+.custom-markdown h1 {
+  font-size: 2em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--color-border-dark);
+}
+
+.custom-markdown h2 {
+  font-size: 1.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--color-border-dark);
+}
+
+.custom-markdown h3 {
+  font-size: 1.25em;
+}
+
+.custom-markdown p {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.custom-markdown ul,
+.custom-markdown ol {
+  margin-top: 0;
+  margin-bottom: 16px;
+  padding-left: 2em;
+}
+
+.custom-markdown ul {
+  list-style-type: disc;
+}
+
+.custom-markdown ol {
+  list-style-type: decimal;
+}
+
+.custom-markdown li + li {
+  margin-top: 0.25em;
+}
+
+/* Tables */
+.custom-markdown table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  margin-top: 0;
+  margin-bottom: 16px;
+  width: max-content;
+  max-width: 100%;
+  display: block;
+  overflow-x: auto;
+}
+
+.custom-markdown table th,
+.custom-markdown table td {
+  padding: 6px 13px;
+  border: 1px solid var(--color-border-dark);
+}
+
+.custom-markdown table th {
+  font-weight: 600;
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.custom-markdown table tr {
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border-dark);
+}
+
+.custom-markdown table tr:nth-child(2n) {
+  background-color: var(--color-surface-container);
+}
+
+/* Code */
+.custom-markdown code {
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  background-color: rgba(208, 188, 255, 0.1);
+  color: var(--color-primary);
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.custom-markdown pre {
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+  background-color: #0d1117;
+  border: 1px solid var(--color-border-dark);
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.custom-markdown pre code {
+  display: inline;
+  max-width: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  line-height: inherit;
+  word-wrap: normal;
+  background-color: transparent;
+  border: 0;
+  color: var(--color-on-surface);
+}
+
+.custom-markdown a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.custom-markdown a:hover {
+  text-decoration: underline;
+}
+
+.custom-markdown strong {
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
