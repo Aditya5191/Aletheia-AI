@@ -1,4 +1,4 @@
-# Lustitia: Fairness Auditing Agent
+# Aletheia: Fairness Auditing Agent
 
 ## Quick Start (CLI Pipeline)
 
@@ -36,7 +36,7 @@ If you prefer to use the live React observability dashboard instead of the CLI:
    ```bash
    python backend/api.py
    ```
-   *Note: Ensure the dataset directory exists. The frontend will upload the CSV directly to `dataset/data.csv`.*
+   *Note: The backend orchestrates the agent graph on Port 8000-8002 and serves generated artifacts (charts, code, reports) on **Port 8005**. Ensure the dataset directory exists.*
 
 2. **Start the Frontend**:
    ```bash
@@ -48,7 +48,7 @@ If you prefer to use the live React observability dashboard instead of the CLI:
 
 ---
 
-**Lustitia** is a production-ready Model Context Protocol (MCP) server that delivers algorithmic fairness auditing capabilities directly to LLM agents. Instead of exposing rigid API endpoints, the server uses a **Knowledge Skill Delivery Model** -- providing runnable pseudo-code, mathematical specifications, parameter tuning guides, and causal constraints dynamically to any MCP-compatible agent (Claude Desktop, Cursor, LM Studio, or any MCP client).
+**Aletheia** is a production-ready Model Context Protocol (MCP) server that delivers algorithmic fairness auditing capabilities directly to LLM agents. Instead of exposing rigid API endpoints, the server uses a **Knowledge Skill Delivery Model** -- providing runnable pseudo-code, mathematical specifications, parameter tuning guides, and causal constraints dynamically to any MCP-compatible agent (Claude Desktop, Cursor, LM Studio, or any MCP client).
 
 This allows agents to compile, execute, and sandbox fairness models aligned with user datasets without relying on external web services or pre-built libraries.
 
@@ -68,10 +68,11 @@ The **AgenticFlow Frontend** pairs with this backend to provide a live, real-tim
 ├── frontend/             # AgenticFlow React/Next.js UI
 │   └── agenticflow/      # Live dashboard, interactive nodes, deep-dive modal
 ├── mcps/                 # Unified MCP Servers
-│   ├── auditor/          # Lustitia Algorithm Knowledge Delivery
-│   └── sandbox/          # Dockerized Python Execution Environment
-├── outputs/              # Host-synced bias graphs and summaries
-├── main.py               # Legacy CLI entry point
+│   ├── auditor/          # Aletheia Algorithm Knowledge Delivery
+│   ├── sandbox/          # Dockerized Python Execution Environment
+│   └── miscellaneous/    # UI Blueprint & Chart Schema Delivery
+├── outputs/              # Host-synced bias graphs, JSON charts, and code logs
+├── main.py               # CLI entry point
 ├── Procfile              # Railway deployment config
 └── requirements.txt      # Python dependencies
 ```
@@ -94,7 +95,7 @@ graph TD
     
     %% Adjudicator Loop
     FA --> FA_ROUT{Router}
-    FA_ROUT -->|Tool Call| AT[All Tools: Lustitia + Sandbox]
+    FA_ROUT -->|Tool Call| AT[All Tools: Aletheia + Sandbox]
     AT --> FA
     
     %% Mitigation Handoff
@@ -102,7 +103,7 @@ graph TD
 
     %% Mitigation Loop
     MA --> MA_ROUT{Router}
-    MA_ROUT -->|Tool Call| MT[All Tools: Lustitia + Sandbox]
+    MA_ROUT -->|Tool Call| MT[All Tools: Aletheia + Sandbox]
     MT --> MA
 
     %% End
@@ -115,7 +116,7 @@ graph TD
     profile_file(summary.txt)
     end
 
-    subgraph "Lustitia MCP (Remote)"
+    subgraph "Aletheia MCP (Remote)"
     algo_db[(13 Algorithms)]
     end
 
@@ -130,9 +131,9 @@ graph TD
 
 | Agent | Purpose | Tools Used |
 |-------|---------|------------|
-| **Data Surveyor** | Profiles raw data, verifies column types, and checks for missing values or correlations. | Sandbox `bash`, `read_file` |
-| **Fairness Adjudicator** | Selects the best bias-audit algorithm, writes implementation code, and executes the audit inside the sandbox. | Lustitia `auditor`, Sandbox `bash` |
-| **Mitigation Agent** | Takes the detected biases and applies algorithms to residualize or remove proxy biases in the dataset. | Lustitia `auditor`, Sandbox `bash` |
+| **Data Surveyor** | Profiles raw data, verifies column types, and checks for missing values or correlations. | Sandbox `bash`, `read_file`, Misc `get_chart_schemas` |
+| **Fairness Adjudicator** | Selects the best bias-audit algorithm, writes implementation code, and executes the audit inside the sandbox. | Aletheia `auditor`, Sandbox `bash`, Misc `get_chart_schemas` |
+| **Mitigation Agent** | Takes the detected biases and applies algorithms to residualize or remove proxy biases in the dataset. | Aletheia `auditor`, Sandbox `bash` |
 
 ### Dual-Knowledge Delivery Model
 
@@ -158,7 +159,7 @@ mcps/sandbox/
 
 ### MCP Tools Exposed
 
-### Lustitia Auditor Tools
+### Aletheia Auditor Tools
 
 | Tool | Purpose |
 |------|---------|
@@ -249,11 +250,11 @@ Add to `claude_desktop_config.json` (located in `%APPDATA%\Claude`):
 ```json
 {
   "mcpServers": {
-    "lustitia-auditor": {
+    "aletheia-auditor": {
       "command": "python",
       "args": ["C:\\path\\to\\your\\mcps\\auditor\\server.py"]
     },
-    "lustitia-sandbox": {
+    "aletheia-sandbox": {
       "command": "python",
       "args": ["C:\\path\\to\\your\\mcps\\sandbox\\mcp_server.py"]
     }
@@ -268,7 +269,7 @@ Add to your MCP configuration file:
 ```json
 {
   "mcpServers": {
-    "lustitia-auditor": {
+    "aletheia-auditor": {
       "command": "python",
       "args": ["C:\\path\\to\\your\\mcps\\auditor\\server.py"]
     }

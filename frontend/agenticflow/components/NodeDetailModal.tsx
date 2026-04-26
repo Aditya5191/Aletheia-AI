@@ -52,11 +52,18 @@ function fmtVal(v: number | string): string {
 }
 
 interface ChartDef {
-  id: string;
-  label: string;
-  type?: "line" | "bar" | "pie"; // Defaults to line if not specified
-  data: ChartPoint[];
-  color: string; // e.g. "#d0bcff"
+  id?: string;
+  label?: string;
+  title?: string;
+  type?: "line" | "bar" | "pie" | "heatmap" | "scatter"; // Added scatter
+  data: any[]; 
+  color?: string;
+  xLabels?: string[];
+  yLabels?: string[];
+  colorScale?: string[];
+  xAxisLabel?: string;
+  yAxisLabel?: string;
+  series?: {name: string, color: string}[];
 }
 
 interface NodeDetailData {
@@ -872,7 +879,386 @@ function InteractivePieChart({ chartDef }: { chartDef: ChartDef }) {
 function InteractiveChart({ chartDef }: { chartDef: ChartDef }) {
   if (chartDef.type === "bar") return <InteractiveBarChart chartDef={chartDef} />;
   if (chartDef.type === "pie") return <InteractivePieChart chartDef={chartDef} />;
+  if (chartDef.type === "heatmap") return <InteractiveHeatmap chartDef={chartDef} />;
+  if (chartDef.type === "scatter") return <InteractiveScatterChart chartDef={chartDef} />;
   return <InteractiveLineChart chartDef={chartDef} />;
+}
+
+function InteractiveScatterChart({ chartDef }: { chartDef: ChartDef }) {
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const { data, series = [], xAxisLabel = "X", yAxisLabel = "Y" } = chartDef;
+
+  const W = 560;
+  const H = 240;
+  const PAD_X = 60;
+  const PAD_TOP = 20;
+  const PAD_BOT = 40;
+
+  const chartW = W - PAD_X * 2;
+  const chartH = H - PAD_TOP - PAD_BOT;
+
+  // Find min/max for scaling
+  const xs = data.map((d: any) => d.x);
+  const ys = data.map((d: any) => d.y);
+  
+  const minX = Math.min(...xs, 0);
+  const maxX = Math.max(...xs, 1);
+  const minY = Math.min(...ys, 0);
+  const maxY = Math.max(...ys, 1);
+
+  const rangeX = maxX - minX || 1;
+  const rangeY = maxY - minY || 1;
+
+  const getX = (x: number) => PAD_X + ((x - minX) / rangeX) * chartW;
+  const getY = (y: number) => PAD_TOP + chartH - ((y - minY) / rangeY) * chartH;
+
+  const defaultColor = chartDef.color || "#7AA2F7";
+
+  return (
+    <div className="flex items-center justify-center h-full relative">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="w-full h-auto"
+        onMouseLeave={() => setHoveredIdx(null)}
+      >
+        {/* Y Axis Grid & Labels */}
+        {[0, 0.25, 0.5, 0.75, 1].map((p, i) => {
+          const val = minY + rangeY * p;
+          const y = getY(val);
+          return (
+            <g key={`y-${i}`}>
+              <line
+                x1={PAD_X}
+                y1={y}
+                x2={W - PAD_X}
+                y2={y}
+                stroke="#1F2228"
+                strokeWidth="1"
+                strokeDasharray="4 4"
+              />
+              <text
+                x={PAD_X - 8}
+                y={y + 4}
+                textAnchor="end"
+                className="fill-outline text-[10px]"
+              >
+                {fmtVal(val)}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* X Axis Grid & Labels */}
+        {[0, 0.25, 0.5, 0.75, 1].map((p, i) => {
+          const val = minX + rangeX * p;
+          const x = getX(val);
+          return (
+            <g key={`x-${i}`}>
+              <line
+                x1={x}
+                y1={PAD_TOP}
+                x2={x}
+                y2={PAD_TOP + chartH}
+                stroke="#1F2228"
+                strokeWidth="1"
+                strokeDasharray="4 4"
+              />
+              <text
+                x={x}
+                y={PAD_TOP + chartH + 16}
+                textAnchor="middle"
+                className="fill-outline text-[10px]"
+              >
+                {fmtVal(val)}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Axis Titles */}
+        <text
+          x={PAD_X / 2 - 10}
+          y={PAD_TOP + chartH / 2}
+          transform={`rotate(-90 ${PAD_X / 2 - 10} ${PAD_TOP + chartH / 2})`}
+          textAnchor="middle"
+          className="fill-outline text-[9px] font-semibold uppercase tracking-widest"
+        >
+          {yAxisLabel}
+        </text>
+        <text
+          x={PAD_X + chartW / 2}
+          y={H - 5}
+          textAnchor="middle"
+          className="fill-outline text-[9px] font-semibold uppercase tracking-widest"
+        >
+          {xAxisLabel}
+        </text>
+
+        {/* Scatter Points */}
+        {data.map((d: any, i: number) => {
+          const color = series[d.seriesIndex]?.color || defaultColor;
+          const cx = getX(d.x);
+          const cy = getY(d.y);
+          const isHovered = hoveredIdx === i;
+
+          return (
+            <g key={`pt-${i}`} onMouseEnter={() => setHoveredIdx(i)}>
+              {/* Invisible larger circle for easier hovering */}
+              <circle cx={cx} cy={cy} r={12} fill="transparent" className="cursor-pointer" />
+              
+              <circle
+                cx={cx}
+                cy={cy}
+                r={isHovered ? 6 : 4}
+                fill={color}
+                opacity={hoveredIdx === null || isHovered ? 1 : 0.4}
+                className="transition-all duration-300 ease-out pointer-events-none"
+                style={{
+                  transformOrigin: `${cx}px ${cy}px`,
+                  animation: `popIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards ${i * 0.02}s`,
+                  opacity: 0
+                }}
+              />
+
+              {/* Tooltip */}
+              {isHovered && (
+                <g className="pointer-events-none">
+                  <rect
+                    x={cx - 36}
+                    y={cy - 34}
+                    width={72}
+                    height={24}
+                    rx={6}
+                    fill="#282a2e"
+                    stroke="#494454"
+                  />
+                  <text
+                    x={cx}
+                    y={cy - 18}
+                    textAnchor="middle"
+                    className="text-[10px] font-semibold fill-white"
+                  >
+                    ({fmtVal(d.x)}, {fmtVal(d.y)})
+                  </text>
+                </g>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+function InteractiveHeatmap({ chartDef }: { chartDef: ChartDef }) {
+  const [hovered, setHovered] = useState<{r: number, c: number} | null>(null);
+  const { data, xLabels = [], yLabels = [], colorScale = ["#15171B", "#d0bcff", "#ff5252"] } = chartDef;
+  
+  const W = 560;
+  const H = 380;
+  const PAD_LEFT = 100;
+  const PAD_RIGHT = 20;
+  const PAD_TOP = 20;
+  const PAD_BOTTOM = 120;
+  
+  const chartW = W - PAD_LEFT - PAD_RIGHT;
+  const chartH = H - PAD_TOP - PAD_BOTTOM;
+  
+  const rows = data.length;
+  const cols = data[0]?.length || 1;
+  const cellW = chartW / cols;
+  const cellH = chartH / rows;
+
+  // Flatten all values for min-max normalization
+  const flatData = data.flat().map((v: number) => Math.abs(v));
+  const minVal = Math.min(...flatData);
+  const maxVal = Math.max(...flatData);
+  const range = maxVal - minVal || 1;
+
+  // Helper: parse hex to RGB
+  const hexToRgb = (hex: string) => {
+    const h = hex.replace('#', '');
+    return {
+      r: parseInt(h.substring(0, 2), 16),
+      g: parseInt(h.substring(2, 4), 16),
+      b: parseInt(h.substring(4, 6), 16),
+    };
+  };
+
+  // 3-stop color gradient: low → mid → high
+  const lowColor  = hexToRgb(colorScale[0] || "#1a1b2e");  // dark navy
+  const midColor  = hexToRgb(colorScale[1] || "#7AA2F7");  // blue
+  const highColor = hexToRgb(colorScale[2] || "#F7768E");  // hot pink/red
+
+  // Interpolate between two RGB colors
+  const lerpColor = (a: typeof lowColor, b: typeof lowColor, t: number) => {
+    const r = Math.round(a.r + (b.r - a.r) * t);
+    const g = Math.round(a.g + (b.g - a.g) * t);
+    const bl = Math.round(a.b + (b.b - a.b) * t);
+    return `rgb(${r},${g},${bl})`;
+  };
+
+  // Map value → fully interpolated color (no opacity tricks)
+  const getCellColor = (val: number) => {
+    const normalized = (Math.abs(val) - minVal) / range; // 0..1
+    if (normalized < 0.5) {
+      return lerpColor(lowColor, midColor, normalized * 2);
+    }
+    return lerpColor(midColor, highColor, (normalized - 0.5) * 2);
+  };
+
+  return (
+    <div className="flex items-center justify-center h-full relative">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" onMouseLeave={() => setHovered(null)}>
+        {/* Y Labels */}
+        {yLabels.map((lbl, i) => (
+          <text
+            key={`y-${i}`}
+            x={PAD_LEFT - 10}
+            y={PAD_TOP + (i + 0.5) * cellH}
+            textAnchor="end"
+            alignmentBaseline="middle"
+            className="fill-outline text-[9px]"
+          >
+            {lbl.length > 15 ? lbl.substring(0, 13) + ".." : lbl}
+          </text>
+        ))}
+
+        {/* X Labels */}
+        {xLabels.map((lbl, j) => (
+          <text
+            key={`x-${j}`}
+            x={PAD_LEFT + (j + 0.5) * cellW}
+            y={PAD_TOP + chartH + 15}
+            textAnchor="end"
+            transform={`rotate(-40 ${PAD_LEFT + (j + 0.5) * cellW} ${PAD_TOP + chartH + 15})`}
+            className="fill-outline text-[9px]"
+          >
+            {lbl.length > 15 ? lbl.substring(0, 13) + ".." : lbl}
+          </text>
+        ))}
+
+        {/* Cells */}
+        {data.map((row, i) => 
+          row.map((val: number, j: number) => {
+            const isHovered = hovered?.r === i && hovered?.c === j;
+            return (
+              <g key={`cell-${i}-${j}`} onMouseEnter={() => setHovered({r: i, c: j})}>
+                <rect
+                  x={PAD_LEFT + j * cellW}
+                  y={PAD_TOP + i * cellH}
+                  width={cellW - 2}
+                  height={cellH - 2}
+                  rx={2}
+                  fill={getCellColor(val)}
+                  opacity={isHovered ? 1 : 0.85}
+                  stroke={isHovered ? "#fff" : "transparent"}
+                  strokeWidth={isHovered ? 2 : 0}
+                  className="transition-all duration-300 cursor-pointer"
+                  style={{ animation: `fadeIn 0.5s ease forwards ${(i+j)*0.05}s` }}
+                />
+                
+                {/* Tooltip */}
+                {isHovered && (
+                  <g className="pointer-events-none">
+                    <rect
+                      x={PAD_LEFT + j * cellW + cellW/2 - 30}
+                      y={PAD_TOP + i * cellH - 25}
+                      width={60}
+                      height={20}
+                      rx={4}
+                      fill="#282a2e"
+                      stroke="#494454"
+                    />
+                    <text
+                      x={PAD_LEFT + j * cellW + cellW/2}
+                      y={PAD_TOP + i * cellH - 11}
+                      textAnchor="middle"
+                      className="text-[10px] font-semibold fill-white"
+                    >
+                      {fmtVal(val)}
+                    </text>
+                  </g>
+                )}
+              </g>
+            );
+          })
+        )}
+        {/* Color Legend */}
+        {(() => {
+          const legendX = PAD_LEFT;
+          const legendY = PAD_TOP + chartH + 45;
+          const legendW = chartW;
+          const legendH = 10;
+          const stops = 20;
+          const stepW = legendW / stops;
+
+          return (
+            <g>
+              {/* Gradient bar made of small rects */}
+              {Array.from({ length: stops }).map((_, s) => {
+                const t = s / (stops - 1);
+                const val = minVal + t * range;
+                return (
+                  <rect
+                    key={`legend-${s}`}
+                    x={legendX + s * stepW}
+                    y={legendY}
+                    width={stepW + 0.5}
+                    height={legendH}
+                    rx={s === 0 ? 3 : s === stops - 1 ? 3 : 0}
+                    fill={getCellColor(val)}
+                  />
+                );
+              })}
+
+              {/* Border around legend */}
+              <rect
+                x={legendX}
+                y={legendY}
+                width={legendW}
+                height={legendH}
+                rx={3}
+                fill="none"
+                stroke="#1F2228"
+                strokeWidth={1}
+              />
+
+              {/* Min label */}
+              <text
+                x={legendX}
+                y={legendY + legendH + 12}
+                textAnchor="start"
+                className="fill-outline text-[9px]"
+              >
+                {fmtVal(minVal)} (Low)
+              </text>
+
+              {/* Mid label */}
+              <text
+                x={legendX + legendW / 2}
+                y={legendY + legendH + 12}
+                textAnchor="middle"
+                className="fill-outline text-[9px]"
+              >
+                {fmtVal(minVal + range / 2)}
+              </text>
+
+              {/* Max label */}
+              <text
+                x={legendX + legendW}
+                y={legendY + legendH + 12}
+                textAnchor="end"
+                className="fill-outline text-[9px]"
+              >
+                {fmtVal(maxVal)} (High)
+              </text>
+            </g>
+          );
+        })()}
+      </svg>
+    </div>
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -1027,7 +1413,7 @@ function ChartSection({ charts }: { charts: ChartDef[] }) {
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="flex items-center justify-between gap-3 bg-[#111317] border border-[#1F2228] text-on-surface-variant text-[11px] font-medium rounded-full px-4 py-1.5 hover:border-[#333539] hover:text-on-surface focus:outline-none focus:border-primary transition-colors cursor-pointer min-w-[160px]"
             >
-              <span className="truncate">{activeChart.label}</span>
+              <span className="truncate">{activeChart.title || activeChart.label || `Chart ${activeIdx + 1}`}</span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 text-outline ${isDropdownOpen ? "rotate-180" : ""}`} />
             </button>
             
@@ -1035,7 +1421,7 @@ function ChartSection({ charts }: { charts: ChartDef[] }) {
               <div className="absolute right-0 top-full mt-2 w-full min-w-[180px] bg-[#15171B] border border-[#282a2e] rounded-xl shadow-2xl overflow-hidden z-50 py-1 flex flex-col backdrop-blur-xl">
                 {charts.map((chart, idx) => (
                   <button
-                    key={chart.id}
+                    key={chart.id || `chart-${idx}`}
                     onClick={() => {
                       setActiveIdx(idx);
                       setIsDropdownOpen(false);
@@ -1046,7 +1432,7 @@ function ChartSection({ charts }: { charts: ChartDef[] }) {
                         : "text-on-surface-variant hover:bg-[#1a1c20] hover:text-on-surface"
                     }`}
                   >
-                    {chart.label}
+                    {chart.title || chart.label || `Chart ${idx + 1}`}
                   </button>
                 ))}
               </div>
@@ -1146,8 +1532,11 @@ export default function NodeDetailModal({ nodeId, onClose }: NodeDetailModalProp
         // Silently ignore — file may not exist yet
       }
 
-      if (chartsOk && metricsOk && reviewOk) {
+      if (chartsOk) {
         setIsLoadingCharts(false);
+      }
+      
+      if (chartsOk && metricsOk && reviewOk) {
         clearInterval(intervalId);
       }
     };

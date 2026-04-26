@@ -8,7 +8,7 @@ import time
 def start_docker_sandbox():
     """Starts an ephemeral docker container mapping data.csv and returns its ID."""
     image = "sandbox-python:latest"
-    container_name = f"lustitia-sandbox-{uuid.uuid4().hex[:8]}"
+    container_name = f"aletheia-sandbox-{uuid.uuid4().hex[:8]}"
     print(f"[DOCKER] Starting ephemeral container {container_name} from {image}...")
     
     # Ensure local outputs directory exists
@@ -38,6 +38,16 @@ def run_test():
         stderr=subprocess.DEVNULL
     )
     
+    print("[MCP] Starting Miscellaneous MCP Server on port 8002...")
+    misc_env = os.environ.copy()
+    misc_env["PORT"] = "8002"
+    misc_mcp_process = subprocess.Popen(
+        [sys.executable, os.path.join("mcps", "miscellaneous", "server.py")],
+        env=misc_env,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL
+    )
+    
     time.sleep(3)
     
     try:
@@ -51,9 +61,11 @@ def run_test():
         print(f"\n[ERROR] An error occurred while running the agent:")
         traceback.print_exc()
     finally:
-        print("\n[CLEANUP] Stopping MCP Server...")
+        print("\n[CLEANUP] Stopping MCP Servers...")
         mcp_process.terminate()
         mcp_process.wait()
+        misc_mcp_process.terminate()
+        misc_mcp_process.wait()
         
         print(f"[CLEANUP] Downloading generated graphs/outputs to host...")
         os.makedirs("outputs", exist_ok=True)

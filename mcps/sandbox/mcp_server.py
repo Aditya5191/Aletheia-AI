@@ -42,6 +42,10 @@ async def list_tools():
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "reason": {
+                        "type": "string",
+                        "description": " Explanation of why you are calling this tool. MUST be provided.",
+                    },
                     "container_id": {"type": "string"},
                     "command": {
                         "type": "string",
@@ -52,7 +56,7 @@ async def list_tools():
                         "description": "Timeout in seconds (default: 120).",
                     },
                 },
-                "required": ["container_id", "command"],
+                "required": ["reason", "container_id", "command"],
             },
         ),
 
@@ -71,6 +75,10 @@ async def list_tools():
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "reason": {
+                        "type": "string",
+                        "description": "CRITICAL: MAXIMUM 5 WORDS. Describe what you are trying to achieve. E.g., 'Checking for missing values'.",
+                    },
                     "container_id": {"type": "string"},
                     "file_path": {
                         "type": "string",
@@ -81,7 +89,7 @@ async def list_tools():
                         "description": "The complete file content to write.",
                     },
                 },
-                "required": ["container_id", "file_path", "content"],
+                "required": ["reason", "container_id", "file_path", "content"],
             },
         ),
 
@@ -98,6 +106,10 @@ async def list_tools():
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "reason": {
+                        "type": "string",
+                        "description": "CRITICAL: MAXIMUM 5 WORDS. Describe what you are trying to achieve. E.g., 'Checking for missing values'.",
+                    },
                     "container_id": {"type": "string"},
                     "file_path": {
                         "type": "string",
@@ -112,7 +124,7 @@ async def list_tools():
                         "description": "Number of lines to read (default: all lines).",
                     },
                 },
-                "required": ["container_id", "file_path"],
+                "required": ["reason", "container_id", "file_path"],
             },
         ),
 
@@ -130,6 +142,10 @@ async def list_tools():
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "reason": {
+                        "type": "string",
+                        "description": "CRITICAL: MAXIMUM 5 WORDS. Describe what you are trying to achieve. E.g., 'Checking for missing values'.",
+                    },
                     "container_id": {"type": "string"},
                     "file_path": {
                         "type": "string",
@@ -144,7 +160,7 @@ async def list_tools():
                         "description": "The replacement text.",
                     },
                 },
-                "required": ["container_id", "file_path", "old_text", "new_text"],
+                "required": ["reason", "container_id", "file_path", "old_text", "new_text"],
             },
         ),
 
@@ -160,6 +176,10 @@ async def list_tools():
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "reason": {
+                        "type": "string",
+                        "description": "CRITICAL: MAXIMUM 5 WORDS. Describe what you are trying to achieve. E.g., 'Checking for missing values'.",
+                    },
                     "container_id": {"type": "string"},
                     "pattern": {
                         "type": "string",
@@ -174,7 +194,7 @@ async def list_tools():
                         "description": "File glob pattern, e.g. '*.py' to only search Python files.",
                     },
                 },
-                "required": ["container_id", "pattern"],
+                "required": ["reason", "container_id", "pattern"],
             },
         ),
 
@@ -185,13 +205,17 @@ async def list_tools():
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "reason": {
+                        "type": "string",
+                        "description": "CRITICAL: MAXIMUM 5 WORDS. Describe what you are trying to achieve. E.g., 'Checking for missing values'.",
+                    },
                     "container_id": {"type": "string"},
                     "path": {
                         "type": "string",
                         "description": "Path to list (default: /workspace).",
                     },
                 },
-                "required": ["container_id"],
+                "required": ["reason", "container_id"],
             },
         ),
 
@@ -207,13 +231,17 @@ async def list_tools():
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "reason": {
+                        "type": "string",
+                        "description": "CRITICAL: MAXIMUM 5 WORDS. Describe what you are trying to achieve. E.g., 'Checking for missing values'.",
+                    },
                     "container_id": {"type": "string"},
                     "file_path": {
                         "type": "string",
                         "description": "Absolute container path to the python file, e.g. /workspace/run_analysis.py",
                     },
                 },
-                "required": ["container_id", "file_path"],
+                "required": ["reason", "container_id", "file_path"],
             },
         ),
 
@@ -230,13 +258,17 @@ async def list_tools():
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "reason": {
+                        "type": "string",
+                        "description": "CRITICAL: MAXIMUM 5 WORDS. Describe what you are trying to achieve. E.g., 'Checking for missing values'.",
+                    },
                     "container_id": {"type": "string"},
                     "code": {
                         "type": "string",
                         "description": "The Python code to execute in the stateful kernel.",
                     },
                 },
-                "required": ["container_id", "code"],
+                "required": ["reason", "container_id", "code"],
             },
         ),
 
@@ -250,9 +282,13 @@ async def list_tools():
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "reason": {
+                        "type": "string",
+                        "description": "Brief 3-5 word explanation of why you are calling this tool. MUST be short.",
+                    },
                     "container_id": {"type": "string"},
                 },
-                "required": ["container_id"],
+                "required": ["reason", "container_id"],
             },
         ),
     ]

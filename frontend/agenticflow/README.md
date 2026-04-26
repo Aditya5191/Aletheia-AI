@@ -16,8 +16,9 @@ AgenticFlow is a high-fidelity, professional AI observability and orchestration 
 - **Disparity Visualization:** Intelligent path highlighting that turns nodes and edges **Red** when the Fairness Adjudicator detects bias in the data.
 
 ### 3. Deep-Dive Observability Modal
-- **Analytics Tab:** High-performance SVG charts (Line, Pie, and fully-responsive Interactive Bar Charts with **Dynamic Negative Value Support**) for precise metric evaluation.
-- **Code Tab:** AI-generated Python logic (pandas, sklearn) executed in the Docker Sandbox, displayed with syntax highlighting and 1-click copy-to-clipboard functionality.
+- **Analytics Tab:** High-performance SVG charts (Line, Pie, Scatter, and fully-responsive Interactive Bar Charts).
+- **Interactive Heatmaps:** Specialized correlation matrix visualizer with **Dynamic Contrast Normalization** and a live color legend bar.
+- **Code Tab:** Real-time execution notebook. Captured AI-generated Python logic (pandas, sklearn) as it runs in the Docker Sandbox, with status tracking and 1-click copy functionality.
 - **Review Tab:** Comprehensive markdown-based reports providing qualitative insights into agent verdicts.
 
 ### 4. Dual View Modes
@@ -28,7 +29,8 @@ AgenticFlow is a high-fidelity, professional AI observability and orchestration 
 - **Frontend:** Next.js 14, React 18, TypeScript
 - **Flow Engine:** React Flow (@xyflow/react)
 - **Styling:** Tailwind CSS, Lucide React (Icons)
-- **Visualizations:** Custom highly-responsive SVGs
+- **Visualizations:** Custom highly-responsive SVGs with RGB color interpolation for heatmaps.
+- **Data Sync:** Real-time artifact polling from the FastAPI backend (Port 8005).
 - **Animations:** CSS3 Keyframes (Custom "Live Drawing" and container spawning effects)
 
 ## Project Structure
@@ -47,7 +49,7 @@ AgenticFlow is a high-fidelity, professional AI observability and orchestration 
 
 ### Prerequisites
 - Node.js 18+
-- The Lustitia Backend must be running (see the root README)
+- The Aletheia Backend must be running (see the root README)
 
 ### Installation
 1. Navigate to the frontend directory:

@@ -43,7 +43,7 @@ export function useAuditSocket() {
     if (wsRef.current) return;
 
     setConnectionStatus("connecting");
-    setStatusMessage("Opening connection to Lustitia...");
+    setStatusMessage("Opening connection to Aletheia...");
 
     const ws = new WebSocket(WS_URL);
     wsRef.current = ws;

@@ -1,0 +1,164 @@
+# ALETHEIA-AI CHART SCHEMAS
+# This file defines the JSON data structures required to render various chart types 
+# in the frontend visualization engine.
+
+================================================================================
+1. BAR CHART (Current Implementation)
+Best for: Single metric comparisons across groups (e.g., False Positive Rate per race).
+================================================================================
+{
+  "type": "bar",
+  "title": "Disparate Impact by Group",
+  "color": "#9ECE6A",
+  "data": [
+    { "label": "Caucasian", "value": 0.85 },
+    { "label": "African American", "value": -0.42 },
+    { "label": "Hispanic", "value": 0.12 },
+    { "label": "Asian", "value": 0.95 }
+  ]
+}
+
+================================================================================
+2. GROUPED BAR CHART
+Best for: Comparing two different metrics across the same groups (e.g., Before vs After mitigation).
+================================================================================
+{
+  "type": "grouped_bar",
+  "title": "Error Rates: Before vs After Mitigation",
+  "series": [
+    { "name": "Before", "color": "#F7768E" },
+    { "name": "After", "color": "#9ECE6A" }
+  ],
+  "data": [
+    { "label": "Male", "values": [0.35, 0.15] },
+    { "label": "Female", "values": [0.65, 0.18] },
+    { "label": "Non-binary", "values": [0.55, 0.16] }
+  ]
+}
+
+================================================================================
+3. STACKED BAR CHART
+Best for: Showing composition of a whole (e.g., Total bias broken down by feature contribution).
+================================================================================
+{
+  "type": "stacked_bar",
+  "title": "Bias Contribution by Feature",
+  "series": [
+    { "name": "Direct Effect", "color": "#E3B341" },
+    { "name": "Indirect Effect", "color": "#7AA2F7" },
+    { "name": "Spurious Effect", "color": "#F7768E" }
+  ],
+  "data": [
+    { "label": "Age", "values": [0.4, 0.2, 0.1] },
+    { "label": "Zip Code", "values": [0.1, 0.7, 0.2] },
+    { "label": "Education", "values": [0.5, 0.1, 0.0] }
+  ]
+}
+
+================================================================================
+4. LINE CHART / AREA CHART
+Best for: Tracking metrics over time or across continuous thresholds.
+================================================================================
+{
+  "type": "line",
+  "title": "Fairness-Accuracy Tradeoff Curve",
+  "xAxisLabel": "Classification Threshold",
+  "yAxisLabel": "Score",
+  "series": [
+    { "name": "Accuracy", "color": "#7DCFFF" },
+    { "name": "Demographic Parity", "color": "#9ECE6A" }
+  ],
+  "data": [
+    { "x": 0.1, "values": [0.55, 0.98] },
+    { "x": 0.3, "values": [0.65, 0.85] },
+    { "x": 0.5, "values": [0.75, 0.70] },
+    { "x": 0.7, "values": [0.82, 0.40] },
+    { "x": 0.9, "values": [0.85, 0.15] }
+  ]
+}
+
+================================================================================
+5. SCATTER PLOT
+Best for: Showing correlation between two continuous variables (e.g., Risk Score vs Actual Outcome).
+================================================================================
+{
+  "type": "scatter",
+  "title": "Risk Score Calibration",
+  "xAxisLabel": "Predicted Risk Score",
+  "yAxisLabel": "Actual Default Rate",
+  "series": [
+    { "name": "Group A", "color": "#7AA2F7" },
+    { "name": "Group B", "color": "#F7768E" }
+  ],
+  "data": [
+    { "seriesIndex": 0, "x": 0.2, "y": 0.15, "label": "ID_102" },
+    { "seriesIndex": 1, "x": 0.8, "y": 0.85, "label": "ID_405" },
+    { "seriesIndex": 0, "x": 0.5, "y": 0.45, "label": "ID_221" },
+    { "seriesIndex": 1, "x": 0.3, "y": 0.55, "label": "ID_339" }
+  ]
+}
+
+================================================================================
+6. BOX-AND-WHISKER PLOT
+Best for: Showing statistical distribution, variance, and outliers within groups.
+================================================================================
+{
+  "type": "box_plot",
+  "title": "Prediction Variance by Demographic",
+  "color": "#BB9AF7",
+  "data": [
+    { 
+      "label": "Group 1", 
+      "min": 0.1, 
+      "q1": 0.3, 
+      "median": 0.45, 
+      "q3": 0.6, 
+      "max": 0.8, 
+      "outliers": [0.95, 0.05] 
+    },
+    { 
+      "label": "Group 2", 
+      "min": 0.2, 
+      "q1": 0.4, 
+      "median": 0.55, 
+      "q3": 0.7, 
+      "max": 0.85, 
+      "outliers": [] 
+    }
+  ]
+}
+
+================================================================================
+7. HEATMAP (Correlation Matrix)
+Best for: Identifying proxies by showing correlations between all features.
+================================================================================
+{
+  "type": "heatmap",
+  "title": "Feature Correlation Matrix",
+  "colorScale": ["#15171B", "#7AA2F7", "#F7768E"], // Zero, Positive, Negative
+  "xLabels": ["Age", "Income", "Zip Code", "Race"],
+  "yLabels": ["Age", "Income", "Zip Code", "Race"],
+  "data": [
+    [ 1.00,  0.45, -0.12,  0.05],
+    [ 0.45,  1.00,  0.88,  0.75],
+    [-0.12,  0.88,  1.00,  0.82],
+    [ 0.05,  0.75,  0.82,  1.00]
+  ]
+}
+
+================================================================================
+8. WATERFALL CHART
+Best for: Showing step-by-step reduction of bias through mitigation stages.
+================================================================================
+{
+  "type": "waterfall",
+  "title": "Disparate Impact Mitigation Journey",
+  "yAxisLabel": "Disparity Score",
+  "data": [
+    { "label": "Baseline", "value": 0.45, "type": "total", "color": "#F7768E" },
+    { "label": "Drop Zip Code", "value": -0.15, "type": "delta", "color": "#9ECE6A" },
+    { "label": "Reweight Data", "value": -0.20, "type": "delta", "color": "#9ECE6A" },
+    { "label": "Threshold Adj.", "value": -0.08, "type": "delta", "color": "#9ECE6A" },
+    { "label": "Final Score", "value": 0.02, "type": "total", "color": "#7DCFFF" }
+  ]
+}

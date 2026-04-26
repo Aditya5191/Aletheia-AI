@@ -4,8 +4,8 @@ import subprocess
 import asyncio
 import json
 import shutil
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, BackgroundTasks
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, BackgroundTasks, HTTPException
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from typing import Dict, Optional
@@ -16,7 +16,7 @@ import sys
 sys.path.append(os.path.abspath("."))
 from agents.graph import run_langgraph_agent
 
-app = FastAPI(title="Lustitia API")
+app = FastAPI(title="Aletheia API")
 
 # Enable CORS for frontend
 app.add_middleware(
@@ -40,7 +40,7 @@ app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
 
 def start_docker_sandbox():
     image = "sandbox-python:latest"
-    container_name = f"lustitia-api-{uuid.uuid4().hex[:8]}"
+    container_name = f"aletheia-api-{uuid.uuid4().hex[:8]}"
     os.makedirs("dataset", exist_ok=True)
     os.makedirs("outputs", exist_ok=True)
     
@@ -107,6 +107,18 @@ async def get_docker_status(container_id: str):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
+@app.get("/outputs/{filename}")
+async def get_output_file(filename: str):
+    """Serve generated JSON files or plots from the outputs directory."""
+    file_path = os.path.abspath(os.path.join("outputs", filename))
+    # Security check to prevent path traversal
+    if not file_path.startswith(os.path.abspath("outputs")):
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    if os.path.exists(file_path):
+        return FileResponse(file_path)
+    raise HTTPException(status_code=404, detail="File not found")
+
 @app.websocket("/ws/audit")
 async def audit_websocket(websocket: WebSocket):
     await websocket.accept()
@@ -124,6 +136,7 @@ async def audit_websocket(websocket: WebSocket):
     container_id = None
     mcp_process = None
     auditor_process = None
+    miscellaneous_process = None
     
     # Track code cells per agent for the Code tab
     sender_to_agent = {
@@ -175,11 +188,24 @@ async def audit_websocket(websocket: WebSocket):
             stderr=subprocess.DEVNULL
         )
         
+        # Start Miscellaneous MCP locally
+        miscellaneous_process = subprocess.Popen(
+            [sys.executable, "mcps/miscellaneous/server.py"],
+            env={**os.environ, "PORT": "8002"},
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+        
         await asyncio.sleep(3) # Wait for server boot
         
         current_sender = None
         
-        async for event in run_langgraph_agent(container_id, sandbox_url="http://localhost:8000/sse", lustitia_url="http://localhost:8001/sse"):
+        async for event in run_langgraph_agent(
+            container_id, 
+            sandbox_url="http://localhost:8000/sse", 
+            aletheia_url="http://localhost:8001/sse",
+            miscellaneous_url="http://localhost:8002/sse"
+        ):
             try:
                 await websocket.send_json(event)
                 
@@ -267,6 +293,8 @@ async def audit_websocket(websocket: WebSocket):
             mcp_process.terminate()
         if auditor_process:
             auditor_process.terminate()
+        if miscellaneous_process:
+            miscellaneous_process.terminate()
         
         if container_id:
             print(f"[CLEANUP] Syncing outputs from {container_id[:12]}...")

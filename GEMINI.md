@@ -1,7 +1,7 @@
-# GEMINI.md - Lustitia Project Context
+# GEMINI.md - Aletheia Project Context
 
 ## Project Overview
-**Lustitia** is an advanced Model Context Protocol (MCP) framework designed for automated algorithmic fairness auditing. It enables LLM agents to perform deep statistical and causal bias detection and mitigation on datasets without requiring pre-installed specialized libraries for every algorithm.
+**Aletheia** is an advanced Model Context Protocol (MCP) framework designed for automated algorithmic fairness auditing. It enables LLM agents to perform deep statistical and causal bias detection and mitigation on datasets without requiring pre-installed specialized libraries for every algorithm.
 
 The project uses a **Dual-Knowledge Delivery Model**:
 - **Auditor MCP Server:** Provides metadata and implementation "knowledge skills" (pseudo-code, math, and tuning guides) for 13 fairness algorithms.

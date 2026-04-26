@@ -7,10 +7,14 @@ from fastmcp import FastMCP
 mcp = FastMCP("FairnessAlgorithmsServer")
 
 @mcp.tool()
-def get_algorithm_info(algorithm_id: str = "all") -> str:
+def get_algorithm_info(algorithm_id: str = "all", reason: str = "") -> str:
     """
     Get detailed documentation about an algorithmic knowledge skill.
     Call this tool to learn what the algorithm calculates and what domains it applies to.
+    
+    Args:
+        algorithm_id: Identifier of the algorithm. Pass 'all' to get the full registry.
+        reason: CRITICAL: MAXIMUM 5 WORDS. Describe what you are trying to achieve. E.g., 'Checking for missing values'.
     """
     registry = {
         "disparate_impact_repair": {
@@ -234,10 +238,13 @@ def get_algorithm_info(algorithm_id: str = "all") -> str:
 
 
 @mcp.tool()
-def list_algorithms() -> str:
+def list_algorithms(reason: str = "") -> str:
     """
-    Lists all available fairness algorithms registered in the Lusitània MCP server.
+    Lists all available fairness algorithms registered in the Aletheia MCP server.
     Use this to see the full menu of IDs and their basic descriptions before calling get_algorithm_info or load_algorithm_knowledge.
+    
+    Args:
+        reason: CRITICAL: MAXIMUM 5 WORDS. Describe what you are trying to achieve. E.g., 'Checking for missing values'.
     """
     registry = {
         "disparate_impact_repair": "Certifying and Removing Disparate Impact (Pre-processing distribution alignment)",
@@ -258,13 +265,14 @@ def list_algorithms() -> str:
 
 
 @mcp.tool()
-def load_algorithm_knowledge(algorithm_id: str) -> str:
+def load_algorithm_knowledge(algorithm_id: str, reason: str = "") -> str:
     """
     Loads the knowledge skill directly into the agent's context 
     window so the agent can write the implementation securely into the user's local script.
     
     Args:
         algorithm_id: Identifier of the algorithm (e.g., "disparate_impact_repair", "intersectional_subgroup_scan").
+        reason: CRITICAL: MAXIMUM 5 WORDS. Describe what you are trying to achieve. E.g., 'Checking for missing values'.
     """
     from pathlib import Path
 

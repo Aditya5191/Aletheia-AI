@@ -57,6 +57,7 @@ function AgentNode({ id, data, selected }: NodeProps<AgentNodeType>) {
   const { bg, icon } = iconMap[data.iconType];
   const isHighlighted = selected || data.isSelected;
   const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
+  const [showAllTools, setShowAllTools] = useState(false);
   const [localIsRunning, setLocalIsRunning] = useState(false);
   const updateNodeInternals = useUpdateNodeInternals();
   const { viewMode } = useViewMode();
@@ -175,20 +176,52 @@ function AgentNode({ id, data, selected }: NodeProps<AgentNodeType>) {
         {/* Individual Tool Accordions - Only visible in Developer Mode */}
         {viewMode === "developer" && data.toolCalls && data.toolCalls.length > 0 && (
           <div className="flex flex-col gap-2 mt-2">
-            {data.toolCalls.map((tool) => {
+            <div className="flex justify-between items-center px-1">
+              <span className="text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold">
+                {showAllTools ? "All Tool Calls" : "Recent Activity"}
+              </span>
+              {data.toolCalls.length > 1 && (
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowAllTools(!showAllTools);
+                    setTimeout(() => updateNodeInternals(id), 0);
+                  }}
+                  className="text-[10px] text-primary hover:text-primary-container transition-colors flex items-center gap-1"
+                >
+                  {showAllTools ? "Show Less" : `View All (${data.toolCalls.length})`}
+                  <ChevronDown className={`w-3 h-3 transition-transform ${showAllTools ? "rotate-180" : ""}`} />
+                </button>
+              )}
+            </div>
+
+            {(showAllTools ? data.toolCalls : data.toolCalls.slice(-1)).map((tool) => {
               const isExpanded = expandedTools[tool.id] || false;
               return (
                 <div key={tool.id} className="bg-[#1A1D21] border border-[#282A2E] rounded-lg overflow-hidden cursor-default">
-                  <button
-                    onClick={(e) => toggleTool(e, tool.id)}
-                    className="w-full flex items-center gap-2 p-2 text-xs text-outline hover:text-on-surface hover:bg-[#282A2E] transition-colors"
-                  >
-                    <div className="w-5 h-5 rounded-full bg-[#15171B] border border-[#282A2E] flex items-center justify-center shrink-0">
-                      <Wrench className="w-3 h-3 text-outline" />
-                    </div>
-                    <span className="flex-1 text-left font-mono truncate">{tool.name}</span>
-                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                  </button>
+                  {(() => {
+                    let displayTitle = tool.name;
+                    try {
+                      const parsedInputs = typeof tool.inputs === 'string' ? JSON.parse(tool.inputs) : tool.inputs;
+                      if (parsedInputs && (parsedInputs.reason || parsedInputs['arguments.reason'])) {
+                        displayTitle = parsedInputs.reason || parsedInputs['arguments.reason'];
+                      }
+                    } catch (e) {
+                      // ignore parse errors
+                    }
+                    return (
+                      <button
+                        onClick={(e) => toggleTool(e, tool.id)}
+                        className="w-full flex items-center gap-2 p-2 text-xs text-outline hover:text-on-surface hover:bg-[#282A2E] transition-colors"
+                      >
+                        <div className="w-5 h-5 rounded-full bg-[#15171B] border border-[#282A2E] flex items-center justify-center shrink-0">
+                          <Wrench className="w-3 h-3 text-outline" />
+                        </div>
+                        <span className="flex-1 text-left font-mono truncate" title={displayTitle}>{displayTitle}</span>
+                        {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                      </button>
+                    );
+                  })()}
                   
                   {isExpanded && (
                     <div className="p-2 border-t border-[#282A2E] bg-[#15171B] flex flex-col gap-2">

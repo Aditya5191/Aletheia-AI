@@ -26,7 +26,6 @@ import { Plus } from "lucide-react";
 /*  Node types registry                                                */
 /* ------------------------------------------------------------------ */
 
-const nodeTypes = { agent: AgentNode, attribute: AttributeNode, upload: UploadNode, docker: DockerNode };
 
 /* ------------------------------------------------------------------ */
 /*  Initial data                                                       */
@@ -175,6 +174,13 @@ export default function FlowCanvas() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isLocked, setIsLocked] = useState(false);
   const [discoveredAttributes, setDiscoveredAttributes] = useState<string[]>([]);
+
+  const nodeTypes = useMemo(() => ({ 
+    agent: AgentNode, 
+    attribute: AttributeNode, 
+    upload: UploadNode, 
+    docker: DockerNode 
+  }), []);
 
   const setDockerStatus = useCallback((status: DockerStatus, containerId?: string) => {
     setNodes((nds) =>
@@ -584,11 +590,6 @@ export default function FlowCanvas() {
         />
       </ReactFlow>
 
-      {/* Floating Add Agent Node Button */}
-      <button className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-full shadow-[0_8px_32px_rgba(208,188,255,0.2)] hover:bg-primary-container hover:text-on-primary-container transition-all hover:scale-105 text-[13px] font-semibold tracking-[0.05em] cursor-pointer">
-        <Plus className="w-5 h-5" />
-        Add Agent Node
-      </button>
 
       {selectedNodeId && (
         <NodeDetailModal

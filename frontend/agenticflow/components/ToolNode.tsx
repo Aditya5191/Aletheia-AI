@@ -8,6 +8,13 @@ export type ToolNodeType = Node<{
 }, "tool">;
 
 export default function ToolNode({ data }: NodeProps<ToolNodeType>) {
+  // Extract reason if it exists, otherwise fallback to function name
+  const reasonInput = data.inputs.find((i) => i.key === "reason" || i.key === "arguments.reason");
+  const headerTitle = reasonInput ? reasonInput.value : data.functionName;
+  
+  // Filter reason out of the visual inputs list
+  const displayInputs = data.inputs.filter((i) => i.key !== "reason" && i.key !== "arguments.reason");
+
   return (
     <div className="w-[380px] bg-[#0E1015] border border-[#1F2228] rounded-xl shadow-2xl flex flex-col font-mono text-[12px] overflow-hidden group">
       {/* Top Handle (Target) */}
@@ -19,9 +26,11 @@ export default function ToolNode({ data }: NodeProps<ToolNodeType>) {
 
       {/* Mac-like Terminal Header */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-[#15171B] border-b border-[#1F2228]">
-        <div className="flex items-center gap-2">
-          <TerminalSquare className="w-4 h-4 text-[#E3B341]" />
-          <span className="text-[#E3B341] font-semibold">{data.functionName}</span>
+        <div className="flex items-center gap-2 flex-1 min-w-0 pr-4">
+          <TerminalSquare className="w-4 h-4 text-[#E3B341] flex-shrink-0" />
+          <span className="text-[#E3B341] font-semibold truncate" title={headerTitle}>
+            {headerTitle}
+          </span>
         </div>
         <div className="flex gap-1.5">
           <div className="w-2.5 h-2.5 rounded-full bg-[#282A2E]" />
@@ -38,7 +47,7 @@ export default function ToolNode({ data }: NodeProps<ToolNodeType>) {
             {">>> Input Parameters:"}
           </div>
           <div className="pl-4 flex flex-col gap-1">
-            {data.inputs.map((inp, i) => (
+            {displayInputs.map((inp, i) => (
               <div key={i} className="flex">
                 <span className="text-[#F7768E]">{inp.key}</span>
                 <span className="text-[#A9B1D6] mx-1">:</span>

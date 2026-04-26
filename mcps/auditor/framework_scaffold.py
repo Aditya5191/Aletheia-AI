@@ -20,7 +20,7 @@ def aggregate_pipeline_result(state: dict, output_key: str):
     """
     return {"status": "complete", "result": state}
 
-# Lusitània Framework Execution Scaffold
+# Aletheia Framework Execution Scaffold
 def execute_framework_pipeline(pipeline_spec: dict, df, **kwargs):
     """
     Executes a DAG framework step-by-step securely.

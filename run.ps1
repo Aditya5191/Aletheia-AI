@@ -1,6 +1,6 @@
-# Lustitia: Full-Stack Start Script (Improved)
+# Aletheia: Full-Stack Start Script (Improved)
 
-Write-Host "🚀 Starting Lustitia Forensic Audit System..." -ForegroundColor Cyan
+Write-Host "🚀 Starting Aletheia Forensic Audit System..." -ForegroundColor Cyan
 
 # Ensure any existing processes on the target ports are cleaned up
 Write-Host "[CLEANUP] Checking for existing processes on ports 8005 and 5173..." -ForegroundColor Gray
