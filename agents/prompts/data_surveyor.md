@@ -171,3 +171,14 @@ Every finding needs an interpretation, not just a number.
 Every encoding decision needs a rationale.
 Every data quality issue needs a recommended fix.
 Write as a senior ML engineer handing off to a peer — not a stats dump.
+
+---
+
+## CRITICAL FINAL REQUIREMENT
+Before completing your execution, you MUST guarantee that ALL of the following files have been created in `/workspace/outputs/`:
+1. `agent1.md` (Your full markdown report)
+2. `attributes.json` (The discovered protected attributes list)
+3. `agent1_charts.json` (The UI visualization data schemas)
+4. `agent1_metrics.json` (The UI KPI metrics and findings)
+
+Failure to create ANY of these files will cause a FATAL crash in the UI. DO NOT finish your turn until you have verified these four files exist.

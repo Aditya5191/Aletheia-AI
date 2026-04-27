@@ -134,16 +134,16 @@ const agentDefinitions: Record<string, AgentNodeType> = {
       ]
     },
   } as AgentNodeType,
-  "business-reporter": {
-    id: "business-reporter",
+  "report-writer": {
+    id: "report-writer",
     type: "agent",
     position: { x: 1600, y: 170 },
     data: {
-      title: "Business Reporter",
-      iconType: "brain",
-      description: "Generates executive summaries and compliance certificates in plain language.",
-      inputLabel: "Mitigated Data",
-      outputLabel: "Final Report",
+      title: "Report Writer",
+      iconType: "code",
+      description: "Compiles all audit outputs into a polished PDF report with charts and findings.",
+      inputLabel: "All Reports",
+      outputLabel: "Final PDF",
       inputVariant: "default",
       outputVariant: "active",
       hasRunButton: true,
@@ -326,15 +326,15 @@ export default function FlowCanvas() {
           })
         );
 
-        // Spawn Agent 4: Business Reporter
-        const agent4 = { ...agentDefinitions["business-reporter"], data: { ...agentDefinitions["business-reporter"].data, onRunComplete: handleRunComplete } };
-        const edge4 = { id: "e-me-br", source: "mitigation-expert", target: "business-reporter", type: "default", animated: true };
+        // Spawn Agent 4: Report Writer
+        const agent4 = { ...agentDefinitions["report-writer"], data: { ...agentDefinitions["report-writer"].data, onRunComplete: handleRunComplete } };
+        const edge4 = { id: "e-me-rw", source: "mitigation-expert", target: "report-writer", type: "default", animated: true };
         
         setNodes((nds) => [...nds, agent4]);
         setEdges((eds) => [...eds, edge4]);
 
-      } else if (nodeId === "business-reporter") {
-        console.log("Business Report Generated");
+      } else if (nodeId === "report-writer") {
+        console.log("Final Report Generated");
       }
     },
     [setNodes, setEdges, discoveredAttributes]
@@ -355,6 +355,7 @@ export default function FlowCanvas() {
         let agent1Finished = false;
         let agent2Finished = false;
         let agent3Finished = false;
+        let agent4Finished = false;
 
         // Docker spawning animation
         setDockerStatus("spawning");
@@ -404,7 +405,8 @@ export default function FlowCanvas() {
             const senderMap: Record<string, string> = {
               "DATA_SURVEYOR": "data-inspector",
               "FAIRNESS_ADJUDICATOR": "fairness-adjudicator",
-              "MITIGATION_AGENT": "mitigation-expert"
+              "MITIGATION_AGENT": "mitigation-expert",
+              "REPORT_COMPILER": "report-writer"
             };
             const targetNodeId = senderMap[msg.sender];
 
@@ -451,8 +453,17 @@ export default function FlowCanvas() {
                               : cn
                           )
                         );
-                        // We do NOT call handleRunComplete here. 
-                        // It will be called by the "attributes_discovered" message handler.
+                        // We normally rely on "attributes_discovered" to call handleRunComplete.
+                        // Fallback: If attributes.json fails, spawn Agent 2 manually.
+                        setTimeout(() => {
+                          setNodes((nds) => {
+                            if (!nds.find(n => n.id === "fairness-adjudicator")) {
+                              console.warn("Fallback: Spawning Agent 2 manually because attributes.json was missing.");
+                              handleRunComplete("data-inspector", []);
+                            }
+                            return nds;
+                          });
+                        }, 2000);
                       }, 500);
                     } else if (targetNodeId === "fairness-adjudicator" && !agent2Finished) {
                       agent2Finished = true;
@@ -479,6 +490,19 @@ export default function FlowCanvas() {
                           )
                         );
                         handleRunComplete("mitigation-expert");
+                      }, 500);
+                    } else if (targetNodeId === "report-writer" && !agent4Finished) {
+                      agent4Finished = true;
+                      
+                      setTimeout(() => {
+                        setNodes((currentNds) =>
+                          currentNds.map((cn) =>
+                            cn.id === "report-writer"
+                              ? ({ ...cn, data: { ...cn.data, isAgentRunning: false } } as AgentNodeType)
+                              : cn
+                          )
+                        );
+                        handleRunComplete("report-writer");
                       }, 500);
                     }
                   }

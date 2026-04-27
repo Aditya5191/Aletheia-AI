@@ -20,6 +20,7 @@ import {
   ChevronDown,
   Play,
   Hash,
+  Download,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -297,48 +298,17 @@ def apply_mitigation(df):
 print("Mitigation complete. New sample weights calculated.")`,
     lastRun: "Running...",
   },
-  "business-reporter": {
-    title: "Business Reporter",
-    iconType: "brain",
+  "report-writer": {
+    title: "Report Writer",
+    iconType: "code",
     statusLabel: "Completed",
     statusColor: "#4edea3",
-    charts: [
-      {
-        id: "compliance_score",
-        label: "Compliance Rating",
-        type: "bar",
-        color: "#4edea3",
-        data: [
-          { label: "Privacy", value: 92 },
-          { label: "Fairness", value: 98 },
-          { label: "Transparency", value: 85 },
-        ],
-      },
-    ],
-    metrics: [
-      { label: "Health Score", value: "A+", change: "Excellent", up: true },
-      { label: "Legal Risk", value: "Low", change: "Mitigated", up: false },
-      { label: "Audit Readiness", value: "100%", change: "Certified", up: true },
-    ],
-    findings: [
-      { severity: "success", text: "🔴 RED: Initial bias audit failed (Gender/Age disparity detected)." },
-      { severity: "warning", text: "🟡 YELLOW: Reweighing applied; accuracy monitored for drift." },
-      { severity: "success", text: "🟢 GREEN: Final fairness audit passed. Model is compliant with EU AI Act." },
-    ],
+    charts: [],
+    metrics: [],
+    findings: [],
     review:
-      "**Executive Summary (Plain English)**\n\nOur AI auditor initially found that the system was making slightly biased decisions regarding Gender and Age. We stepped in and fixed this by re-balancing the data weights. \n\n**The Result**: The system is now fair and treats all demographic groups equally. We have successfully reduced legal risk while maintaining 99.6% of the original model accuracy. The system is now ready for production deployment.",
-    codeSnippet: `def generate_business_report(metrics):
-    report = f\"\"\"
-    EXECUTIVE SUMMARY
-    -----------------
-    Status: COMPLIANT
-    Fairness Score: {metrics['fairness']}
-    Legal Risk: LOW
-    
-    The audit has verified that all bias mitigation steps 
-    have been successfully implemented.
-    \"\"\"
-    return report`,
+      "**Report Compiler**\n\nThe Report Writer agent reads every output produced by the three previous agents, renders all chart JSON data as publication-quality matplotlib figures, and compiles everything into a single aesthetically polished PDF report.\n\nOnce the PDF is ready, use the Download button above to save it locally.",
+    codeSnippet: "",
     lastRun: "Just now",
   },
   "output-formatter": {
@@ -442,8 +412,11 @@ function InteractiveLineChart({ chartDef }: { chartDef: ChartDef }) {
   const chartW = W - PAD_X * 2;
   const chartH = H - PAD_TOP - PAD_BOTTOM;
 
-  const maxVal = Math.max(...data.map((d) => d.value));
-  const minVal = Math.min(...data.map((d) => d.value)) * 0.8;
+  // Extract values safely, filtering out non-numeric data
+  const values = data.map((d: any) => parseFloat(d.value)).filter((v: number) => !isNaN(v));
+  
+  const maxVal = values.length > 0 ? Math.max(...values, 1) : 1;
+  const minVal = values.length > 0 ? Math.min(...values, 0) : 0;
   const range = maxVal - minVal || 1;
 
   const points = data.map((d, i) => ({
@@ -486,7 +459,7 @@ function InteractiveLineChart({ chartDef }: { chartDef: ChartDef }) {
                 textAnchor="end"
                 className="fill-outline text-[10px]"
               >
-                {val}
+                {fmtVal(rawVal)}
               </text>
             </g>
           );
@@ -620,12 +593,15 @@ function InteractiveBarChart({ chartDef }: { chartDef: ChartDef }) {
   const chartW = W - PAD_X * 2;
   const chartH = H - PAD_TOP - PAD_BOTTOM;
 
-  const maxValRaw = Math.max(...data.map((d) => d.value), 0);
-  const minValRaw = Math.min(...data.map((d) => d.value), 0);
+  // Extract values safely, filtering out non-numeric data
+  const values = data.map((d: any) => parseFloat(d.value)).filter((v: number) => !isNaN(v));
+  
+  const maxValRaw = values.length > 0 ? Math.max(...values, 0) : 0;
+  const minValRaw = values.length > 0 ? Math.min(...values, 0) : 0;
   const rangeRaw = maxValRaw - minValRaw || 1;
   const maxVal = maxValRaw + (maxValRaw > 0 ? rangeRaw * 0.1 : 0);
   const minVal = minValRaw - (minValRaw < 0 ? rangeRaw * 0.1 : 0);
-  const totalRange = maxVal - minVal;
+  const totalRange = maxVal - minVal || 1;
 
   const zeroY = PAD_TOP + chartH * (maxVal / totalRange);
   const barWidth = Math.min(40, (chartW / data.length) * 0.6);
@@ -659,7 +635,7 @@ function InteractiveBarChart({ chartDef }: { chartDef: ChartDef }) {
                 textAnchor="end"
                 className="fill-outline text-[10px]"
               >
-                {val}
+                {fmtVal(rawVal)}
               </text>
             </g>
           );
@@ -740,6 +716,212 @@ function InteractiveBarChart({ chartDef }: { chartDef: ChartDef }) {
               >
                 {d.label.length > 20 ? d.label.substring(0, 18) + ".." : d.label}
               </text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+function InteractiveGroupedBarChart({ chartDef }: { chartDef: ChartDef }) {
+  const [hovered, setHovered] = useState<{group: number, series: number} | null>(null);
+  const { data, series = [] } = chartDef;
+
+  const W = 560;
+  const H = 280;
+  const PAD_X = 40;
+  const PAD_TOP = 30;
+  const PAD_BOTTOM = 70;
+  const chartW = W - PAD_X * 2;
+  const chartH = H - PAD_TOP - PAD_BOTTOM;
+
+  // Flatten all values to find scale
+  const allValues = data.flatMap((d: any) => d.values || []).filter((v: number) => !isNaN(v));
+  const maxValRaw = allValues.length > 0 ? Math.max(...allValues, 0) : 0;
+  const minValRaw = allValues.length > 0 ? Math.min(...allValues, 0) : 0;
+  const rangeRaw = maxValRaw - minValRaw || 1;
+  
+  const maxVal = maxValRaw + rangeRaw * 0.1;
+  const minVal = minValRaw;
+  const totalRange = maxVal - minVal || 1;
+
+  const groupWidth = chartW / data.length;
+  const barSpacing = 2;
+  const barWidth = (groupWidth * 0.8) / series.length - barSpacing;
+
+  return (
+    <div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" onMouseLeave={() => setHovered(null)}>
+        {/* Grid lines */}
+        {[0, 0.25, 0.5, 0.75, 1].map((frac) => {
+          const y = PAD_TOP + chartH * (1 - frac);
+          const rawVal = minVal + totalRange * frac;
+          return (
+            <g key={frac}>
+              <line x1={PAD_X} y1={y} x2={W - PAD_X} y2={y} stroke="rgba(149,142,160,0.1)" strokeDasharray="4 4" />
+              <text x={PAD_X - 8} y={y + 4} textAnchor="end" className="fill-outline text-[10px]">{fmtVal(rawVal)}</text>
+            </g>
+          );
+        })}
+
+        {/* Groups */}
+        {data.map((group: any, gIdx: number) => (
+          <g key={gIdx}>
+            {/* Group Label */}
+            <text
+              x={PAD_X + (gIdx + 0.5) * groupWidth}
+              y={PAD_TOP + chartH + 20}
+              textAnchor="middle"
+              className="fill-white text-[11px] font-medium"
+            >
+              {group.label}
+            </text>
+
+            {/* Bars in Group */}
+            {group.values.map((val: number, sIdx: number) => {
+              const h = ((val - minVal) / totalRange) * chartH;
+              const x = PAD_X + gIdx * groupWidth + (groupWidth * 0.1) + sIdx * (barWidth + barSpacing);
+              const y = PAD_TOP + chartH - h;
+              const isHovered = hovered?.group === gIdx && hovered?.series === sIdx;
+              const color = series[sIdx]?.color || "#7AA2F7";
+
+              return (
+                <g key={sIdx} onMouseEnter={() => setHovered({group: gIdx, series: sIdx})}>
+                  <rect
+                    x={x}
+                    y={y}
+                    width={barWidth}
+                    height={h}
+                    fill={isHovered ? "#fff" : color}
+                    rx={2}
+                    opacity={hovered === null || isHovered ? 1 : 0.4}
+                    className="transition-all duration-300"
+                  />
+                  {isHovered && (
+                    <g>
+                      <rect x={x + barWidth/2 - 30} y={y - 25} width={60} height={20} rx={4} fill="#1a1b2e" stroke={color} strokeWidth="1" />
+                      <text x={x + barWidth/2} y={y - 11} textAnchor="middle" className="text-[10px] font-bold fill-white">{fmtVal(val)}</text>
+                    </g>
+                  )}
+                </g>
+              );
+            })}
+          </g>
+        ))}
+
+        {/* Legend */}
+        <g transform={`translate(${W - PAD_X - 100}, 5)`}>
+          {series.map((s: any, i: number) => (
+            <g key={i} transform={`translate(0, ${i * 14})`}>
+              <rect width={8} height={8} fill={s.color} rx={1} />
+              <text x={12} y={7} className="fill-outline text-[9px]">{s.name}</text>
+            </g>
+          ))}
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+function InteractiveBoxPlot({ chartDef }: { chartDef: ChartDef }) {
+  const [hovered, setHovered] = useState<number | null>(null);
+  const { data } = chartDef;
+
+  const W = 560;
+  const H = 280;
+  const PAD_X = 60;
+  const PAD_TOP = 20;
+  const PAD_BOTTOM = 60;
+  const chartW = W - PAD_X - 20;
+  const chartH = H - PAD_TOP - PAD_BOTTOM;
+
+  // Scale finding
+  const allVals = data.flatMap((d: any) => [d.min, d.max, d.q1, d.q3, d.median]).filter((v: number) => !isNaN(v));
+  const minValRaw = allVals.length > 0 ? Math.min(...allVals, 0) : 0;
+  const maxValRaw = allVals.length > 0 ? Math.max(...allVals, 1) : 1;
+  const rangeRaw = maxValRaw - minValRaw || 1;
+  
+  const minVal = minValRaw - rangeRaw * 0.05;
+  const maxVal = maxValRaw + rangeRaw * 0.05;
+  const totalRange = maxVal - minVal || 1;
+
+  const itemW = chartW / data.length;
+  const boxW = Math.min(30, itemW * 0.6);
+  const chartColor = chartDef.color || "#BB9AF7";
+
+  const getY = (v: number) => PAD_TOP + chartH - ((v - minVal) / totalRange) * chartH;
+
+  return (
+    <div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" onMouseLeave={() => setHovered(null)}>
+        {/* Y Axis Grid */}
+        {[0, 0.25, 0.5, 0.75, 1].map((frac) => {
+          const y = PAD_TOP + chartH * (1 - frac);
+          const rawVal = minVal + totalRange * frac;
+          return (
+            <g key={frac}>
+              <line x1={PAD_X} y1={y} x2={W - 20} y2={y} stroke="rgba(149,142,160,0.1)" strokeDasharray="4 4" />
+              <text x={PAD_X - 8} y={y + 4} textAnchor="end" className="fill-outline text-[10px]">{fmtVal(rawVal)}</text>
+            </g>
+          );
+        })}
+
+        {/* Boxes */}
+        {data.map((d: any, i: number) => {
+          const cx = PAD_X + (i + 0.5) * itemW;
+          const yMin = getY(d.min);
+          const yMax = getY(d.max);
+          const yQ1 = getY(d.q1);
+          const yQ3 = getY(d.q3);
+          const yMed = getY(d.median);
+          const isHovered = hovered === i;
+
+          return (
+            <g key={i} onMouseEnter={() => setHovered(i)}>
+              {/* Whisker Line */}
+              <line x1={cx} y1={yMin} x2={cx} y2={yMax} stroke={chartColor} strokeWidth="1.5" />
+              <line x1={cx - boxW/3} y1={yMin} x2={cx + boxW/3} y2={yMin} stroke={chartColor} strokeWidth="1.5" />
+              <line x1={cx - boxW/3} y1={yMax} x2={cx + boxW/3} y2={yMax} stroke={chartColor} strokeWidth="1.5" />
+
+              {/* Box (Q1 to Q3) */}
+              <rect
+                x={cx - boxW/2}
+                y={Math.min(yQ1, yQ3)}
+                width={boxW}
+                height={Math.abs(yQ1 - yQ3)}
+                fill={isHovered ? "#fff" : chartColor}
+                opacity={0.8}
+                stroke="#1a1b2e"
+                strokeWidth="1"
+                rx={2}
+                className="transition-all duration-300"
+              />
+
+              {/* Median Line */}
+              <line x1={cx - boxW/2} y1={yMed} x2={cx + boxW/2} y2={yMed} stroke="#1a1b2e" strokeWidth="2" />
+
+              {/* X Label */}
+              <text
+                x={cx}
+                y={PAD_TOP + chartH + 15}
+                textAnchor="end"
+                transform={`rotate(-35 ${cx} ${PAD_TOP + chartH + 15})`}
+                className="fill-outline text-[9px]"
+              >
+                {d.label.length > 15 ? d.label.substring(0, 13) + ".." : d.label}
+              </text>
+
+              {/* Tooltip */}
+              {isHovered && (
+                <g>
+                  <rect x={cx + boxW/2 + 5} y={yMed - 30} width={90} height={60} rx={4} fill="#1a1b2e" stroke={chartColor} strokeWidth="1" />
+                  <text x={cx + boxW/2 + 10} y={yMed - 18} className="text-[9px] fill-outline">Max: {fmtVal(d.max)}</text>
+                  <text x={cx + boxW/2 + 10} y={yMed - 8} className="text-[9px] fill-white font-bold">Med: {fmtVal(d.median)}</text>
+                  <text x={cx + boxW/2 + 10} y={yMed + 2} className="text-[9px] fill-outline">Min: {fmtVal(d.min)}</text>
+                  <text x={cx + boxW/2 + 10} y={yMed + 12} className="text-[9px] fill-outline">Q1/Q3: {fmtVal(d.q1)}/{fmtVal(d.q3)}</text>
+                </g>
+              )}
             </g>
           );
         })}
@@ -878,6 +1060,8 @@ function InteractivePieChart({ chartDef }: { chartDef: ChartDef }) {
 
 function InteractiveChart({ chartDef }: { chartDef: ChartDef }) {
   if (chartDef.type === "bar") return <InteractiveBarChart chartDef={chartDef} />;
+  if (chartDef.type === "grouped_bar") return <InteractiveGroupedBarChart chartDef={chartDef} />;
+  if (chartDef.type === "box_plot") return <InteractiveBoxPlot chartDef={chartDef} />;
   if (chartDef.type === "pie") return <InteractivePieChart chartDef={chartDef} />;
   if (chartDef.type === "heatmap") return <InteractiveHeatmap chartDef={chartDef} />;
   if (chartDef.type === "scatter") return <InteractiveScatterChart chartDef={chartDef} />;
@@ -1456,7 +1640,7 @@ function ChartSection({ charts }: { charts: ChartDef[] }) {
 
 export default function NodeDetailModal({ nodeId, onClose }: NodeDetailModalProps) {
   const detail = nodeDetails[nodeId];
-  const [activeTab, setActiveTab] = useState<"chart" | "review" | "code">("chart");
+  const [activeTab, setActiveTab] = useState<"chart" | "review" | "code">(nodeId === "report-writer" ? "review" : "chart");
   const [copied, setCopied] = useState(false);
   const [copiedCellIdx, setCopiedCellIdx] = useState<number | null>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -1464,7 +1648,8 @@ export default function NodeDetailModal({ nodeId, onClose }: NodeDetailModalProp
   const agentMap: Record<string, number> = {
     "data-inspector": 1,
     "fairness-adjudicator": 2,
-    "mitigation-expert": 3
+    "mitigation-expert": 3,
+    "report-writer": 4
   };
   const agentNum = agentMap[nodeId];
 
@@ -1489,15 +1674,17 @@ export default function NodeDetailModal({ nodeId, onClose }: NodeDetailModalProp
       let reviewOk = false;
       const ts = Date.now(); // cache buster
 
-      try {
-        const resCharts = await fetch(`http://localhost:8005/outputs/agent${agentNum}_charts.json?t=${ts}`);
-        if (resCharts.ok) {
-          const chartsData = await resCharts.json();
-          setDynamicCharts(chartsData);
-          chartsOk = true;
+      if (agentNum !== 4) {
+        try {
+          const resCharts = await fetch(`http://localhost:8005/outputs/agent${agentNum}_charts.json?t=${ts}`);
+          if (resCharts.ok) {
+            const chartsData = await resCharts.json();
+            setDynamicCharts(chartsData);
+            chartsOk = true;
+          }
+        } catch {
+          // file may not exist yet
         }
-      } catch {
-        // file may not exist yet
       }
 
       try {
@@ -1536,7 +1723,12 @@ export default function NodeDetailModal({ nodeId, onClose }: NodeDetailModalProp
         setIsLoadingCharts(false);
       }
       
-      if (chartsOk && metricsOk && reviewOk) {
+      // Agent 4 does not produce a charts JSON file, so we shouldn't wait for it.
+      const isComplete = agentNum === 4 
+        ? (metricsOk && reviewOk) 
+        : (chartsOk && metricsOk && reviewOk);
+
+      if (isComplete) {
         clearInterval(intervalId);
       }
     };
@@ -1620,46 +1812,66 @@ export default function NodeDetailModal({ nodeId, onClose }: NodeDetailModalProp
         </div>
 
         {/* ---- Tabs ---- */}
-        <div className="flex gap-1 px-6 pt-4 pb-0">
-          <button
-            onClick={() => setActiveTab("chart")}
-            className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
-              activeTab === "chart"
-                ? "bg-surface-container text-primary border border-b-0 border-[#1F2228]"
-                : "text-outline hover:text-on-surface-variant"
-            }`}
-          >
-            <span className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
-              Analytics
-            </span>
-          </button>
-          <button
-            onClick={() => setActiveTab("review")}
-            className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
-              activeTab === "review"
-                ? "bg-surface-container text-primary border border-b-0 border-[#1F2228]"
-                : "text-outline hover:text-on-surface-variant"
-            }`}
-          >
-            <span className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Review
-            </span>
-          </button>
-          <button
-            onClick={() => setActiveTab("code")}
-            className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
-              activeTab === "code"
-                ? "bg-surface-container text-primary border border-b-0 border-[#1F2228]"
-                : "text-outline hover:text-on-surface-variant"
-            }`}
-          >
-            <span className="flex items-center gap-2">
-              <Terminal className="w-4 h-4" />
-              Code
-            </span>
-          </button>
+        <div className="flex gap-1 px-6 pt-4 pb-0 items-center justify-between">
+          <div className="flex gap-1">
+            {nodeId !== "report-writer" && (
+              <button
+                onClick={() => setActiveTab("chart")}
+                className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
+                  activeTab === "chart"
+                    ? "bg-surface-container text-primary border border-b-0 border-[#1F2228]"
+                    : "text-outline hover:text-on-surface-variant"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4" />
+                  Analytics
+                </span>
+              </button>
+            )}
+            <button
+              onClick={() => setActiveTab("review")}
+              className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
+                activeTab === "review"
+                  ? "bg-surface-container text-primary border border-b-0 border-[#1F2228]"
+                  : "text-outline hover:text-on-surface-variant"
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Review
+              </span>
+            </button>
+            {nodeId !== "report-writer" && (
+              <button
+                onClick={() => setActiveTab("code")}
+                className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
+                  activeTab === "code"
+                    ? "bg-surface-container text-primary border border-b-0 border-[#1F2228]"
+                    : "text-outline hover:text-on-surface-variant"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <Terminal className="w-4 h-4" />
+                  Code
+                </span>
+              </button>
+            )}
+          </div>
+
+          {/* Download PDF button — only for Report Writer */}
+          {nodeId === "report-writer" && (
+            <a
+              href="http://localhost:8005/outputs/final_report.pdf"
+              download="Aletheia_Fairness_Report.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-[#7AA2F7] to-[#BB9AF7] text-[#1a1b26] hover:shadow-[0_0_20px_rgba(122,162,247,0.4)] transition-all cursor-pointer"
+            >
+              <Download className="w-4 h-4" />
+              Download PDF
+            </a>
+          )}
         </div>
 
         {/* ---- Content ---- */}

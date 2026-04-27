@@ -20,6 +20,7 @@ AgenticFlow is a high-fidelity, professional AI observability and orchestration 
 - **Interactive Heatmaps:** Specialized correlation matrix visualizer with **Dynamic Contrast Normalization** and a live color legend bar.
 - **Code Tab:** Real-time execution notebook. Captured AI-generated Python logic (pandas, sklearn) as it runs in the Docker Sandbox, with status tracking and 1-click copy functionality.
 - **Review Tab:** Comprehensive markdown-based reports providing qualitative insights into agent verdicts.
+- **Report Compiler:** Dedicated final node that aggregates all previous agent outputs, generates a stylized HTML/CSS template, and compiles a publication-quality **PDF** via WeasyPrint directly from the frontend.
 
 ### 4. Dual View Modes
 - **Developer Mode:** Full observability with terminal-style tool-call logs and technical metadata for deep debugging.

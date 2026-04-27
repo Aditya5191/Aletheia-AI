@@ -143,8 +143,9 @@ async def audit_websocket(websocket: WebSocket):
         "DATA_SURVEYOR": 1,
         "FAIRNESS_ADJUDICATOR": 2,
         "MITIGATION_AGENT": 3,
+        "REPORT_COMPILER": 4,
     }
-    code_cells: Dict[int, list] = {1: [], 2: [], 3: []}
+    code_cells: Dict[int, list] = {1: [], 2: [], 3: [], 4: []}
     # Track pending execute_cell calls awaiting their tool_result
     pending_cells: Dict[str, dict] = {}
     
@@ -267,7 +268,7 @@ async def audit_websocket(websocket: WebSocket):
                 break
         
         # Save final code cells for all agents
-        for agent_num in [1, 2, 3]:
+        for agent_num in [1, 2, 3, 4]:
             if code_cells[agent_num]:
                 save_code_cells(agent_num)
         

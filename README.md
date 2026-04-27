@@ -106,8 +106,16 @@ graph TD
     MA_ROUT -->|Tool Call| MT[All Tools: Aletheia + Sandbox]
     MT --> MA
 
+    %% Report Handoff
+    MA_ROUT -->|Mitigation Complete| RC[Report Compiler]
+    
+    %% Report Loop
+    RC --> RC_ROUT{Router}
+    RC_ROUT -->|Tool Call| RT[Sandbox Tools: bash, execute_cell]
+    RT --> RC
+
     %% End
-    MA_ROUT -->|Final Answer| END((End))
+    RC_ROUT -->|Final Answer| END((End))
     END -->|Streams Results| UI
 
     subgraph "Docker Sandbox Container"
@@ -134,6 +142,7 @@ graph TD
 | **Data Surveyor** | Profiles raw data, verifies column types, and checks for missing values or correlations. | Sandbox `bash`, `read_file`, Misc `get_chart_schemas` |
 | **Fairness Adjudicator** | Selects the best bias-audit algorithm, writes implementation code, and executes the audit inside the sandbox. | Aletheia `auditor`, Sandbox `bash`, Misc `get_chart_schemas` |
 | **Mitigation Agent** | Takes the detected biases and applies algorithms to residualize or remove proxy biases in the dataset. | Aletheia `auditor`, Sandbox `bash` |
+| **Report Compiler** | Aggregates all previous findings, dynamically generates HTML/CSS, and uses WeasyPrint to compile a publication-ready PDF report. | Sandbox `bash`, `execute_cell`, `read_file`, `write_file` |
 
 ### Dual-Knowledge Delivery Model
 

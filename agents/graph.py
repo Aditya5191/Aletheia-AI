@@ -78,7 +78,8 @@ async def run_langgraph_agent(
                             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.abspath(".secrets/vertex-credentials.json")
 
                             llm = ChatVertexAI(
-                                model="gemini-2.5-pro",
+                                model="gemini-3.1-pro-preview",
+                                location="global",
                                 temperature=0.2,
                                 safety_settings={
                                     HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
@@ -91,6 +92,7 @@ async def run_langgraph_agent(
                             llm_surveyor = llm.bind_tools(sandbox_tools + misc_tools)
                             llm_adjudicator = llm.bind_tools(all_tools)
                             llm_mitigator = llm.bind_tools(all_tools)
+                            llm_compiler = llm.bind_tools(all_tools)
 
                             def data_surveyor(state: AgentState):
                                 prompt_path = os.path.join(os.path.dirname(__file__), "prompts", "data_surveyor.md")
@@ -125,6 +127,17 @@ async def run_langgraph_agent(
                                 response = llm_mitigator.invoke([system_prompt] + clean_messages(state["messages"]))
                                 return {"messages": [response], "sender": "mitigation_agent"}
 
+                            def report_compiler(state: AgentState):
+                                prompt_path = os.path.join(os.path.dirname(__file__), "prompts", "report_compiler.md")
+                                with open(prompt_path, "r", encoding="utf-8") as f:
+                                    raw_prompt = f.read()
+
+                                system_prompt = SystemMessage(
+                                    content=raw_prompt.replace("{container_id}", container_id)
+                                )
+                                response = llm_compiler.invoke([system_prompt] + clean_messages(state["messages"]))
+                                return {"messages": [response], "sender": "report_compiler"}
+
                             # ── Handoff nodes: wipe history between agents ──
                             def handoff_to_adjudicator(state: AgentState):
                                 """Clear Agent 1's message history. Agent 2 reads agent1.md from disk."""
@@ -144,6 +157,15 @@ async def run_langgraph_agent(
                                     "sender": "handoff"
                                 }
 
+                            def handoff_to_compiler(state: AgentState):
+                                """Clear Agent 3's message history. Agent 4 reads agent1.md, agent2.md, agent3.md from disk."""
+                                delete_messages = [RemoveMessage(id=m.id) for m in state["messages"]]
+                                handoff_msg = HumanMessage(content="Mitigation Agent complete. All reports and charts saved. Read them via bash and begin report compilation.")
+                                return {
+                                    "messages": delete_messages + [handoff_msg],
+                                    "sender": "handoff"
+                                }
+
                             def router(state: AgentState):
                                 last_msg = state["messages"][-1]
                                 sender = state.get("sender", "")
@@ -157,6 +179,9 @@ async def run_langgraph_agent(
                                 if sender == "fairness_adjudicator":
                                     return "handoff_to_mitigator"
 
+                                if sender == "mitigation_agent":
+                                    return "handoff_to_compiler"
+
                                 return END
 
                             tools_node = ToolNode(all_tools)
@@ -167,6 +192,8 @@ async def run_langgraph_agent(
                             workflow.add_node("fairness_adjudicator", fairness_adjudicator)
                             workflow.add_node("handoff_to_mitigator", handoff_to_mitigator)
                             workflow.add_node("mitigation_agent", mitigation_agent)
+                            workflow.add_node("handoff_to_compiler", handoff_to_compiler)
+                            workflow.add_node("report_compiler", report_compiler)
                             workflow.add_node("tools", tools_node)
 
                             workflow.add_edge(START, "data_surveyor")
@@ -174,12 +201,14 @@ async def run_langgraph_agent(
                             workflow.add_edge("handoff_to_adjudicator", "fairness_adjudicator")
                             workflow.add_conditional_edges("fairness_adjudicator", router, {"tools": "tools", "handoff_to_mitigator": "handoff_to_mitigator", END: END})
                             workflow.add_edge("handoff_to_mitigator", "mitigation_agent")
-                            workflow.add_conditional_edges("mitigation_agent", router, {"tools": "tools", END: END})
-                            workflow.add_conditional_edges("tools", lambda x: x["sender"], {"data_surveyor": "data_surveyor", "fairness_adjudicator": "fairness_adjudicator", "mitigation_agent": "mitigation_agent"})
+                            workflow.add_conditional_edges("mitigation_agent", router, {"tools": "tools", "handoff_to_compiler": "handoff_to_compiler", END: END})
+                            workflow.add_edge("handoff_to_compiler", "report_compiler")
+                            workflow.add_conditional_edges("report_compiler", router, {"tools": "tools", END: END})
+                            workflow.add_conditional_edges("tools", lambda x: x["sender"], {"data_surveyor": "data_surveyor", "fairness_adjudicator": "fairness_adjudicator", "mitigation_agent": "mitigation_agent", "report_compiler": "report_compiler"})
 
                             app = workflow.compile()
 
-                            initial_message = HumanMessage(content="Please begin the execution. Surveyor, map out the data. Adjudicator, follow up with the fairness audit. Mitigator, follow up with the mitigation.")
+                            initial_message = HumanMessage(content="Please begin the execution. Surveyor, map out the data. Adjudicator, follow up with the fairness audit. Mitigator, follow up with the mitigation. Compiler, follow up with the final report.")
 
                             print("\n\033[1m\033[96m" + "="*50 + "\nStarting Unified Agent Workflow...\n" + "="*50 + "\033[0m\n")
                             async for event in app.astream({"messages": [initial_message], "sender": "user"}, stream_mode="values"):
