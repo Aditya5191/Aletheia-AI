@@ -80,61 +80,7 @@ The **AgenticFlow Frontend** pairs with this backend to provide a live, real-tim
 
 ### Agent Workflow Diagram
 
-```mermaid
-graph TD
-    UI[AgenticFlow Frontend] -->|WebSocket/Upload| API[FastAPI Server]
-    API -->|Spawns| START((Start LangGraph))
-    START --> DS[Data Surveyor Agent]
-    DS --> DS_ROUT{Router}
-    
-    %% Surveyor Loop
-    DS_ROUT -->|Tool Call| ST[Sandbox tools: bash, read_file]
-    ST --> DS
-    
-    %% Handoff
-    DS_ROUT -->|No tools + Answer| FA[Fairness Adjudicator Agent]
-    
-    %% Adjudicator Loop
-    FA --> FA_ROUT{Router}
-    FA_ROUT -->|Tool Call| AT[All Tools: Aletheia + Sandbox]
-    AT --> FA
-    
-    %% Mitigation Handoff
-    FA_ROUT -->|Final Audit| MA[Mitigation Agent]
-
-    %% Mitigation Loop
-    MA --> MA_ROUT{Router}
-    MA_ROUT -->|Tool Call| MT[All Tools: Aletheia + Sandbox]
-    MT --> MA
-
-    %% Report Handoff
-    MA_ROUT -->|Mitigation Complete| RC[Report Compiler]
-    
-    %% Report Loop
-    RC --> RC_ROUT{Router}
-    RC_ROUT -->|Tool Call| RT[Sandbox Tools: bash, execute_cell]
-    RT --> RC
-
-    %% End
-    RC_ROUT -->|Final Answer| END((End))
-    END -->|Streams Results| UI
-
-    subgraph "Docker Sandbox Container"
-    data[(data.csv)]
-    audit_file(audit.py)
-    profile_file(summary.txt)
-    end
-
-    subgraph "Aletheia MCP (Remote)"
-    algo_db[(13 Algorithms)]
-    end
-
-    %% Interactions
-    ST -.->|Analyzes| data
-    AT -.->|Loads Algo| algo_db
-    AT -.->|Writes/Runs| audit_file
-    MT -.->|Repairs Data| data
-```
+![Agent Workflow Diagram](./USER%20FLOW%20DIAGRAM.png)
 
 ## Google Cloud Deployment
 
