@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { API_BASE_URL } from "../lib/config";
 import {
   X,
   Database,
@@ -1686,7 +1687,7 @@ export default function NodeDetailModal({ nodeId, onClose }: NodeDetailModalProp
 
       if (agentNum !== 4) {
         try {
-          const resCharts = await fetch(`http://localhost:8005/outputs/agent${agentNum}_charts.json?t=${ts}`);
+          const resCharts = await fetch(`${API_BASE_URL}/outputs/agent${agentNum}_charts.json?t=${ts}`);
           if (resCharts.ok) {
             const chartsData = await resCharts.json();
             setDynamicCharts(chartsData);
@@ -1698,7 +1699,7 @@ export default function NodeDetailModal({ nodeId, onClose }: NodeDetailModalProp
       }
 
       try {
-        const resMetrics = await fetch(`http://localhost:8005/outputs/agent${agentNum}_metrics.json?t=${ts}`);
+        const resMetrics = await fetch(`${API_BASE_URL}/outputs/agent${agentNum}_metrics.json?t=${ts}`);
         if (resMetrics.ok) {
           const metricsData = await resMetrics.json();
           setDynamicMetrics(metricsData);
@@ -1709,7 +1710,7 @@ export default function NodeDetailModal({ nodeId, onClose }: NodeDetailModalProp
       }
 
       try {
-        const resReview = await fetch(`http://localhost:8005/outputs/agent${agentNum}.md?t=${ts}`);
+        const resReview = await fetch(`${API_BASE_URL}/outputs/agent${agentNum}.md?t=${ts}`);
         if (resReview.ok) {
           const reviewText = await resReview.text();
           setDynamicReview(reviewText);
@@ -1720,7 +1721,7 @@ export default function NodeDetailModal({ nodeId, onClose }: NodeDetailModalProp
       }
 
       try {
-        const resCode = await fetch(`http://localhost:8005/outputs/agent${agentNum}_code.json?t=${ts}`);
+        const resCode = await fetch(`${API_BASE_URL}/outputs/agent${agentNum}_code.json?t=${ts}`);
         if (resCode.ok) {
           const codeData = await resCode.json();
           setDynamicCode(codeData);
@@ -1872,7 +1873,7 @@ export default function NodeDetailModal({ nodeId, onClose }: NodeDetailModalProp
           {/* Download PDF button — only for Report Writer */}
           {nodeId === "report-writer" && (
             <a
-              href="http://localhost:8005/outputs/final_report.pdf"
+              href={`${API_BASE_URL}/outputs/final_report.pdf`}
               download="Aletheia_Fairness_Report.pdf"
               target="_blank"
               rel="noopener noreferrer"

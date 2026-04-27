@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useState, useCallback, useRef, useEffect } from "react";
+import { API_BASE_URL } from "../lib/config";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
 import {
   Upload,
@@ -53,7 +54,7 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
 
   // Check for existing dataset on mount
   useEffect(() => {
-    fetch("http://localhost:8005/dataset/status")
+    fetch(`${API_BASE_URL}/dataset/status`)
       .then((res) => res.json())
       .then((data) => {
         if (data.exists) {
@@ -85,7 +86,7 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
         const formData = new FormData();
         formData.append("file", file);
 
-        const res = await fetch("http://localhost:8005/upload", {
+        const res = await fetch(`${API_BASE_URL}/upload`, {
           method: "POST",
           body: formData,
         });

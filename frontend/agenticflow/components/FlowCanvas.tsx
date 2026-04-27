@@ -22,6 +22,7 @@ import NodeDetailModal from "./NodeDetailModal";
 import CanvasControls from "./CanvasControls";
 
 import { useViewMode } from "./ViewModeContext";
+import { WS_BASE_URL } from "../lib/config";
 
 /* ------------------------------------------------------------------ */
 /*  Initial data                                                       */
@@ -358,7 +359,7 @@ export default function FlowCanvas() {
           )
         );
 
-        const socket = new WebSocket("ws://localhost:8005/ws/audit");
+        const socket = new WebSocket(`${WS_BASE_URL}/ws/audit`);
         let agent1Finished = false;
         let agent2Finished = false;
         let agent3Finished = false;

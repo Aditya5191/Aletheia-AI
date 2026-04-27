@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { WS_BASE_URL } from "../lib/config";
 
 export interface ToolCallRecord {
   id: string;
@@ -27,7 +28,7 @@ export interface AuditEvent {
   message?: string;
 }
 
-const WS_URL = "ws://localhost:8005/ws/audit";
+const WS_URL = `${WS_BASE_URL}/ws/audit`;
 
 export function useAuditSocket() {
   const [connectionStatus, setConnectionStatus] = useState<"disconnected" | "connecting" | "connected" | "error">("disconnected");
