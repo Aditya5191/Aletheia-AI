@@ -54,6 +54,8 @@ Most organisations know this is happening. Almost none have the tools to prove i
 ## Architecture Overview
 
 Aletheia is a distributed multi-agent system built on three core layers:
+
+```
 ├── agents/                     # LangGraph Multi-Agent Orchestration
 │   ├── prompts/                # Externalized Markdown agent prompts
 │   └── graph.py                # Dual-MCP state machine logic
@@ -70,6 +72,7 @@ Aletheia is a distributed multi-agent system built on three core layers:
 ├── main.py                     # CLI entry point
 ├── Procfile                    # Railway deployment config
 └── requirements.txt
+```
 
 ![Agent Workflow](./diagram/USER%20FLOW%20DIAGRAM.png)
 
