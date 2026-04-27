@@ -1,3 +1,76 @@
+<div align="center">
+
+<img src="./diagram/logo.png" alt="Aletheia Logo" width="120"/>
+
+# ALETHEIA AI
+
+### Production-Grade Algorithmic Fairness Auditing via Multi-Agent AI
+
+[![License: Research](https://img.shields.io/badge/License-Research-blue.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-3776AB.svg?logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Next.js](https://img.shields.io/badge/Next.js-14+-000000.svg?logo=next.js&logoColor=white)](https://nextjs.org)
+[![Docker](https://img.shields.io/badge/Docker-Sandboxed-2496ED.svg?logo=docker&logoColor=white)](https://docker.com)
+[![Google Cloud](https://img.shields.io/badge/Google_Cloud-Deployed-4285F4.svg?logo=google-cloud&logoColor=white)](https://cloud.google.com)
+[![MCP](https://img.shields.io/badge/MCP-Compatible-FF6B35.svg)](https://modelcontextprotocol.io)
+[![LangGraph](https://img.shields.io/badge/LangGraph-Orchestrated-7C3AED.svg)](https://langchain-ai.github.io/langgraph)
+
+**[Live Demo](https://aletheia-frontend-69262873588.us-central1.run.app/)**
+
+---
+
+*Most AI fairness tools tell you a number. Aletheia tells you who is being harmed, why, how to fix it, and proves it worked — automatically, end to end, in plain English.*
+
+---
+
+</div>
+
+---
+
+## The Problem
+
+Algorithmic bias is one of the most consequential unsolved problems in applied AI. Criminal justice systems flag innocent people as high-risk at twice the rate for certain racial groups. Hiring models reject qualified candidates based on zip code. Loan systems deny credit using proxies that encode the very discrimination they claim to avoid.
+
+Most organisations know this is happening. Almost none have the tools to prove it, measure it precisely, fix it, and document the fix for regulators — without a dedicated team of ML fairness researchers.
+
+**Aletheia solves this end to end.** Upload a CSV. Get a legally-referenced, plain-English audit report with before/after comparisons, compliance status, and a fixed dataset — fully automated, in minutes.
+
+---
+
+## What Makes This Hard (And Why Existing Tools Fall Short)
+
+| Limitation | Existing Tools | Aletheia |
+|---|---|---|
+| Requires ML expertise to interpret | Yes | No — plain English throughout |
+| Detects only surface-level bias | Yes | Detects proxy, intersectional, causal, and indirect bias |
+| Static algorithm selection | Yes | Dynamic selection from 13 algorithms per dataset |
+| No mitigation | Most | Full mitigation with before/after proof |
+| No compliance mapping | No | EEOC, EU AI Act, ISO 24027 |
+| No PDF audit trail | No | Publication-ready PDF with charts |
+| Requires code changes | Yes | Zero-code — drag, drop, run |
+
+---
+
+## Architecture Overview
+
+Aletheia is a distributed multi-agent system built on three core layers:
+├── agents/                     # LangGraph Multi-Agent Orchestration
+│   ├── prompts/                # Externalized Markdown agent prompts
+│   └── graph.py                # Dual-MCP state machine logic
+├── backend/                    # FastAPI Server — WebSocket Streaming
+│   └── api.py                  # Orchestrates agent graph, serves artifacts
+├── frontend/                   # React/Next.js AgenticFlow Dashboard
+│   └── agenticflow/            # Live observability, interactive nodes, deep-dive modal
+├── mcps/                       # Unified Model Context Protocol Servers
+│   ├── auditor/                # Aletheia Algorithm Knowledge Delivery (13 algorithms)
+│   ├── sandbox/                # Dockerized Python Execution Environment
+│   └── miscellaneous/          # UI Blueprint and Chart Schema Delivery
+├── dataset/                    # Source data input (data.csv)
+├── outputs/                    # Host-synced charts, JSON, code logs, PDF report
+├── main.py                     # CLI entry point
+├── Procfile                    # Railway deployment config
+└── requirements.txt
+
 ![Agent Workflow](./diagram/USER%20FLOW%20DIAGRAM.png)
 
 ### The Four-Agent Pipeline
