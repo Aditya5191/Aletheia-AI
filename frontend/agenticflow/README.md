@@ -1,5 +1,7 @@
 # AgenticFlow: Forensic AI Observability Dashboard
 
+**Live Demo:** [https://aletheia-frontend-69262873588.us-central1.run.app/](https://aletheia-frontend-69262873588.us-central1.run.app/)
+
 AgenticFlow is a high-fidelity, professional AI observability and orchestration dashboard built for deep forensic analysis of AI agent pipelines. It provides real-time visualization of multi-agent interactions, tool-call tracing, and dataset disparity auditing with a premium "Clinical Observer" aesthetic.
 
 ## Key Features
