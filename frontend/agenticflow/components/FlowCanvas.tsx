@@ -20,12 +20,8 @@ import UploadNode, { type UploadNodeType } from "./UploadNode";
 import DockerNode, { type DockerNodeType, type DockerStatus } from "./DockerNode";
 import NodeDetailModal from "./NodeDetailModal";
 import CanvasControls from "./CanvasControls";
-import { Plus } from "lucide-react";
 
-/* ------------------------------------------------------------------ */
-/*  Node types registry                                                */
-/* ------------------------------------------------------------------ */
-
+import { useViewMode } from "./ViewModeContext";
 
 /* ------------------------------------------------------------------ */
 /*  Initial data                                                       */
@@ -35,7 +31,7 @@ const initialNodes: (AgentNodeType | AttributeNodeType | UploadNodeType | Docker
   {
     id: "dataset-upload",
     type: "upload",
-    position: { x: -450, y: 155 },
+    position: { x: 100, y: 155 },
     data: {
       title: "Dataset Input",
     },
@@ -43,7 +39,7 @@ const initialNodes: (AgentNodeType | AttributeNodeType | UploadNodeType | Docker
   {
     id: "docker-sandbox",
     type: "docker",
-    position: { x: -30, y: 220 },
+    position: { x: 520, y: 220 },
     data: {
       status: "idle" as DockerStatus,
     },
@@ -51,9 +47,9 @@ const initialNodes: (AgentNodeType | AttributeNodeType | UploadNodeType | Docker
   {
     id: "data-inspector",
     type: "agent",
-    position: { x: 250, y: 170 },
+    position: { x: 800, y: 170 },
     data: {
-      title: "Data Inspector",
+      title: "Dataset Auditor",
       iconType: "database",
       description:
         "Analyzes the source dataset for feature imbalances and demographic disparities.",
@@ -151,10 +147,6 @@ const agentDefinitions: Record<string, AgentNodeType> = {
   } as AgentNodeType,
 };
 
-/* ------------------------------------------------------------------ */
-/*  Custom edge styles                                                 */
-/* ------------------------------------------------------------------ */
-
 const defaultEdgeOptions = {
   style: {
     stroke: "#d0bcff",
@@ -164,11 +156,8 @@ const defaultEdgeOptions = {
   animated: false,
 };
 
-/* ------------------------------------------------------------------ */
-/*  Component                                                          */
-/* ------------------------------------------------------------------ */
-
 export default function FlowCanvas() {
+  const { isSidebarCollapsed } = useViewMode();
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -193,7 +182,6 @@ export default function FlowCanvas() {
   }, [setNodes]);
 
   const handleUploadComplete = useCallback((fileName: string) => {
-    // Animate the upload → docker edge
     setEdges((eds) =>
       eds.map((e) => {
         if (e.id === "e-upload-docker") {
@@ -204,6 +192,11 @@ export default function FlowCanvas() {
     );
   }, [setEdges]);
 
+  // Horizontal gap between agent nodes
+  const AGENT_GAP_X = 450;
+  // Vertical spacing between attribute nodes
+  const ATTR_SPACING_Y = 120;
+
   const handleRunComplete = useCallback(
     (nodeId: string, dynamicAttrs?: string[]) => {
       if (nodeId === "data-inspector") {
@@ -211,18 +204,41 @@ export default function FlowCanvas() {
           ? dynamicAttrs 
           : discoveredAttributes;
 
-        const newNodes: AttributeNodeType[] = attributesToUse.map((attr, index) => ({
-          id: `attr-${attr.toLowerCase()}`,
-          type: "attribute",
-          position: { x: 500, y: 120 + (index * 100) },
-          data: { label: attr.charAt(0).toUpperCase() + attr.slice(1), color: "#4edea3" }
-        }));
+        setNodes((nds) => {
+          // Find the source node's current position
+          const sourceNode = nds.find(n => n.id === "data-inspector");
+          const sourceX = sourceNode?.position?.x ?? 800;
+          const sourceY = sourceNode?.position?.y ?? 170;
 
+          // Place attributes between source and next agent
+          const attrX = sourceX + AGENT_GAP_X / 2;
+          const totalAttrHeight = (attributesToUse.length - 1) * ATTR_SPACING_Y;
+          const attrStartY = sourceY - totalAttrHeight / 2 + 30;
+
+          const newAttrNodes: AttributeNodeType[] = attributesToUse.map((attr, index) => ({
+            id: `attr-${attr.toLowerCase()}`,
+            type: "attribute",
+            position: { x: attrX, y: attrStartY + (index * ATTR_SPACING_Y) },
+            data: { label: attr.charAt(0).toUpperCase() + attr.slice(1), color: "#4edea3" }
+          }));
+
+          // Place Agent 2 after the attributes column
+          const agent2X = sourceX + AGENT_GAP_X;
+          const agent2Y = sourceY;
+          const agent2 = {
+            ...agentDefinitions["fairness-adjudicator"],
+            position: { x: agent2X, y: agent2Y },
+            data: { ...agentDefinitions["fairness-adjudicator"].data, onRunComplete: handleRunComplete, toolCalls: [], isAgentRunning: true }
+          };
+
+          return [...nds, ...newAttrNodes, agent2];
+        });
+
+        // Build edges
         const newEdges: Edge[] = [];
         if (attributesToUse.length > 0) {
           attributesToUse.forEach((attr) => {
             const attrId = `attr-${attr.toLowerCase()}`;
-            // Diverging from Data Inspector
             newEdges.push({
               id: `e-di-${attrId}`,
               source: "data-inspector",
@@ -231,7 +247,6 @@ export default function FlowCanvas() {
               animated: true,
               style: { stroke: "#4edea3", strokeWidth: 2 }
             });
-            // Converging to Agent Auditor
             newEdges.push({
               id: `e-${attrId}-fa`,
               source: attrId,
@@ -242,7 +257,6 @@ export default function FlowCanvas() {
             });
           });
         } else {
-          // Direct connection if no attributes are discovered
           newEdges.push({
             id: `e-di-fa`,
             source: "data-inspector",
@@ -252,86 +266,79 @@ export default function FlowCanvas() {
             style: { stroke: "#4edea3", strokeWidth: 2 }
           });
         }
-        
-        setNodes((nds) => [...nds, ...newNodes]);
         setEdges((eds) => [...eds, ...newEdges]);
 
-        // Spawn Agent 2: Fairness Adjudicator
-        const agent2 = { ...agentDefinitions["fairness-adjudicator"], data: { ...agentDefinitions["fairness-adjudicator"].data, onRunComplete: handleRunComplete, toolCalls: [], isAgentRunning: true } };
-        setNodes((nds) => [...nds, agent2]);
       } else if (nodeId === "fairness-adjudicator") {
         const disparityNodes = ["attr-gender", "attr-age"];
         
-        setNodes((nds) => 
-          nds.map((n) => {
+        setNodes((nds) => {
+          // Color disparity nodes
+          const updated = nds.map((n) => {
             if (disparityNodes.includes(n.id)) {
-              return {
-                ...n,
-                data: { ...n.data, color: "#ff5252" }
-              } as typeof n;
+              return { ...n, data: { ...n.data, color: "#ff5252" } } as typeof n;
             }
             return n;
-          })
-        );
+          });
 
-        setEdges((eds) => 
-          eds.map((e) => {
-            if (
-              e.id === "e-di-gen" || e.id === "e-gen-fa" ||
-              e.id === "e-di-age" || e.id === "e-age-fa"
-            ) {
-              return {
-                ...e,
-                style: { ...e.style, stroke: "#ff5252" }
-              };
+          // Find Agent 2's current position to place Agent 3 relative to it
+          const sourceNode = updated.find(n => n.id === "fairness-adjudicator");
+          const sourceX = sourceNode?.position?.x ?? 1250;
+          const sourceY = sourceNode?.position?.y ?? 170;
+
+          const agent3 = {
+            ...agentDefinitions["mitigation-expert"],
+            position: { x: sourceX + AGENT_GAP_X, y: sourceY },
+            data: { ...agentDefinitions["mitigation-expert"].data, onRunComplete: handleRunComplete }
+          };
+
+          return [...updated, agent3];
+        });
+
+        setEdges((eds) => {
+          const updated = eds.map((e) => {
+            if (e.id === "e-di-gen" || e.id === "e-gen-fa" || e.id === "e-di-age" || e.id === "e-age-fa") {
+              return { ...e, style: { ...e.style, stroke: "#ff5252" } };
             }
             return e;
-          })
-        );
-
-        // Spawn Agent 3: Mitigation Expert
-        const agent3 = { ...agentDefinitions["mitigation-expert"], data: { ...agentDefinitions["mitigation-expert"].data, onRunComplete: handleRunComplete } };
-        const edge3 = { id: "e-fa-me", source: "fairness-adjudicator", target: "mitigation-expert", type: "default", animated: true };
-        
-        setNodes((nds) => [...nds, agent3]);
-        setEdges((eds) => [...eds, edge3]);
+          });
+          return [...updated, { id: "e-fa-me", source: "fairness-adjudicator", target: "mitigation-expert", type: "default", animated: true }];
+        });
 
       } else if (nodeId === "mitigation-expert") {
-        // When Agent 3 finishes, turn the red edges back to green or a "fixed" color (e.g., violet)
         const fixedNodes = ["attr-gender", "attr-age"];
-        setNodes((nds) => 
-          nds.map((n) => {
+
+        setNodes((nds) => {
+          // Color fixed nodes
+          const updated = nds.map((n) => {
             if (fixedNodes.includes(n.id)) {
-              return {
-                ...n,
-                data: { ...n.data, color: "#d0bcff" } // Violet for "Fixed"
-              } as typeof n;
+              return { ...n, data: { ...n.data, color: "#d0bcff" } } as typeof n;
             }
             return n;
-          })
-        );
+          });
 
-        setEdges((eds) => 
-          eds.map((e) => {
-            if (
-              e.id === "e-di-gen" || e.id === "e-gen-fa" ||
-              e.id === "e-di-age" || e.id === "e-age-fa"
-            ) {
-              return {
-                ...e,
-                style: { ...e.style, stroke: "#d0bcff" }
-              };
+          // Find Agent 3's current position to place Agent 4 relative to it
+          const sourceNode = updated.find(n => n.id === "mitigation-expert");
+          const sourceX = sourceNode?.position?.x ?? 1700;
+          const sourceY = sourceNode?.position?.y ?? 170;
+
+          const agent4 = {
+            ...agentDefinitions["report-writer"],
+            position: { x: sourceX + AGENT_GAP_X, y: sourceY },
+            data: { ...agentDefinitions["report-writer"].data, onRunComplete: handleRunComplete }
+          };
+
+          return [...updated, agent4];
+        });
+
+        setEdges((eds) => {
+          const updated = eds.map((e) => {
+            if (e.id === "e-di-gen" || e.id === "e-gen-fa" || e.id === "e-di-age" || e.id === "e-age-fa") {
+              return { ...e, style: { ...e.style, stroke: "#d0bcff" } };
             }
             return e;
-          })
-        );
-
-        // Spawn Agent 4: Report Writer
-        const agent4 = { ...agentDefinitions["report-writer"], data: { ...agentDefinitions["report-writer"].data, onRunComplete: handleRunComplete } };
-        const edge4 = { id: "e-me-rw", source: "mitigation-expert", target: "report-writer", type: "default", animated: true };
-        
-        setNodes((nds) => [...nds, agent4]);
-        setEdges((eds) => [...eds, edge4]);
+          });
+          return [...updated, { id: "e-me-rw", source: "mitigation-expert", target: "report-writer", type: "default", animated: true }];
+        });
 
       } else if (nodeId === "report-writer") {
         console.log("Final Report Generated");
@@ -357,12 +364,7 @@ export default function FlowCanvas() {
         let agent3Finished = false;
         let agent4Finished = false;
 
-        // Docker spawning animation
         setDockerStatus("spawning");
-
-        socket.onclose = () => {
-          setDockerStatus("stopped");
-        };
 
         socket.onerror = () => {
           setDockerStatus("error");
@@ -373,12 +375,9 @@ export default function FlowCanvas() {
             const msg = JSON.parse(event.data);
 
             if (msg.type === "status") {
-              console.log("Status:", msg.message);
-              // Detect sandbox started message to transition Docker node
               if (msg.message && msg.message.startsWith("Sandbox started")) {
                 const cId = msg.message.replace("Sandbox started: ", "");
                 setDockerStatus("running", cId);
-                // Animate docker → data-inspector edge
                 setEdges((eds) =>
                   eds.map((e) =>
                     e.id === "e-docker-di"
@@ -396,7 +395,6 @@ export default function FlowCanvas() {
             }
 
             if (msg.type === "attributes_discovered") {
-              console.log("Attributes Discovered:", msg.attributes);
               setDiscoveredAttributes(msg.attributes);
               handleRunComplete("data-inspector", msg.attributes);
               return;
@@ -430,7 +428,6 @@ export default function FlowCanvas() {
                     } as AgentNodeType;
                   } else if (msg.type === "tool_result") {
                     const updatedTools = [...currentTools];
-                    // Find the last tool with matching name that is still running
                     for (let i = updatedTools.length - 1; i >= 0; i--) {
                       if (updatedTools[i].name === msg.name && updatedTools[i].output === "Running...") {
                         updatedTools[i] = { ...updatedTools[i], output: msg.content };
@@ -444,7 +441,6 @@ export default function FlowCanvas() {
                   } else if (msg.type === "message" && !msg.tool_calls) {
                     if (targetNodeId === "data-inspector" && !agent1Finished) {
                       agent1Finished = true;
-                      
                       setTimeout(() => {
                         setNodes((currentNds) =>
                           currentNds.map((cn) =>
@@ -453,12 +449,9 @@ export default function FlowCanvas() {
                               : cn
                           )
                         );
-                        // We normally rely on "attributes_discovered" to call handleRunComplete.
-                        // Fallback: If attributes.json fails, spawn Agent 2 manually.
                         setTimeout(() => {
                           setNodes((nds) => {
                             if (!nds.find(n => n.id === "fairness-adjudicator")) {
-                              console.warn("Fallback: Spawning Agent 2 manually because attributes.json was missing.");
                               handleRunComplete("data-inspector", []);
                             }
                             return nds;
@@ -467,7 +460,6 @@ export default function FlowCanvas() {
                       }, 500);
                     } else if (targetNodeId === "fairness-adjudicator" && !agent2Finished) {
                       agent2Finished = true;
-                      
                       setTimeout(() => {
                         setNodes((currentNds) =>
                           currentNds.map((cn) =>
@@ -480,7 +472,6 @@ export default function FlowCanvas() {
                       }, 500);
                     } else if (targetNodeId === "mitigation-expert" && !agent3Finished) {
                       agent3Finished = true;
-                      
                       setTimeout(() => {
                         setNodes((currentNds) =>
                           currentNds.map((cn) =>
@@ -493,7 +484,6 @@ export default function FlowCanvas() {
                       }, 500);
                     } else if (targetNodeId === "report-writer" && !agent4Finished) {
                       agent4Finished = true;
-                      
                       setTimeout(() => {
                         setNodes((currentNds) =>
                           currentNds.map((cn) =>
@@ -517,6 +507,7 @@ export default function FlowCanvas() {
 
         socket.onclose = () => {
           console.log("Audit WS closed.");
+          setDockerStatus("stopped");
           setNodes((nds) =>
             nds.map((n) =>
               n.id === "data-inspector"
@@ -526,7 +517,6 @@ export default function FlowCanvas() {
           );
         };
       } else {
-        // Fallback simulated execution for other agents
         setNodes((nds) =>
           nds.map((n) =>
             n.id === nodeId ? ({ ...n, data: { ...n.data, isAgentRunning: true } } as AgentNodeType) : n
@@ -542,14 +532,13 @@ export default function FlowCanvas() {
         }, 5000);
       }
     },
-    [setNodes, handleRunComplete]
+    [setNodes, setEdges, handleRunComplete, setDockerStatus]
   );
 
-  // Attach callbacks on mount
   React.useEffect(() => {
     setNodes((nds) =>
       nds.map((n) => {
-        if ((n.id === "data-inspector" || n.id === "fairness-adjudicator" || n.id === "mitigation-expert" || n.id === "business-reporter") && n.type === "agent") {
+        if ((n.id === "data-inspector" || n.id === "fairness-adjudicator" || n.id === "mitigation-expert" || n.id === "report-writer") && n.type === "agent") {
           return { ...n, data: { ...n.data, onRunComplete: handleRunComplete, onRunStart: handleRunStart } } as AgentNodeType;
         }
         if (n.id === "dataset-upload" && n.type === "upload") {
@@ -572,7 +561,9 @@ export default function FlowCanvas() {
   const proOptions = useMemo(() => ({ hideAttribution: true }), []);
 
   return (
-    <div className="ml-[260px] mt-[64px] h-[calc(100vh-64px)] relative">
+    <div className={`mt-[64px] h-[calc(100vh-64px)] relative transition-all duration-300 ease-in-out ${
+      isSidebarCollapsed ? "ml-0" : "ml-[260px]"
+    }`}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -613,7 +604,6 @@ export default function FlowCanvas() {
           zoomable
         />
       </ReactFlow>
-
 
       {selectedNodeId && (
         <NodeDetailModal

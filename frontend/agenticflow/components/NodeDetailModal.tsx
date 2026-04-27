@@ -56,7 +56,7 @@ interface ChartDef {
   id?: string;
   label?: string;
   title?: string;
-  type?: "line" | "bar" | "pie" | "heatmap" | "scatter"; // Added scatter
+  type?: "line" | "bar" | "grouped_bar" | "box_plot" | "pie" | "heatmap" | "scatter";
   data: any[]; 
   color?: string;
   xLabels?: string[];
@@ -420,7 +420,7 @@ function InteractiveLineChart({ chartDef }: { chartDef: ChartDef }) {
   const range = maxVal - minVal || 1;
 
   const points = data.map((d, i) => ({
-    x: PAD_X + (i / (data.length - 1)) * chartW,
+    x: PAD_X + (i / Math.max(data.length - 1, 1)) * chartW,
     y: PAD_TOP + chartH - ((d.value - minVal) / range) * chartH,
   }));
 
@@ -1579,7 +1579,17 @@ function ChartSection({ charts }: { charts: ChartDef[] }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const activeChart = charts[activeIdx];
+  // Clamp activeIdx if charts array shrinks
+  const safeIdx = Math.min(activeIdx, charts.length - 1);
+  const activeChart = charts.length > 0 ? charts[safeIdx] : null;
+
+  if (!activeChart) {
+    return (
+      <div className="bg-surface-container rounded-xl border border-[#1F2228] p-5 flex flex-col h-[300px] items-center justify-center">
+        <p className="text-on-surface-variant text-sm">No chart data available yet.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-surface-container rounded-xl border border-[#1F2228] p-5 flex flex-col h-full">

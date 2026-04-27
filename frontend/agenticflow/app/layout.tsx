@@ -9,9 +9,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "AgenticFlow - AI Workflow Workspace",
+  title: "Aletheia AI - Forensic Observability",
   description:
-    "Build, orchestrate, and deploy intelligent AI agent workflows with AgenticFlow.",
+    "Build, orchestrate, and deploy intelligent AI agent workflows with Aletheia.",
 };
 
 export default function RootLayout({

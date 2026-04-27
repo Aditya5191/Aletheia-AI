@@ -7,15 +7,28 @@ export type ViewMode = "developer" | "user";
 interface ViewModeContextType {
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
+  isSidebarCollapsed: boolean;
+  setIsSidebarCollapsed: (collapsed: boolean) => void;
+  showDocs: boolean;
+  setShowDocs: (show: boolean) => void;
 }
 
 const ViewModeContext = createContext<ViewModeContextType | undefined>(undefined);
 
 export function ViewModeProvider({ children }: { children: ReactNode }) {
-  const [viewMode, setViewMode] = useState<ViewMode>("developer"); // Default to developer
+  const [viewMode, setViewMode] = useState<ViewMode>("user");
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [showDocs, setShowDocs] = useState(false);
 
   return (
-    <ViewModeContext.Provider value={{ viewMode, setViewMode }}>
+    <ViewModeContext.Provider value={{ 
+      viewMode, 
+      setViewMode, 
+      isSidebarCollapsed, 
+      setIsSidebarCollapsed,
+      showDocs,
+      setShowDocs
+    }}>
       {children}
     </ViewModeContext.Provider>
   );
