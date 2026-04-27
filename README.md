@@ -90,41 +90,55 @@ Aletheia is deployed as a distributed, production-grade application on Google Cl
 
 ```mermaid
 graph TD
-    subgraph "Google Cloud"
+    %% Node styling
+    classDef gcp fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef serverless fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef vm fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef container fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100
+    classDef user fill:#eceff1,stroke:#455a64,stroke-width:2px,color:#263238
+    classDef storage fill:#e0f7fa,stroke:#00838f,stroke-width:2px,color:#006064
+
+    User((User)):::user
+
+    subgraph GCP ["Google Cloud Platform (us-central1)"]
         direction TB
         
-        subgraph "Cloud Run (Serverless)"
-            FE[AgenticFlow Frontend\nNext.js standalone]
+        AR[("Artifact Registry\n(Docker Images)")]:::storage
+
+        subgraph CR ["Cloud Run (Serverless)"]
+            FE["AgenticFlow Frontend\n(Next.js Standalone)"]:::serverless
         end
         
-        subgraph "Compute Engine (VM: e2-custom-2-7168 / 7GB)"
-            Caddy[Caddy Reverse Proxy\nHTTPS via sslip.io]
+        subgraph GCE ["Compute Engine (e2-custom-2-7168)"]
+            Caddy["Caddy Proxy\n(HTTPS via sslip.io)"]:::vm
             
-            subgraph "Backend Container"
-                FastAPI[FastAPI WebSocket Server\nPort 8005]
-                MCP[LangGraph + MCP Subprocesses]
+            subgraph Backend ["Backend Container"]
+                direction TB
+                FastAPI["FastAPI Server\n(Port 8005)"]:::container
+                MCP["LangGraph +\nMCP Orchestrator"]:::container
             end
             
-            subgraph "Ephemeral Sandboxes"
-                SB1[Docker Sandbox Container 1]
-                SB2[Docker Sandbox Container N]
+            subgraph Sandboxes ["Ephemeral Sandboxes (DinD)"]
+                SB1["Docker Sandbox 1"]:::container
+                SB2["Docker Sandbox N"]:::container
             end
-            
-            Caddy -->|ws:// / http://| FastAPI
-            FastAPI -->|Controls| MCP
-            MCP -->|Docker API via Socket| SB1
-            MCP -->|Docker API via Socket| SB2
-            FastAPI -.->|"docker cp (sync outputs)"| SB1
         end
-        
-        AR[(Artifact Registry\nus-central1)]
     end
     
-    User((User)) -->|HTTPS| FE
-    FE -->|WSS / HTTPS| Caddy
+    %% Connections
+    User == "HTTPS (Port 443)" ==> FE
+    User -. "WebSocket / HTTPS" .-> Caddy
     
-    AR -.->|Pulls Image| FE
-    AR -.->|Pulls Image| FastAPI
+    Caddy ==>|"Internal Proxy"| FastAPI
+    FastAPI ==>|"Function Calls"| MCP
+    
+    MCP == "Docker Socket (/var/run/docker.sock)" ==> SB1
+    MCP == "Docker Socket" ==> SB2
+    
+    FastAPI -. "docker cp\n(Sync Outputs)" .-> SB1
+    
+    AR -. "Pulls Image" .-> FE
+    AR -. "Pulls Image" .-> FastAPI
 ```
 
 ### Useful Deployment Commands
