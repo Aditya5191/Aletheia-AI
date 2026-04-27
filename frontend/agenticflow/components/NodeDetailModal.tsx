@@ -57,7 +57,7 @@ interface ChartDef {
   id?: string;
   label?: string;
   title?: string;
-  type?: "line" | "bar" | "grouped_bar" | "box_plot" | "pie" | "heatmap" | "scatter";
+  type?: "line" | "bar" | "grouped_bar" | "stacked_bar" | "box_plot" | "pie" | "heatmap" | "scatter";
   data: any[]; 
   color?: string;
   xLabels?: string[];
@@ -825,6 +825,111 @@ function InteractiveGroupedBarChart({ chartDef }: { chartDef: ChartDef }) {
   );
 }
 
+function InteractiveStackedBarChart({ chartDef }: { chartDef: ChartDef }) {
+  const [hovered, setHovered] = useState<{group: number, series: number} | null>(null);
+  const { data, series = [] } = chartDef;
+
+  const W = 560;
+  const H = 280;
+  const PAD_X = 40;
+  const PAD_TOP = 30;
+  const PAD_BOTTOM = 70;
+  const chartW = W - PAD_X * 2;
+  const chartH = H - PAD_TOP - PAD_BOTTOM;
+
+  // For stacked bars, we need to find the max sum per group
+  const maxValRaw = data.length > 0 
+    ? Math.max(...data.map((d: any) => (d.values || []).reduce((a: number, b: number) => a + (isNaN(b) ? 0 : b), 0)))
+    : 0;
+  
+  const maxVal = maxValRaw * 1.1 || 1; // 10% padding on top
+  const minVal = 0; // Stacked bars typically start at 0
+  const totalRange = maxVal;
+
+  const groupWidth = chartW / data.length;
+  const barWidth = groupWidth * 0.6; // Bar takes 60% of group width
+
+  return (
+    <div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" onMouseLeave={() => setHovered(null)}>
+        {/* Grid lines */}
+        {[0, 0.25, 0.5, 0.75, 1].map((frac) => {
+          const y = PAD_TOP + chartH * (1 - frac);
+          const rawVal = minVal + totalRange * frac;
+          return (
+            <g key={frac}>
+              <line x1={PAD_X} y1={y} x2={W - PAD_X} y2={y} stroke="rgba(149,142,160,0.1)" strokeDasharray="4 4" />
+              <text x={PAD_X - 8} y={y + 4} textAnchor="end" className="fill-outline text-[10px]">{fmtVal(rawVal)}</text>
+            </g>
+          );
+        })}
+
+        {/* Groups */}
+        {data.map((group: any, gIdx: number) => {
+          let currentY = PAD_TOP + chartH; // Start from bottom
+          const x = PAD_X + gIdx * groupWidth + (groupWidth - barWidth) / 2;
+
+          return (
+            <g key={gIdx}>
+              {/* Group Label */}
+              <text
+                x={PAD_X + (gIdx + 0.5) * groupWidth}
+                y={PAD_TOP + chartH + 20}
+                textAnchor="middle"
+                className="fill-white text-[11px] font-medium"
+              >
+                {group.label}
+              </text>
+
+              {/* Stacked Bars in Group */}
+              {group.values.map((val: number, sIdx: number) => {
+                if (isNaN(val) || val <= 0) return null;
+                const h = (val / totalRange) * chartH;
+                const y = currentY - h; // The top of this bar segment
+                
+                const isHovered = hovered?.group === gIdx && hovered?.series === sIdx;
+                const color = series[sIdx]?.color || "#7AA2F7";
+
+                const rect = (
+                  <g key={sIdx} onMouseEnter={() => setHovered({group: gIdx, series: sIdx})}>
+                    <rect
+                      x={x}
+                      y={y}
+                      width={barWidth}
+                      height={h}
+                      fill={isHovered ? "#fff" : color}
+                      opacity={hovered === null || isHovered ? 1 : 0.4}
+                      className="transition-all duration-300"
+                    />
+                    {isHovered && (
+                      <g>
+                        <rect x={x + barWidth/2 - 30} y={y - 25} width={60} height={20} rx={4} fill="#1a1b2e" stroke={color} strokeWidth="1" />
+                        <text x={x + barWidth/2} y={y - 11} textAnchor="middle" className="text-[10px] font-bold fill-white">{fmtVal(val)}</text>
+                      </g>
+                    )}
+                  </g>
+                );
+                currentY = y; // Update current Y for the next segment to stack on top
+                return rect;
+              })}
+            </g>
+          );
+        })}
+
+        {/* Legend */}
+        <g transform={`translate(${W - PAD_X - 100}, 5)`}>
+          {series.map((s: any, i: number) => (
+            <g key={i} transform={`translate(0, ${i * 14})`}>
+              <rect width={8} height={8} fill={s.color} rx={1} />
+              <text x={12} y={7} className="fill-outline text-[9px]">{s.name}</text>
+            </g>
+          ))}
+        </g>
+      </svg>
+    </div>
+  );
+}
+
 function InteractiveBoxPlot({ chartDef }: { chartDef: ChartDef }) {
   const [hovered, setHovered] = useState<number | null>(null);
   const { data } = chartDef;
@@ -1062,6 +1167,7 @@ function InteractivePieChart({ chartDef }: { chartDef: ChartDef }) {
 function InteractiveChart({ chartDef }: { chartDef: ChartDef }) {
   if (chartDef.type === "bar") return <InteractiveBarChart chartDef={chartDef} />;
   if (chartDef.type === "grouped_bar") return <InteractiveGroupedBarChart chartDef={chartDef} />;
+  if (chartDef.type === "stacked_bar") return <InteractiveStackedBarChart chartDef={chartDef} />;
   if (chartDef.type === "box_plot") return <InteractiveBoxPlot chartDef={chartDef} />;
   if (chartDef.type === "pie") return <InteractivePieChart chartDef={chartDef} />;
   if (chartDef.type === "heatmap") return <InteractiveHeatmap chartDef={chartDef} />;

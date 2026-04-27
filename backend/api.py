@@ -4,6 +4,7 @@ import subprocess
 import asyncio
 import json
 import shutil
+import traceback
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, BackgroundTasks, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,11 +31,43 @@ app.add_middleware(
 # Global state to track active sessions (if needed)
 active_sessions: Dict[str, dict] = {}
 
-# Clear stale agent outputs on startup
-os.makedirs("outputs", exist_ok=True)
-for _fname in os.listdir("outputs"):
-    if _fname.startswith("agent") and (_fname.endswith(".json") or _fname.endswith(".md")):
-        os.remove(os.path.join("outputs", _fname))
+def cleanup_stale_resources():
+    """Remove any leftover sandbox containers and clear stale outputs.
+    Handles the case where a user reloads mid-audit."""
+    print("[CLEANUP] Cleaning stale sandbox containers and outputs...")
+    # Kill and remove all aletheia sandbox containers
+    try:
+        result = subprocess.run(
+            ["docker", "ps", "-a", "--filter", "name=aletheia-api-", "--format", "{{.ID}}"],
+            capture_output=True, text=True, timeout=10
+        )
+        container_ids = result.stdout.strip().split("\n")
+        for cid in container_ids:
+            if cid:
+                subprocess.run(["docker", "rm", "-f", cid], capture_output=True, timeout=10)
+                print(f"[CLEANUP] Removed stale container {cid[:12]}")
+    except Exception as e:
+        print(f"[CLEANUP] Error cleaning containers: {e}")
+    
+    # Clear stale agent outputs
+    os.makedirs("outputs", exist_ok=True)
+    for fname in os.listdir("outputs"):
+        if fname.startswith("agent") and (fname.endswith(".json") or fname.endswith(".md")):
+            try:
+                os.remove(os.path.join("outputs", fname))
+            except:
+                pass
+    # Also clear any leftover chart images
+    for fname in os.listdir("outputs"):
+        if fname.endswith(".png") or fname.endswith(".svg"):
+            try:
+                os.remove(os.path.join("outputs", fname))
+            except:
+                pass
+    print("[CLEANUP] Done.")
+
+# Clean up on startup
+cleanup_stale_resources()
 
 app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
 
@@ -44,17 +77,19 @@ def start_docker_sandbox():
     os.makedirs("dataset", exist_ok=True)
     os.makedirs("outputs", exist_ok=True)
     
-    data_path = os.path.abspath("dataset/data.csv")
-
-    outputs_path = os.path.abspath("outputs")
-
+    # Start container without volume mounts (Docker-in-Docker can't map container paths)
     result = subprocess.run([
         "docker", "run", "-d", "--name", container_name,
-        "-v", f"{data_path}:/workspace/data.csv",
-        "-v", f"{outputs_path}:/workspace/outputs",
         "--network", "bridge", image, "tail", "-f", "/dev/null"
     ], capture_output=True, text=True, check=True)
-    return result.stdout.strip()
+    container_id = result.stdout.strip()
+    
+    # Copy dataset into the sandbox container
+    data_path = os.path.abspath("dataset/data.csv")
+    if os.path.exists(data_path):
+        subprocess.run(["docker", "cp", data_path, f"{container_id}:/workspace/data.csv"], check=True)
+    
+    return container_id
 
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
@@ -164,40 +199,50 @@ async def audit_websocket(websocket: WebSocket):
             json.dump(successful, f, indent=2)
     
     try:
-        # Clear stale outputs from previous runs
-        os.makedirs("outputs", exist_ok=True)
-        for fname in os.listdir("outputs"):
-            if fname.startswith("agent") and (fname.endswith(".json") or fname.endswith(".md")):
-                os.remove(os.path.join("outputs", fname))
+        # Clean up any stale containers/outputs from previous runs (handles mid-audit reload)
+        cleanup_stale_resources()
         
         container_id = start_docker_sandbox()
         await websocket.send_json({"type": "status", "message": f"Sandbox started: {container_id[:12]}"})
         
-        # Start Sandbox MCP
+        # Start Sandbox MCP (log stderr for debugging)
         mcp_process = subprocess.Popen(
             [sys.executable, "mcps/sandbox/mcp_server.py"],
             env={**os.environ, "PORT": "8000"},
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
         )
         
         # Start Auditor MCP locally to avoid Railway timeouts
         auditor_process = subprocess.Popen(
             [sys.executable, "mcps/auditor/server.py"],
             env={**os.environ, "PORT": "8001"},
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
         )
         
         # Start Miscellaneous MCP locally
         miscellaneous_process = subprocess.Popen(
             [sys.executable, "mcps/miscellaneous/server.py"],
             env={**os.environ, "PORT": "8002"},
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
         )
         
-        await asyncio.sleep(3) # Wait for server boot
+        await asyncio.sleep(5) # Wait for server boot
+        
+        # Check if MCP servers are still running
+        for name, proc in [("Sandbox MCP", mcp_process), ("Auditor MCP", auditor_process), ("Miscellaneous MCP", miscellaneous_process)]:
+            if proc.poll() is not None:
+                stderr_out = proc.stderr.read().decode() if proc.stderr else ""
+                stdout_out = proc.stdout.read().decode() if proc.stdout else ""
+                print(f"[ERROR] {name} crashed on startup (exit code {proc.returncode})")
+                print(f"[ERROR] {name} stderr: {stderr_out}")
+                print(f"[ERROR] {name} stdout: {stdout_out}")
+                raise RuntimeError(f"{name} failed to start: {stderr_out[:500]}")
+            else:
+                print(f"[OK] {name} is running (PID {proc.pid})")
+
         
         current_sender = None
         
@@ -263,6 +308,16 @@ async def audit_websocket(websocket: WebSocket):
                     except Exception as e:
                         print(f"[ERROR] Failed to read attributes.json: {e}")
 
+                # Sync outputs from sandbox container after every tool result
+                if event.get("type") == "tool_result" and container_id:
+                    try:
+                        subprocess.run(
+                            ["docker", "cp", f"{container_id}:/workspace/outputs/.", "outputs/"],
+                            capture_output=True, timeout=10
+                        )
+                    except Exception:
+                        pass
+
             except (WebSocketDisconnect, ConnectionClosedOK, ConnectionClosedError):
                 print("[WS] Client disconnected during event stream.")
                 break
@@ -284,7 +339,14 @@ async def audit_websocket(websocket: WebSocket):
     except RuntimeError as e:
         print(f"[WS] Runtime error during cleanup (safe to ignore): {e}")
     except Exception as e:
+        full_tb = traceback.format_exc()
         print(f"[ERROR] Audit failed: {e}")
+        print(f"[ERROR] Full traceback:\n{full_tb}")
+        # Also print sub-exceptions for ExceptionGroups
+        if hasattr(e, 'exceptions'):
+            for i, sub_e in enumerate(e.exceptions):
+                print(f"[ERROR] Sub-exception {i}: {sub_e}")
+                print(f"[ERROR] Sub-traceback {i}:\n{''.join(traceback.format_exception(type(sub_e), sub_e, sub_e.__traceback__))}")
         try:
             await websocket.send_json({"type": "error", "message": str(e)})
         except:

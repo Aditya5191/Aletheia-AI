@@ -135,6 +135,83 @@ graph TD
     MT -.->|Repairs Data| data
 ```
 
+## Google Cloud Deployment
+
+Aletheia is deployed as a distributed, production-grade application on Google Cloud. 
+
+### Cloud Architecture
+
+```mermaid
+graph TD
+    subgraph "Google Cloud"
+        direction TB
+        
+        subgraph "Cloud Run (Serverless)"
+            FE[AgenticFlow Frontend\nNext.js standalone]
+        end
+        
+        subgraph "Compute Engine (VM: e2-custom-2-7168 / 7GB)"
+            Caddy[Caddy Reverse Proxy\nHTTPS via sslip.io]
+            
+            subgraph "Backend Container"
+                FastAPI[FastAPI WebSocket Server\nPort 8005]
+                MCP[LangGraph + MCP Subprocesses]
+            end
+            
+            subgraph "Ephemeral Sandboxes"
+                SB1[Docker Sandbox Container 1]
+                SB2[Docker Sandbox Container N]
+            end
+            
+            Caddy -->|ws:// / http://| FastAPI
+            FastAPI -->|Controls| MCP
+            MCP -->|Docker API via Socket| SB1
+            MCP -->|Docker API via Socket| SB2
+            FastAPI -.->|docker cp (sync outputs)| SB1
+        end
+        
+        AR[(Artifact Registry\nus-central1)]
+    end
+    
+    User((User)) -->|HTTPS| FE
+    FE -->|WSS / HTTPS| Caddy
+    
+    AR -.->|Pulls Image| FE
+    AR -.->|Pulls Image| Backend Container
+```
+
+### Useful Deployment Commands
+
+If you update the code locally and want to push the changes to production, use the following commands:
+
+**1. To deploy Frontend changes:**
+```bash
+# Build the image with the correct backend URL build args
+docker build -t us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/frontend:latest --build-arg NEXT_PUBLIC_API_URL=https://34-46-180-121.sslip.io --build-arg NEXT_PUBLIC_WS_URL=wss://34-46-180-121.sslip.io ./frontend/agenticflow
+
+# Push to Artifact Registry
+docker push us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/frontend:latest
+
+# Deploy directly to Cloud Run
+gcloud run deploy aletheia-frontend --image us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/frontend:latest --region us-central1 --project project-f97facc4-90fc-43df-91f
+```
+
+**2. To deploy Backend changes:**
+```bash
+# Build from the root directory
+docker build -t us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend:latest -f Dockerfile.backend .
+
+# Push to Artifact Registry
+docker push us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend:latest
+
+# SSH into the VM, pull the new image, and restart the container
+gcloud compute ssh aletheia-backend --zone=us-central1-a --command="sudo docker pull us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend:latest && sudo docker rm -f aletheia-backend && sudo docker run -d --name aletheia-backend --restart=always -p 8005:8005 -v /var/run/docker.sock:/var/run/docker.sock us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend:latest"
+```
+
+**3. Helpful VM Commands:**
+- Check Backend Logs: `gcloud compute ssh aletheia-backend --zone=us-central1-a --command="sudo docker logs aletheia-backend -f"`
+- Check if Sandbox Containers are running: `gcloud compute ssh aletheia-backend --zone=us-central1-a --command="sudo docker ps"`
+
 ### Agent Roles
 
 | Agent | Purpose | Tools Used |

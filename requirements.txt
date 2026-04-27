@@ -12,3 +12,4 @@ fastapi
 python-multipart
 websockets
 python-dotenv
+docker
