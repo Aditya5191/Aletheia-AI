@@ -1,6 +1,6 @@
 # Aletheia: Fairness Auditing Agent
 
-🌍 **Live Demo:** [https://aletheia-frontend-69262873588.us-central1.run.app/](https://aletheia-frontend-69262873588.us-central1.run.app/)
+**Live Demo:** [https://aletheia-frontend-69262873588.us-central1.run.app/](https://aletheia-frontend-69262873588.us-central1.run.app/)
 ## Quick Start (CLI Pipeline)
 
 Follow these steps to get the full automated multi-agent pipeline running via the terminal:
