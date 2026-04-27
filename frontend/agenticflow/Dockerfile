@@ -8,6 +8,12 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Bake in the backend API URL at build time
+ARG NEXT_PUBLIC_API_URL=http://localhost:8005
+ARG NEXT_PUBLIC_WS_URL=ws://localhost:8005
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
+
 # Build the app
 RUN npm run build
 

@@ -1,8 +1,8 @@
 FROM python:3.11-slim
 
-# Install Docker CLI (needed to spawn sandbox containers)
+# Install Docker CLI (needed to spawn sandbox containers on the host)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    docker.io \
+    docker.io curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -16,6 +16,7 @@ COPY agents/ agents/
 COPY backend/ backend/
 COPY mcps/ mcps/
 COPY .env .env
+COPY .secrets/ .secrets/
 
 # Create required directories
 RUN mkdir -p dataset outputs
