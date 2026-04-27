@@ -167,7 +167,7 @@ graph TD
             FastAPI -->|Controls| MCP
             MCP -->|Docker API via Socket| SB1
             MCP -->|Docker API via Socket| SB2
-            FastAPI -.->|docker cp (sync outputs)| SB1
+            FastAPI -.->|"docker cp (sync outputs)"| SB1
         end
         
         AR[(Artifact Registry\nus-central1)]
@@ -177,7 +177,7 @@ graph TD
     FE -->|WSS / HTTPS| Caddy
     
     AR -.->|Pulls Image| FE
-    AR -.->|Pulls Image| Backend Container
+    AR -.->|Pulls Image| FastAPI
 ```
 
 ### Useful Deployment Commands
