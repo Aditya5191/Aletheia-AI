@@ -16,7 +16,7 @@ interface ViewModeContextType {
 const ViewModeContext = createContext<ViewModeContextType | undefined>(undefined);
 
 export function ViewModeProvider({ children }: { children: ReactNode }) {
-  const [viewMode, setViewMode] = useState<ViewMode>("user");
+  const [viewMode, setViewMode] = useState<ViewMode>("developer");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showDocs, setShowDocs] = useState(false);
 
