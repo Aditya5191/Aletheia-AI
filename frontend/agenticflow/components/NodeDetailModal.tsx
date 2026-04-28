@@ -1976,18 +1976,30 @@ export default function NodeDetailModal({ nodeId, onClose }: NodeDetailModalProp
             )}
           </div>
 
-          {/* Download PDF button — only for Report Writer */}
+          {/* Download buttons — only for Report Writer */}
           {nodeId === "report-writer" && (
-            <a
-              href={`${API_BASE_URL}/outputs/final_report.pdf`}
-              download="Aletheia_Fairness_Report.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-[#7AA2F7] to-[#BB9AF7] text-[#1a1b26] hover:shadow-[0_0_20px_rgba(122,162,247,0.4)] transition-all cursor-pointer"
-            >
-              <Download className="w-4 h-4" />
-              Download PDF
-            </a>
+            <div className="flex items-center gap-3">
+              <a
+                href={`${API_BASE_URL}/outputs/fixed_dataset.csv`}
+                download="Aletheia_Fixed_Dataset.csv"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-[#7AA2F7] text-[#7AA2F7] hover:bg-[#7AA2F7]/10 transition-all cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+                Fixed Data
+              </a>
+              <a
+                href={`${API_BASE_URL}/outputs/final_report.pdf`}
+                download="Aletheia_Fairness_Report.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-[#7AA2F7] to-[#BB9AF7] text-[#1a1b26] hover:shadow-[0_0_20px_rgba(122,162,247,0.4)] transition-all cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+                PDF Report
+              </a>
+            </div>
           )}
         </div>
 
