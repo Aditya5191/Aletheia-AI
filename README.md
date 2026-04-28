@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="./diagram/logo.png" alt="Aletheia Logo" width="120"/>
-
 # ALETHEIA AI
 
 ### Production-Grade Algorithmic Fairness Auditing via Multi-Agent AI
