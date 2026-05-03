@@ -157,10 +157,13 @@ async def get_output_file(filename: str):
 @app.websocket("/ws/audit")
 async def audit_websocket(websocket: WebSocket):
     await websocket.accept()
+    print("[WS] WebSocket accepted, entering handler...", flush=True)
     
     # Guard: ensure dataset exists before starting
     data_path = os.path.abspath("dataset/data.csv")
+    print(f"[WS] Checking dataset at: {data_path}, exists={os.path.exists(data_path)}, size={os.path.getsize(data_path) if os.path.exists(data_path) else 0}", flush=True)
     if not os.path.exists(data_path) or os.path.getsize(data_path) < 10:
+        print("[WS] Dataset check FAILED - closing connection", flush=True)
         await websocket.send_json({
             "type": "error",
             "message": "No dataset uploaded. Please upload a CSV file first."
@@ -200,9 +203,12 @@ async def audit_websocket(websocket: WebSocket):
     
     try:
         # Clean up any stale containers/outputs from previous runs (handles mid-audit reload)
+        print("[AUDIT] Starting audit websocket handler...", flush=True)
         cleanup_stale_resources()
         
+        print("[AUDIT] Starting Docker sandbox...", flush=True)
         container_id = start_docker_sandbox()
+        print(f"[AUDIT] Sandbox started: {container_id[:12]}", flush=True)
         await websocket.send_json({"type": "status", "message": f"Sandbox started: {container_id[:12]}"})
         
         # Start Sandbox MCP (log stderr for debugging)
@@ -229,19 +235,39 @@ async def audit_websocket(websocket: WebSocket):
             stderr=subprocess.PIPE
         )
         
-        await asyncio.sleep(5) # Wait for server boot
+        await asyncio.sleep(3) # Brief initial wait
         
-        # Check if MCP servers are still running
-        for name, proc in [("Sandbox MCP", mcp_process), ("Auditor MCP", auditor_process), ("Miscellaneous MCP", miscellaneous_process)]:
-            if proc.poll() is not None:
-                stderr_out = proc.stderr.read().decode() if proc.stderr else ""
-                stdout_out = proc.stdout.read().decode() if proc.stdout else ""
-                print(f"[ERROR] {name} crashed on startup (exit code {proc.returncode})")
-                print(f"[ERROR] {name} stderr: {stderr_out}")
-                print(f"[ERROR] {name} stdout: {stdout_out}")
-                raise RuntimeError(f"{name} failed to start: {stderr_out[:500]}")
-            else:
-                print(f"[OK] {name} is running (PID {proc.pid})")
+        # Verify each MCP server is actually accepting HTTP connections
+        # Note: FastMCP servers (Auditor, Miscellaneous) return 404 at /
+        # but that still proves the HTTP server is alive and listening
+        import aiohttp
+        mcp_endpoints = [
+            ("Sandbox MCP", mcp_process, "http://localhost:8000/"),
+            ("Auditor MCP", auditor_process, "http://localhost:8001/sse"),
+            ("Miscellaneous MCP", miscellaneous_process, "http://localhost:8002/sse"),
+        ]
+        for name, proc, url in mcp_endpoints:
+            ready = False
+            for attempt in range(15):  # Retry up to 15 times (30 seconds total)
+                if proc.poll() is not None:
+                    stderr_out = proc.stderr.read().decode() if proc.stderr else ""
+                    stdout_out = proc.stdout.read().decode() if proc.stdout else ""
+                    print(f"[ERROR] {name} crashed on startup (exit code {proc.returncode})", flush=True)
+                    print(f"[ERROR] {name} stderr: {stderr_out}", flush=True)
+                    print(f"[ERROR] {name} stdout: {stdout_out}", flush=True)
+                    raise RuntimeError(f"{name} failed to start: {stderr_out[:500]}")
+                try:
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(url, timeout=aiohttp.ClientTimeout(total=2)) as resp:
+                            # Any HTTP response means the server is alive
+                            ready = True
+                            print(f"[OK] {name} is ready (PID {proc.pid}, attempt {attempt+1}, status={resp.status})", flush=True)
+                            break
+                except Exception:
+                    pass
+                await asyncio.sleep(2)
+            if not ready:
+                raise RuntimeError(f"{name} did not become ready after 30 seconds")
 
         
         current_sender = None
@@ -334,10 +360,12 @@ async def audit_websocket(websocket: WebSocket):
         except:
             pass
             
-    except (WebSocketDisconnect, ConnectionClosedOK, ConnectionClosedError):
-        print("[WS] Client disconnected.")
+    except (WebSocketDisconnect, ConnectionClosedOK, ConnectionClosedError) as e:
+        print(f"[WS] Client disconnected: {e}", flush=True)
     except RuntimeError as e:
-        print(f"[WS] Runtime error during cleanup (safe to ignore): {e}")
+        print(f"[WS] Runtime error: {e}", flush=True)
+        import traceback as tb
+        tb.print_exc()
     except Exception as e:
         full_tb = traceback.format_exc()
         print(f"[ERROR] Audit failed: {e}")

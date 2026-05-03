@@ -13,3 +13,4 @@ python-multipart
 websockets
 python-dotenv
 docker
+aiohttp

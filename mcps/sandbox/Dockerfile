@@ -11,7 +11,9 @@ RUN pip install --no-cache-dir \
     shap \
     matplotlib \
     seaborn \
-    joblib
+    joblib \
+    tabulate \
+    weasyprint
 
 RUN mkdir -p /workspace/outputs
 
