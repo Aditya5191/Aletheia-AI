@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useState, useEffect, useRef } from "react";
 import { Handle, Position, type NodeProps, type Node, useUpdateNodeInternals } from "@xyflow/react";
 import { Database, Brain, Code, MoreHorizontal, ChevronDown, ChevronUp, Clock, Wrench, Play, Loader2 } from "lucide-react";
 import { useViewMode } from "./ViewModeContext";
@@ -59,10 +59,26 @@ function AgentNode({ id, data, selected }: NodeProps<AgentNodeType>) {
   const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
   const [showAllTools, setShowAllTools] = useState(false);
   const [localIsRunning, setLocalIsRunning] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
   const updateNodeInternals = useUpdateNodeInternals();
   const { viewMode } = useViewMode();
 
   const isAgentRunning = data.isAgentRunning !== undefined ? data.isAgentRunning : localIsRunning;
+  const prevIsRunningRef = useRef(isAgentRunning);
+
+  useEffect(() => {
+    // Only show notification if we went from running to not running
+    if (prevIsRunningRef.current === true && isAgentRunning === false) {
+      setShowNotification(true);
+    }
+    prevIsRunningRef.current = isAgentRunning;
+  }, [isAgentRunning]);
+
+  useEffect(() => {
+    if (isHighlighted && showNotification) {
+      setShowNotification(false);
+    }
+  }, [isHighlighted, showNotification]);
 
   const toggleTool = (e: React.MouseEvent, toolId: string) => {
     e.stopPropagation();
@@ -92,12 +108,21 @@ function AgentNode({ id, data, selected }: NodeProps<AgentNodeType>) {
 
   return (
     <div
-      className={`w-[280px] rounded-xl shadow-2xl flex flex-col transition-colors ${
+      className={`w-[280px] rounded-xl shadow-2xl flex flex-col transition-colors relative ${
         isHighlighted
           ? "border border-primary-container bg-surface shadow-[0_8px_32px_rgba(208,188,255,0.1)]"
           : "border border-outline-variant bg-surface hover:border-primary-container"
       }`}
     >
+      {/* Completion Notification */}
+      {showNotification && (
+        <div className="absolute -top-12 left-1/2 -translate-x-1/2 flex flex-col items-center animate-bounce z-50">
+          <div className="bg-primary text-black text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg whitespace-nowrap">
+            Click to view results
+          </div>
+          <div className="w-2.5 h-2.5 bg-primary rotate-45 -mt-1.5 rounded-sm"></div>
+        </div>
+      )}
       {/* ---- Header ---- */}
       <div className="flex items-center justify-between p-2 border-b border-surface-container-highest bg-surface-container-low rounded-t-xl">
         <div className="flex items-center gap-2">

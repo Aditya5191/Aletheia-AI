@@ -210,6 +210,7 @@ The frontend is a live forensic observability dashboard built in Next.js with re
 
 **Key interface features:**
 - **Interactive Guided Tour** — a built-in "Show Tour" feature that visually walks users through the entire multi-agent fairness pipeline using mock test data
+- **Smart Notifications** — animated, bouncing tooltips that guide users to inspect agent nodes as soon as their tasks are completed
 - Drag-and-drop CSV upload with instant dataset preview
 - Interactive agent node graph — click any agent to inspect its live output, charts, and code
 - Deep-dive modal per agent showing Analytics, Review, and Code tabs
