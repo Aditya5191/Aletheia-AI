@@ -12,6 +12,7 @@ import {
   CloudUpload,
   File,
 } from "lucide-react";
+import { useViewMode } from "./ViewModeContext";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -45,6 +46,7 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
   const [error, setError] = useState("");
   const [recentUploads, setRecentUploads] = useState<UploadedFile[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { viewMode } = useViewMode();
 
   const formatSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -52,8 +54,12 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  // Check for existing dataset on mount
+  // Check for existing dataset on mount (skip in test-developer mode)
   useEffect(() => {
+    if (viewMode === "test-developer") {
+      setRecentUploads([{ name: "data.csv", size: "71.3 KB", active: true }]);
+      return;
+    }
     fetch(`${API_BASE_URL}/dataset/status`)
       .then((res) => res.json())
       .then((data) => {
@@ -70,7 +76,7 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
       .catch(() => {
         // Backend not reachable yet — that's fine
       });
-  }, []);
+  }, [viewMode]);
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -115,21 +121,28 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
   );
 
   const handleDrop = useCallback(
-    (e: React.DragEvent) => {
+    async (e: React.DragEvent) => {
       e.preventDefault();
+      e.stopPropagation();
       setIsDragOver(false);
-      const file = e.dataTransfer.files[0];
+
+      if (data.isTourMode) return;
+
+      const file = e.dataTransfer.files?.[0];
       if (file) handleFile(file);
     },
-    [handleFile]
+    [handleFile, data.isTourMode]
   );
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (data.isTourMode) return;
       const file = e.target.files?.[0];
       if (file) handleFile(file);
+      // Reset input
+      if (inputRef.current) inputRef.current.value = "";
     },
-    [handleFile]
+    [handleFile, data.isTourMode]
   );
 
   return (
@@ -164,11 +177,14 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
           `}
           onDragOver={(e) => {
             e.preventDefault();
-            setIsDragOver(true);
+            if (!data.isTourMode) setIsDragOver(true);
           }}
           onDragLeave={() => setIsDragOver(false)}
           onDrop={handleDrop}
-          onClick={() => !isUploading && inputRef.current?.click()}
+          onClick={() => {
+            if (data.isTourMode) return;
+            if (!isUploading) inputRef.current?.click();
+          }}
         >
           {/* Icon */}
           <div

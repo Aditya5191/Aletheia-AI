@@ -13,6 +13,7 @@ import {
   Settings as SettingsIcon,
   CheckCircle,
   Menu,
+  FlaskConical,
 } from "lucide-react";
 import { useViewMode } from "./ViewModeContext";
 
@@ -73,6 +74,17 @@ export default function TopAppBar() {
           >
             <Terminal className="w-3.5 h-3.5" />
             Developer
+          </button>
+          <button
+            onClick={() => setViewMode("test-developer")}
+            className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold transition-all duration-300 ${
+              viewMode === "test-developer"
+                ? "bg-amber-500 text-white shadow-lg shadow-amber-900/40"
+                : "text-gray-500 hover:text-gray-300"
+            }`}
+          >
+            <FlaskConical className="w-3.5 h-3.5" />
+            Test
           </button>
           <button
             onClick={() => setViewMode("user")}

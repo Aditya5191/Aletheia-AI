@@ -6,6 +6,7 @@ import {
   HelpCircle,
   Zap,
   Fingerprint,
+  Compass,
 } from "lucide-react";
 
 import { useViewMode } from "./ViewModeContext";
@@ -31,7 +32,7 @@ const navItems: NavItem[] = [
 ];
 
 export default function SideNavBar() {
-  const { isSidebarCollapsed, setShowDocs } = useViewMode();
+  const { isSidebarCollapsed, setShowDocs, setShowTour } = useViewMode();
 
   return (
     <nav 
@@ -85,11 +86,11 @@ export default function SideNavBar() {
       <div className="px-6 mt-auto whitespace-nowrap">
         <div className="flex flex-col gap-2 pt-4 border-t border-[#1F2228]">
           <button
-            onClick={() => setShowDocs(true)}
+            onClick={() => setShowTour(true)}
             className="flex items-center gap-3 text-gray-500 hover:text-gray-300 transition-colors text-xs cursor-pointer w-full"
           >
-            <FileText className="w-4 h-4" />
-            Docs
+            <Compass className="w-4 h-4" />
+            Tour
           </button>
           <a
             href="#"

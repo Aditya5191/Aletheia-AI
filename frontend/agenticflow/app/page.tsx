@@ -3,18 +3,18 @@
 import TopAppBar from "@/components/TopAppBar";
 import SideNavBar from "@/components/SideNavBar";
 import FlowCanvas from "@/components/FlowCanvas";
-import DocsModal from "@/components/DocsModal";
+import TourWindow from "@/components/TourWindow";
 import { ViewModeProvider, useViewMode } from "@/components/ViewModeContext";
 
 function HomeContent() {
-  const { showDocs, setShowDocs } = useViewMode();
+  const { showTour, setShowTour } = useViewMode();
   
   return (
     <>
       <TopAppBar />
       <SideNavBar />
       <FlowCanvas />
-      {showDocs && <DocsModal onClose={() => setShowDocs(false)} />}
+      {showTour && <TourWindow onClose={() => setShowTour(false)} />}
     </>
   );
 }

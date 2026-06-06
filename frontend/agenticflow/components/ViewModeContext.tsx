@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
-export type ViewMode = "developer" | "user";
+export type ViewMode = "developer" | "user" | "test-developer";
 
 interface ViewModeContextType {
   viewMode: ViewMode;
@@ -11,6 +11,13 @@ interface ViewModeContextType {
   setIsSidebarCollapsed: (collapsed: boolean) => void;
   showDocs: boolean;
   setShowDocs: (show: boolean) => void;
+  showTour: boolean;
+  setShowTour: (show: boolean) => void;
+  // Tour-driven modal control
+  tourNodeId: string | null;
+  setTourNodeId: (id: string | null) => void;
+  tourTab: "chart" | "review" | "code" | null;
+  setTourTab: (tab: "chart" | "review" | "code" | null) => void;
 }
 
 const ViewModeContext = createContext<ViewModeContextType | undefined>(undefined);
@@ -19,6 +26,9 @@ export function ViewModeProvider({ children }: { children: ReactNode }) {
   const [viewMode, setViewMode] = useState<ViewMode>("developer");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showDocs, setShowDocs] = useState(false);
+  const [showTour, setShowTour] = useState(false);
+  const [tourNodeId, setTourNodeId] = useState<string | null>(null);
+  const [tourTab, setTourTab] = useState<"chart" | "review" | "code" | null>(null);
 
   return (
     <ViewModeContext.Provider value={{ 
@@ -27,7 +37,13 @@ export function ViewModeProvider({ children }: { children: ReactNode }) {
       isSidebarCollapsed, 
       setIsSidebarCollapsed,
       showDocs,
-      setShowDocs
+      setShowDocs,
+      showTour,
+      setShowTour,
+      tourNodeId,
+      setTourNodeId,
+      tourTab,
+      setTourTab
     }}>
       {children}
     </ViewModeContext.Provider>

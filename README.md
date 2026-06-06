@@ -209,6 +209,7 @@ For every dataset, Aletheia automatically generates:
 The frontend is a live forensic observability dashboard built in Next.js with real-time WebSocket streaming.
 
 **Key interface features:**
+- **Interactive Guided Tour** — a built-in "Show Tour" feature that visually walks users through the entire multi-agent fairness pipeline using mock test data
 - Drag-and-drop CSV upload with instant dataset preview
 - Interactive agent node graph — click any agent to inspect its live output, charts, and code
 - Deep-dive modal per agent showing Analytics, Review, and Code tabs

@@ -26,6 +26,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
+import { useViewMode } from "./ViewModeContext";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -34,6 +35,7 @@ import remarkBreaks from "remark-breaks";
 interface NodeDetailModalProps {
   nodeId: string;
   onClose: () => void;
+  forceTestMode?: boolean;
 }
 
 /* ------------------------------------------------------------------ */
@@ -1755,12 +1757,21 @@ function ChartSection({ charts }: { charts: ChartDef[] }) {
 /*  Modal Component                                                    */
 /* ------------------------------------------------------------------ */
 
-export default function NodeDetailModal({ nodeId, onClose }: NodeDetailModalProps) {
+export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: NodeDetailModalProps) {
+  const { viewMode, tourTab } = useViewMode();
+  const isTestMode = forceTestMode || viewMode === "test-developer";
   const detail = nodeDetails[nodeId];
   const [activeTab, setActiveTab] = useState<"chart" | "review" | "code">(nodeId === "report-writer" ? "review" : "chart");
   const [copied, setCopied] = useState(false);
   const [copiedCellIdx, setCopiedCellIdx] = useState<number | null>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
+
+  // Tour can control active tab
+  useEffect(() => {
+    if (tourTab) {
+      setActiveTab(tourTab);
+    }
+  }, [tourTab]);
 
   const agentMap: Record<string, number> = {
     "data-inspector": 1,
@@ -1777,8 +1788,11 @@ export default function NodeDetailModal({ nodeId, onClose }: NodeDetailModalProp
   const [isLoadingCharts, setIsLoadingCharts] = useState(!!agentNum);
 
   useEffect(() => {
-    if (!agentNum) {
+    if (!agentNum || isTestMode) {
       setIsLoadingCharts(false);
+      if (isTestMode && detail?.codeSnippet) {
+        setDynamicCode([{ code: detail.codeSnippet, output: "Mock execution output..." }]);
+      }
       return;
     }
     
@@ -1854,15 +1868,17 @@ export default function NodeDetailModal({ nodeId, onClose }: NodeDetailModalProp
     intervalId = setInterval(fetchCharts, 2000); // poll every 2s
 
     return () => clearInterval(intervalId);
-  }, [agentNum]);
+  }, [agentNum, isTestMode]);
 
-  // Only use dynamic data — never fall back to hardcoded mocks
-  const chartsToRender = dynamicCharts || [];
-  const metricsToRender = dynamicMetrics?.metrics || [];
-  const findingsToRender = dynamicMetrics?.findings || [];
-  const reviewToRender = dynamicReview || "";
+  // In test-developer mode, use the static hardcoded data; in live mode, use dynamic API data
+  const chartsToRender = isTestMode ? (detail?.charts || []) : (dynamicCharts || []);
+  const metricsToRender = isTestMode ? (detail?.metrics || []) : (dynamicMetrics?.metrics || []);
+  const findingsToRender = isTestMode ? (detail?.findings || []) : (dynamicMetrics?.findings || []);
+  const reviewToRender = isTestMode ? (detail?.review || "") : (dynamicReview || "");
 
-  const allCode = dynamicCode?.map((c, i) => `# Cell [${i + 1}]\n${c.code}`).join("\n\n") || "";
+  const allCode = isTestMode
+    ? (detail?.codeSnippet || "")
+    : (dynamicCode?.map((c, i) => `# Cell [${i + 1}]\n${c.code}`).join("\n\n") || "");
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(allCode);
