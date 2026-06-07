@@ -32,7 +32,7 @@ export default function Landing() {
       y: -100,
       rotation: 15,
       scrollTrigger: {
-        trigger: 'body',
+        trigger: container.current,
         start: 'top top',
         end: 'bottom bottom',
         scrub: 1
@@ -43,7 +43,7 @@ export default function Landing() {
       y: -200,
       rotation: -15,
       scrollTrigger: {
-        trigger: 'body',
+        trigger: container.current,
         start: 'top top',
         end: 'bottom bottom',
         scrub: 1.5
