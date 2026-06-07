@@ -467,7 +467,7 @@ export default function TourWindow({ onClose }: TourWindowProps) {
       <div
         style={{
           width: "100%", maxWidth: "1200px", height: "calc(100vh - 40px)",
-          backgroundColor: "#111317", borderRadius: "20px",
+          backgroundColor: "var(--color-surface-lowest)", borderRadius: "20px",
           border: "1px solid #2a2d37",
           boxShadow: "0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(139,92,246,0.08)",
           display: "flex", flexDirection: "column", overflow: "hidden",
@@ -480,7 +480,7 @@ export default function TourWindow({ onClose }: TourWindowProps) {
         {/* Header */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "14px 20px", borderBottom: "1px solid #1F2228",
+          padding: "14px 20px", borderBottom: "1px solid var(--color-outline-variant)",
           background: "linear-gradient(135deg, rgba(139,92,246,0.06) 0%, rgba(217,70,239,0.03) 100%)",
           flexShrink: 0,
         }}>

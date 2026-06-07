@@ -532,7 +532,7 @@ function InteractiveLineChart({ chartDef }: { chartDef: ChartDef }) {
               cy={p.y}
               r={hoveredIdx === i ? 5 : 3}
               fill={hoveredIdx === i ? "#fff" : chartColor}
-              stroke="#111317"
+              stroke="var(--color-surface-lowest)"
               strokeWidth="2"
               className="transition-all duration-300 ease-out pointer-events-none"
               style={{
@@ -550,7 +550,7 @@ function InteractiveLineChart({ chartDef }: { chartDef: ChartDef }) {
                   width={72}
                   height={24}
                   rx={6}
-                  fill="#282a2e"
+                  fill="var(--color-outline)"
                   stroke="#494454"
                   strokeWidth="1"
                 />
@@ -692,7 +692,7 @@ function InteractiveBarChart({ chartDef }: { chartDef: ChartDef }) {
                       width={72}
                       height={24}
                       rx={6}
-                      fill="#282a2e"
+                      fill="var(--color-outline)"
                       stroke="#494454"
                       strokeWidth="1"
                     />
@@ -1119,7 +1119,7 @@ function InteractivePieChart({ chartDef }: { chartDef: ChartDef }) {
               <path
                 d={pathData}
                 fill={colors[i % colors.length]}
-                stroke="#15171B"
+                stroke="var(--color-surface)"
                 strokeWidth={2}
                 className="transition-all duration-300 ease-out cursor-pointer"
                 opacity={hoveredIdx === null || hoveredIdx === i ? 1 : 0.5}
@@ -1225,7 +1225,7 @@ function InteractiveScatterChart({ chartDef }: { chartDef: ChartDef }) {
                 y1={y}
                 x2={W - PAD_X}
                 y2={y}
-                stroke="#1F2228"
+                stroke="var(--color-outline-variant)"
                 strokeWidth="1"
                 strokeDasharray="4 4"
               />
@@ -1252,7 +1252,7 @@ function InteractiveScatterChart({ chartDef }: { chartDef: ChartDef }) {
                 y1={PAD_TOP}
                 x2={x}
                 y2={PAD_TOP + chartH}
-                stroke="#1F2228"
+                stroke="var(--color-outline-variant)"
                 strokeWidth="1"
                 strokeDasharray="4 4"
               />
@@ -1322,7 +1322,7 @@ function InteractiveScatterChart({ chartDef }: { chartDef: ChartDef }) {
                     width={72}
                     height={24}
                     rx={6}
-                    fill="#282a2e"
+                    fill="var(--color-outline)"
                     stroke="#494454"
                   />
                   <text
@@ -1345,7 +1345,7 @@ function InteractiveScatterChart({ chartDef }: { chartDef: ChartDef }) {
 
 function InteractiveHeatmap({ chartDef }: { chartDef: ChartDef }) {
   const [hovered, setHovered] = useState<{r: number, c: number} | null>(null);
-  const { data, xLabels = [], yLabels = [], colorScale = ["#15171B", "#d0bcff", "#ff5252"] } = chartDef;
+  const { data, xLabels = [], yLabels = [], colorScale = ["var(--color-surface)", "#d0bcff", "#ff5252"] } = chartDef;
   
   const W = 560;
   const H = 380;
@@ -1460,7 +1460,7 @@ function InteractiveHeatmap({ chartDef }: { chartDef: ChartDef }) {
                       width={60}
                       height={20}
                       rx={4}
-                      fill="#282a2e"
+                      fill="var(--color-outline)"
                       stroke="#494454"
                     />
                     <text
@@ -1513,7 +1513,7 @@ function InteractiveHeatmap({ chartDef }: { chartDef: ChartDef }) {
                 height={legendH}
                 rx={3}
                 fill="none"
-                stroke="#1F2228"
+                stroke="var(--color-outline-variant)"
                 strokeWidth={1}
               />
 
@@ -1694,14 +1694,14 @@ function ChartSection({ charts }: { charts: ChartDef[] }) {
 
   if (!activeChart) {
     return (
-      <div className="bg-surface-container rounded-xl border border-[#1F2228] p-5 flex flex-col h-[300px] items-center justify-center">
+      <div className="bg-surface-container rounded-xl border border-outline-variant p-5 flex flex-col h-[300px] items-center justify-center">
         <p className="text-on-surface-variant text-sm">No chart data available yet.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-surface-container rounded-xl border border-[#1F2228] p-5 flex flex-col h-full">
+    <div className="bg-surface-container rounded-xl border border-outline-variant p-5 flex flex-col h-full">
       {/* Header & Tabs */}
       <div className="flex items-center justify-between mb-4">
         <h4 className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider flex items-center gap-2">
@@ -1714,14 +1714,14 @@ function ChartSection({ charts }: { charts: ChartDef[] }) {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center justify-between gap-3 bg-[#111317] border border-[#1F2228] text-on-surface-variant text-[11px] font-medium rounded-full px-4 py-1.5 hover:border-[#333539] hover:text-on-surface focus:outline-none focus:border-primary transition-colors cursor-pointer min-w-[160px]"
+              className="flex items-center justify-between gap-3 bg-surface-lowest border border-outline-variant text-on-surface-variant text-[11px] font-medium rounded-full px-4 py-1.5 hover:border-outline hover:text-on-surface focus:outline-none focus:border-primary transition-colors cursor-pointer min-w-[160px]"
             >
               <span className="truncate">{activeChart.title || activeChart.label || `Chart ${activeIdx + 1}`}</span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 text-outline ${isDropdownOpen ? "rotate-180" : ""}`} />
             </button>
             
             {isDropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-full min-w-[180px] bg-[#15171B] border border-[#282a2e] rounded-xl shadow-2xl overflow-hidden z-50 py-1 flex flex-col backdrop-blur-xl">
+              <div className="absolute right-0 top-full mt-2 w-full min-w-[180px] bg-surface border border-outline-variant/30 rounded-xl shadow-2xl overflow-hidden z-50 py-1 flex flex-col backdrop-blur-xl">
                 {charts.map((chart, idx) => (
                   <button
                     key={chart.id || `chart-${idx}`}
@@ -1731,7 +1731,7 @@ function ChartSection({ charts }: { charts: ChartDef[] }) {
                     }}
                     className={`w-full text-left px-4 py-2.5 text-[11px] font-medium transition-colors cursor-pointer ${
                       activeIdx === idx
-                        ? "bg-[#1e2024] text-primary"
+                        ? "bg-surface-container-high text-primary"
                         : "text-on-surface-variant hover:bg-[#1a1c20] hover:text-on-surface"
                     }`}
                   >
@@ -1911,11 +1911,11 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
       onClick={handleBackdropClick}
       className="fixed inset-0 z-[200] flex items-center justify-center p-8 bg-black/60 backdrop-blur-sm animate-[fadeIn_200ms_ease-out]"
     >
-      <div className="w-full max-w-[1100px] max-h-[calc(100vh-64px)] bg-[#15171B] border border-[#1F2228] rounded-2xl shadow-[0_32px_80px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden animate-[slideUp_250ms_ease-out]">
+      <div className="w-full max-w-[1100px] max-h-[calc(100vh-64px)] bg-surface border border-outline-variant rounded-2xl shadow-[0_32px_80px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden animate-[slideUp_250ms_ease-out]">
         {/* ---- Header ---- */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#1F2228] bg-[#111317]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant bg-surface-lowest">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary-container/10 border border-[#1F2228] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-lg bg-primary-container/10 border border-outline-variant flex items-center justify-center">
               {iconMap[detail.iconType]}
             </div>
             <div>
@@ -1938,7 +1938,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-[#1F2228] transition-colors cursor-pointer"
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -1952,7 +1952,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                 onClick={() => setActiveTab("chart")}
                 className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
                   activeTab === "chart"
-                    ? "bg-surface-container text-primary border border-b-0 border-[#1F2228]"
+                    ? "bg-surface-container text-primary border border-b-0 border-outline-variant"
                     : "text-outline hover:text-on-surface-variant"
                 }`}
               >
@@ -1966,7 +1966,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
               onClick={() => setActiveTab("review")}
               className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
                 activeTab === "review"
-                  ? "bg-surface-container text-primary border border-b-0 border-[#1F2228]"
+                  ? "bg-surface-container text-primary border border-b-0 border-outline-variant"
                   : "text-outline hover:text-on-surface-variant"
               }`}
             >
@@ -1980,7 +1980,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                 onClick={() => setActiveTab("code")}
                 className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
                   activeTab === "code"
-                    ? "bg-surface-container text-primary border border-b-0 border-[#1F2228]"
+                    ? "bg-surface-container text-primary border border-b-0 border-outline-variant"
                     : "text-outline hover:text-on-surface-variant"
                 }`}
               >
@@ -2026,7 +2026,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
               {/* Chart — 3 cols */}
               <div className="lg:col-span-3">
                 {isLoadingCharts ? (
-                  <div className="bg-surface-container rounded-xl border border-[#1F2228] p-5 flex flex-col h-[300px] items-center justify-center">
+                  <div className="bg-surface-container rounded-xl border border-outline-variant p-5 flex flex-col h-[300px] items-center justify-center">
                     <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
                     <p className="text-on-surface font-medium">Making charts...</p>
                     <p className="text-xs text-outline mt-1">Waiting for agent to generate data</p>
@@ -2043,7 +2043,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                   {metricsToRender.map((m) => (
                     <div
                       key={m.label}
-                      className="bg-surface-container rounded-xl border border-[#1F2228] p-4 flex flex-col gap-1 hover:border-primary-container/40 transition-colors overflow-hidden"
+                      className="bg-surface-container rounded-xl border border-outline-variant p-4 flex flex-col gap-1 hover:border-primary-container/40 transition-colors overflow-hidden"
                     >
                       <span className="text-[11px] text-outline uppercase tracking-wider truncate" title={m.label}>
                         {m.label}
@@ -2078,7 +2078,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
           {activeTab === "review" && (
             /* Review tab */
             <div className="max-w-3xl mx-auto">
-              <div className="bg-surface-container rounded-xl border border-[#1F2228] p-6">
+              <div className="bg-surface-container rounded-xl border border-outline-variant p-6">
                 <h4 className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-4 flex items-center gap-2">
                   <FileText className="w-4 h-4" />
                   Execution Review
@@ -2095,7 +2095,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                 {metricsToRender.map((m) => (
                   <div
                     key={m.label}
-                    className="bg-surface-container rounded-xl border border-[#1F2228] p-4 text-center overflow-hidden"
+                    className="bg-surface-container rounded-xl border border-outline-variant p-4 text-center overflow-hidden"
                   >
                     <span className="text-[10px] text-outline uppercase tracking-wider block truncate" title={m.label}>
                       {m.label}
@@ -2127,7 +2127,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                 </div>
                 <button
                   onClick={handleCopy}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-outline hover:text-on-surface hover:bg-[#1F2228] transition-all cursor-pointer border border-[#1F2228]"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-outline hover:text-on-surface hover:bg-surface-container transition-all cursor-pointer border border-outline-variant"
                 >
                   {copied ? (
                     <>
@@ -2145,7 +2145,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
 
               {/* Notebook Cells */}
               {!dynamicCode || dynamicCode.length === 0 ? (
-                <div className="bg-surface-container rounded-xl border border-[#1F2228] p-8 flex flex-col items-center justify-center">
+                <div className="bg-surface-container rounded-xl border border-outline-variant p-8 flex flex-col items-center justify-center">
                   <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
                   <p className="text-on-surface font-medium">Waiting for code cells...</p>
                   <p className="text-xs text-outline mt-1">Code will appear as the agent executes</p>
@@ -2153,9 +2153,9 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
               ) : (
                 <div className="flex flex-col gap-3">
                   {dynamicCode.map((cell, idx) => (
-                    <div key={idx} className="bg-[#111317] rounded-xl border border-[#1F2228] overflow-hidden">
+                    <div key={idx} className="bg-surface-lowest rounded-xl border border-outline-variant overflow-hidden">
                       {/* Cell Header */}
-                      <div className="flex items-center justify-between px-4 py-2 bg-[#1A1D21] border-b border-[#1F2228]">
+                      <div className="flex items-center justify-between px-4 py-2 bg-surface-container border-b border-outline-variant">
                         <div className="flex items-center gap-2">
                           <Play className="w-3 h-3 text-secondary" />
                           <span className="text-[10px] font-mono text-outline">In [{idx + 1}]</span>
@@ -2166,7 +2166,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                             setCopiedCellIdx(idx);
                             setTimeout(() => setCopiedCellIdx(null), 1500);
                           }}
-                          className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium text-outline hover:text-on-surface hover:bg-[#282A2E] transition-all cursor-pointer"
+                          className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium text-outline hover:text-on-surface hover:bg-[var(--color-outline)] transition-all cursor-pointer"
                         >
                           {copiedCellIdx === idx ? (
                             <>
@@ -2182,7 +2182,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                         </button>
                       </div>
                       {/* Code */}
-                      <div className="p-4 overflow-x-auto border-b border-[#1F2228]">
+                      <div className="p-4 overflow-x-auto border-b border-outline-variant">
                         <pre className="text-[12px] font-mono leading-relaxed">
                           <code style={{color:'#A9B1D6'}}>
                             {cell.code.split('\n').map((line, i) => (

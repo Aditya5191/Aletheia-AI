@@ -224,7 +224,7 @@ function AgentNode({ id, data, selected }: NodeProps<AgentNodeType>) {
             {(showAllTools ? data.toolCalls : data.toolCalls.slice(-1)).map((tool) => {
               const isExpanded = expandedTools[tool.id] || false;
               return (
-                <div key={tool.id} className="bg-[#1A1D21] border border-[#282A2E] rounded-lg overflow-hidden cursor-default">
+                <div key={tool.id} className="bg-surface-container border border-outline-variant/30 rounded-lg overflow-hidden cursor-default">
                   {(() => {
                     let displayTitle = tool.name;
                     try {
@@ -238,9 +238,9 @@ function AgentNode({ id, data, selected }: NodeProps<AgentNodeType>) {
                     return (
                       <button
                         onClick={(e) => toggleTool(e, tool.id)}
-                        className="w-full flex items-center gap-2 p-2 text-xs text-outline hover:text-on-surface hover:bg-[#282A2E] transition-colors"
+                        className="w-full flex items-center gap-2 p-2 text-xs text-outline hover:text-on-surface hover:bg-[var(--color-outline)] transition-colors"
                       >
-                        <div className="w-5 h-5 rounded-full bg-[#15171B] border border-[#282A2E] flex items-center justify-center shrink-0">
+                        <div className="w-5 h-5 rounded-full bg-surface border border-outline-variant/30 flex items-center justify-center shrink-0">
                           <Wrench className="w-3 h-3 text-outline" />
                         </div>
                         <span className="flex-1 text-left font-mono truncate" title={displayTitle}>{displayTitle}</span>
@@ -250,12 +250,12 @@ function AgentNode({ id, data, selected }: NodeProps<AgentNodeType>) {
                   })()}
                   
                   {isExpanded && (
-                    <div className="p-2 border-t border-[#282A2E] bg-[#15171B] flex flex-col gap-2">
-                      <div className="bg-[#0E1015] border border-[#1F2228] rounded-md p-2 w-full font-mono text-[10px] overflow-x-auto hide-scrollbar flex flex-col gap-2">
+                    <div className="p-2 border-t border-outline-variant/30 bg-surface flex flex-col gap-2">
+                      <div className="bg-background border border-outline-variant rounded-md p-2 w-full font-mono text-[10px] overflow-x-auto hide-scrollbar flex flex-col gap-2">
                         {/* Parameters */}
                         {tool.inputs && (
                           <div>
-                            <div className="inline-block bg-[#1A1D21] text-outline px-1.5 py-0.5 rounded text-[9px] mb-1.5">
+                            <div className="inline-block bg-surface-container text-outline px-1.5 py-0.5 rounded text-[9px] mb-1.5">
                               Parameters
                             </div>
                             <pre className="text-[#9ECE6A] whitespace-pre-wrap break-all">
@@ -265,7 +265,7 @@ function AgentNode({ id, data, selected }: NodeProps<AgentNodeType>) {
                         )}
                         {/* Result */}
                         <div>
-                          <div className="inline-block bg-[#1A1D21] text-outline px-1.5 py-0.5 rounded text-[9px] mb-1.5">
+                          <div className="inline-block bg-surface-container text-outline px-1.5 py-0.5 rounded text-[9px] mb-1.5">
                             Result
                           </div>
                           <pre className="text-[#A9B1D6] whitespace-pre-wrap break-all">

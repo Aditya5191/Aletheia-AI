@@ -10,10 +10,10 @@ interface DocsModalProps {
 export default function DocsModal({ onClose }: DocsModalProps) {
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="w-full max-w-4xl max-h-[85vh] bg-[#0B0D10] border border-[#1F2228] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in duration-300">
+      <div className="w-full max-w-4xl max-h-[85vh] bg-background border border-outline-variant rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in duration-300">
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#1F2228] flex justify-between items-center bg-[#15171B]">
+        <div className="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-violet-500/10 text-violet-400">
               <Book className="w-5 h-5" />
@@ -40,7 +40,7 @@ export default function DocsModal({ onClose }: DocsModalProps) {
               <Zap className="w-4 h-4" /> Quick Start Guide
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-[#15171B] border border-[#1F2228] hover:border-violet-500/30 transition-colors group">
+              <div className="p-4 rounded-xl bg-surface border border-outline-variant hover:border-violet-500/30 transition-colors group">
                 <div className="flex gap-4">
                   <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white font-bold text-sm shrink-0">1</div>
                   <div>
@@ -49,7 +49,7 @@ export default function DocsModal({ onClose }: DocsModalProps) {
                   </div>
                 </div>
               </div>
-              <div className="p-4 rounded-xl bg-[#15171B] border border-[#1F2228] hover:border-violet-500/30 transition-colors">
+              <div className="p-4 rounded-xl bg-surface border border-outline-variant hover:border-violet-500/30 transition-colors">
                 <div className="flex gap-4">
                   <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white font-bold text-sm shrink-0">2</div>
                   <div>
@@ -58,7 +58,7 @@ export default function DocsModal({ onClose }: DocsModalProps) {
                   </div>
                 </div>
               </div>
-              <div className="p-4 rounded-xl bg-[#15171B] border border-[#1F2228] hover:border-violet-500/30 transition-colors">
+              <div className="p-4 rounded-xl bg-surface border border-outline-variant hover:border-violet-500/30 transition-colors">
                 <div className="flex gap-4">
                   <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white font-bold text-sm shrink-0">3</div>
                   <div>
@@ -67,7 +67,7 @@ export default function DocsModal({ onClose }: DocsModalProps) {
                   </div>
                 </div>
               </div>
-              <div className="p-4 rounded-xl bg-[#15171B] border border-[#1F2228] hover:border-violet-500/30 transition-colors">
+              <div className="p-4 rounded-xl bg-surface border border-outline-variant hover:border-violet-500/30 transition-colors">
                 <div className="flex gap-4">
                   <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white font-bold text-sm shrink-0">4</div>
                   <div>
@@ -85,7 +85,7 @@ export default function DocsModal({ onClose }: DocsModalProps) {
               <Shield className="w-4 h-4" /> Core Concepts
             </h3>
             <div className="space-y-4">
-              <div className="p-5 rounded-xl bg-[#15171B] border border-[#1F2228]">
+              <div className="p-5 rounded-xl bg-surface border border-outline-variant">
                 <div className="flex justify-between items-start mb-3">
                   <p className="text-white font-semibold">The 80% Rule (Disparate Impact)</p>
                   <span className="text-[10px] bg-violet-500/10 text-violet-400 px-2 py-0.5 rounded font-bold">LEGAL STANDARD</span>
@@ -94,7 +94,7 @@ export default function DocsModal({ onClose }: DocsModalProps) {
                   A selection rate for any group which is less than four-fifths (80%) of the rate for the group with the highest rate will generally be regarded as evidence of adverse impact.
                 </p>
               </div>
-              <div className="p-5 rounded-xl bg-[#15171B] border border-[#1F2228]">
+              <div className="p-5 rounded-xl bg-surface border border-outline-variant">
                 <div className="flex justify-between items-start mb-3">
                   <p className="text-white font-semibold">Dockerized Sandbox Isolation</p>
                   <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded font-bold">SECURITY</span>
@@ -111,7 +111,7 @@ export default function DocsModal({ onClose }: DocsModalProps) {
             <h3 className="text-sm font-bold text-violet-400 uppercase tracking-widest mb-6 flex items-center gap-2">
               <Terminal className="w-4 h-4" /> Technical Reference
             </h3>
-            <div className="rounded-xl border border-[#1F2228] divide-y divide-[#1F2228]">
+            <div className="rounded-xl border border-outline-variant divide-y divide-[var(--color-outline-variant)]">
               <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer group">
                 <div className="flex items-center gap-4">
                   <FileText className="w-5 h-5 text-gray-500" />
@@ -146,7 +146,7 @@ export default function DocsModal({ onClose }: DocsModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-[#1F2228] bg-[#15171B] flex justify-between items-center text-[11px] text-gray-600">
+        <div className="px-6 py-4 border-t border-outline-variant bg-surface flex justify-between items-center text-[11px] text-gray-600">
           <p>© 2026 Aletheia AI Framework v1.0</p>
           <div className="flex gap-4">
             <a href="#" className="hover:text-violet-400">Privacy Policy</a>

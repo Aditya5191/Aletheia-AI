@@ -146,9 +146,9 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
   );
 
   return (
-    <div className="relative w-[320px] rounded-2xl bg-[#15171B] border border-[#1F2228] shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-visible">
+    <div className="relative w-[320px] rounded-2xl bg-surface border border-outline-variant shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-visible">
       {/* ---- Title Bar ---- */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#1F2228]">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-outline-variant">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
             <FileSpreadsheet className="w-4 h-4 text-primary" />
@@ -157,7 +157,7 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
             Upload Dataset
           </span>
         </div>
-        <button className="w-7 h-7 flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-[#1F2228] transition-colors cursor-pointer">
+        <button className="w-7 h-7 flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer">
           <MoreHorizontal className="w-4 h-4" />
         </button>
       </div>
@@ -172,7 +172,7 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
                 ? "border-primary bg-primary/5 scale-[1.01]"
                 : isUploading
                 ? "border-primary/40 bg-primary/5"
-                : "border-[#2A2D35] hover:border-[#3A3D45] bg-[#111317]"
+                : "border-[#2A2D35] hover:border-[#3A3D45] bg-surface-lowest"
             }
           `}
           onDragOver={(e) => {
@@ -189,7 +189,7 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
           {/* Icon */}
           <div
             className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              isUploading ? "bg-primary/15" : "bg-[#1F2228]"
+              isUploading ? "bg-primary/15" : "bg-surface-container"
             }`}
           >
             {isUploading ? (
@@ -247,12 +247,12 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors ${
                   f.active
                     ? "bg-secondary/5 border-secondary/20"
-                    : "bg-[#111317] border-[#1F2228]"
+                    : "bg-surface-lowest border-outline-variant"
                 }`}
               >
                 <div
                   className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${
-                    f.active ? "bg-secondary/15" : "bg-[#1F2228]"
+                    f.active ? "bg-secondary/15" : "bg-surface-container"
                   }`}
                 >
                   {f.active ? (
@@ -282,7 +282,7 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
       <Handle
         type="source"
         position={Position.Right}
-        className="!w-3.5 !h-3.5 !bg-primary !border-[3px] !border-[#15171B] !-right-[7px] !shadow-[0_0_8px_rgba(208,188,255,0.5)]"
+        className="!w-3.5 !h-3.5 !bg-primary !border-[3px] !border-[var(--color-surface)] !-right-[7px] !shadow-[0_0_8px_rgba(208,188,255,0.5)]"
       />
     </div>
   );

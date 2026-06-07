@@ -73,8 +73,8 @@
 body {
   background: var(--color-background);
   color: var(--color-on-background);
-  font-family: var(--font-inter);
-  overflow: hidden;
+  font-family: var(--font-sans, var(--font-inter));
+  overflow-x: hidden;
 }
 
 ::selection {
@@ -335,4 +335,57 @@ body {
 .custom-markdown strong {
   font-weight: 600;
   color: var(--color-on-surface);
+}
+
+/* Landing Page Styles */
+@font-face {
+  font-family: 'HeadingCustom';
+  src: url('/fonts/heading.ttf') format('truetype');
+  font-weight: 700 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'BodyCustom';
+  src: url('/fonts/body.ttf') format('truetype');
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-primary-dim: #50dcc0;
+  --font-display: "HeadingCustom", "Syne", sans-serif;
+  --font-sans: "BodyCustom", "DM Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-label: "JetBrains Mono", monospace;
+}
+
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-extrabold tracking-tight;
+    transform: scaleY(0.85);
+    transform-origin: center;
+    display: inline-block;
+    line-height: 1.1;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-surface-container-high/60 backdrop-blur-[12px];
+  }
+  
+  .btn-primary {
+    @apply bg-gradient-to-br from-primary to-primary-container text-on-primary font-display font-extrabold py-4 px-8 rounded-md transition-all hover:opacity-90 active:scale-[0.98] text-sm tracking-[0.2em];
+  }
+  
+  .btn-secondary {
+    @apply border border-outline-variant text-primary font-display font-extrabold py-2.5 px-6 rounded-md transition-all hover:bg-surface-container-high text-xs tracking-[0.1em];
+  }
+  
+  .card {
+    @apply bg-surface-container rounded-md overflow-hidden border border-white/[0.03];
+  }
 }

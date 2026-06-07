@@ -9,7 +9,7 @@ export default function AttributeNode({ data }: NodeProps<AttributeNodeType>) {
   const color = data.color || "#4edea3"; // default green
   return (
     <div 
-      className="px-5 py-2.5 rounded-full border border-[#1F2228] bg-[#111317] shadow-xl flex items-center justify-center transition-all hover:scale-105"
+      className="px-5 py-2.5 rounded-full border border-outline-variant bg-surface-lowest shadow-xl flex items-center justify-center transition-all hover:scale-105"
       style={{ boxShadow: `0 0 15px ${color}20` }}
     >
       <Handle 

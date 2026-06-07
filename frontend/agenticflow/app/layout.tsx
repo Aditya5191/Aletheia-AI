@@ -14,6 +14,9 @@ export const metadata: Metadata = {
     "Build, orchestrate, and deploy intelligent AI agent workflows with Aletheia.",
 };
 
+import { SmoothScroll } from "@/components/SmoothScroll";
+import { CustomCursor } from "@/components/CustomCursor";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -22,7 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} dark`}>
       <body className="font-[var(--font-inter)] antialiased tracking-tight">
-        {children}
+        <SmoothScroll>
+          <CustomCursor />
+          {children}
+        </SmoothScroll>
       </body>
     </html>
   );

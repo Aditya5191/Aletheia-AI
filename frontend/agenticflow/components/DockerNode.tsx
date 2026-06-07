@@ -97,8 +97,8 @@ function DockerNode({ data }: NodeProps<DockerNodeType>) {
       <div
         className="rounded-2xl border overflow-hidden transition-all duration-500"
         style={{
-          backgroundColor: "#15171B",
-          borderColor: isAnimating || isRunning ? cfg.color + "40" : "#1F2228",
+          backgroundColor: "var(--color-surface)",
+          borderColor: isAnimating || isRunning ? cfg.color + "40" : "var(--color-outline-variant)",
           boxShadow: isAnimating
             ? `0 0 24px ${cfg.pulseColor}, 0 0 48px ${cfg.pulseColor}`
             : isRunning
