@@ -15,7 +15,7 @@ from websockets.exceptions import ConnectionClosedOK, ConnectionClosedError
 # Import the agent graph logic
 import sys
 sys.path.append(os.path.abspath("."))
-from agents.graph import run_langgraph_agent
+from backend.dataset_backend.agents.graph import run_langgraph_agent
 
 app = FastAPI(title="Aletheia API")
 

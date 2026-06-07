@@ -52,7 +52,7 @@ def run_test():
     
     try:
         sys.path.append(os.path.abspath("agents"))
-        from agents.graph import run_langgraph_agent
+        from backend.dataset_backend.agents.graph import run_langgraph_agent
         asyncio.run(run_langgraph_agent(container_id))
     except KeyboardInterrupt:
         print("\nTest cancelled by user.")
