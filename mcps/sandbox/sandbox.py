@@ -15,6 +15,7 @@ file I/O inside Docker containers:
 
 import base64
 import io
+import logging
 import mimetypes
 import os
 import tarfile
@@ -24,37 +25,89 @@ from typing import Optional
 
 import docker
 
+# Sandbox logger — emits to stdout so the MCP server process captures it
+log = logging.getLogger("sandbox")
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s.%(msecs)03d [SANDBOX] %(levelname)s %(message)s",
+    datefmt="%H:%M:%S",
+)
+
 REPL_DAEMON_CODE = """
 import sys
 import io
 import json
+import signal
 import traceback
+import time
+import logging
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
+# Log to file so host can read it via docker exec
+logging.basicConfig(
+    filename='/tmp/repl_daemon.log',
+    level=logging.DEBUG,
+    format='%(asctime)s.%(msecs)03d [DAEMON] %(levelname)s %(message)s',
+    datefmt='%H:%M:%S',
+)
+log = logging.getLogger('repl_daemon')
+log.info('REPL daemon starting...')
+
 global_env = {}
+_cell_count = 0
+
+CELL_TIMEOUT = 300  # seconds
+
+class _CellTimeout(Exception):
+    pass
+
+def _timeout_handler(signum, frame):
+    raise _CellTimeout()
 
 class KernelHandler(BaseHTTPRequestHandler):
     def do_POST(self):
+        global _cell_count
+        _cell_count += 1
+        cell_num = _cell_count
+        t0 = time.time()
+
         content_length = int(self.headers.get('Content-Length', 0))
         code = self.rfile.read(content_length).decode('utf-8')
-        
+        preview = code.strip()[:60].replace('\\n', '|')
+        log.info(f'[cell-{cell_num}] RECEIVED ({content_length}B): {preview!r}')
+
         old_stdout = sys.stdout
         old_stderr = sys.stderr
         redirected_output = io.StringIO()
         sys.stdout = redirected_output
         sys.stderr = redirected_output
-        
+
         error = ""
+        old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
+        signal.alarm(CELL_TIMEOUT)
+        log.debug(f'[cell-{cell_num}] exec() START, env has {len(global_env)} keys')
         try:
             exec(code, global_env)
+            log.debug(f'[cell-{cell_num}] exec() DONE ({time.time()-t0:.3f}s), env now {len(global_env)} keys')
+        except _CellTimeout:
+            elapsed = time.time() - t0
+            log.error(f'[cell-{cell_num}] TIMEOUT after {elapsed:.1f}s')
+            error = f"Cell timed out after {CELL_TIMEOUT}s. Re-import dependencies and recompute."
+            global_env.clear()
         except Exception:
-            error = traceback.format_exc()
+            elapsed = time.time() - t0
+            tb = traceback.format_exc()
+            log.warning(f'[cell-{cell_num}] EXCEPTION after {elapsed:.3f}s: {tb[:200]}')
+            error = tb
         finally:
+            signal.alarm(0)
+            signal.signal(signal.SIGALRM, old_handler)
             sys.stdout = old_stdout
             sys.stderr = old_stderr
-            
+
         output = redirected_output.getvalue()
-        
+        log.info(f'[cell-{cell_num}] RESPONDING: output={len(output)}B error={len(error)}B total={time.time()-t0:.3f}s')
+
         res = json.dumps({"output": output, "error": error})
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
@@ -62,9 +115,10 @@ class KernelHandler(BaseHTTPRequestHandler):
         self.wfile.write(res.encode('utf-8'))
 
     def log_message(self, format, *args):
-        pass # Suppress logging
+        pass  # suppress default HTTP access log to stdout
 
 if __name__ == '__main__':
+    log.info('REPL daemon listening on 127.0.0.1:9999')
     server_address = ('127.0.0.1', 9999)
     httpd = HTTPServer(server_address, KernelHandler)
     httpd.serve_forever()
@@ -162,12 +216,38 @@ class SandboxManager:
 
     def _ensure_repl_daemon(self, container):
         """Check if daemon is running, if not, start it."""
-        check_cmd = "python3 -c 'import urllib.request; urllib.request.urlopen(\"http://127.0.0.1:9999\", timeout=1)'"
+        log.debug("daemon-check: pinging port 9999...")
+        t0 = time.time()
+        check_cmd = "python3 -c 'import urllib.request; urllib.request.urlopen(\"http://127.0.0.1:9999\", timeout=2)'"
         res = container.exec_run(cmd=["bash", "-c", check_cmd])
+        elapsed = time.time() - t0
         if res.exit_code != 0:
-            self._write_file_to_container(container, "/workspace/.repl_daemon.py", REPL_DAEMON_CODE)
-            container.exec_run(cmd=["bash", "-c", "nohup python3 /workspace/.repl_daemon.py >/dev/null 2>&1 &"])
-            time.sleep(1) # wait for boot
+            log.warning(f"daemon-check: FAILED (exit={res.exit_code}, {elapsed:.2f}s) — starting daemon")
+            self._start_repl_daemon(container)
+        else:
+            log.debug(f"daemon-check: OK ({elapsed:.2f}s)")
+
+    def _start_repl_daemon(self, container):
+        """Write and launch the REPL daemon."""
+        log.info("daemon-start: writing + launching repl_daemon.py")
+        self._write_file_to_container(container, "/workspace/.repl_daemon.py", REPL_DAEMON_CODE)
+        container.exec_run(cmd=["bash", "-c", "nohup python3 /workspace/.repl_daemon.py >/tmp/repl_daemon.log 2>&1 &"])
+        time.sleep(1.5)
+        # Verify it actually came up
+        check = container.exec_run(cmd=["bash", "-c",
+            "python3 -c 'import urllib.request; urllib.request.urlopen(\"http://127.0.0.1:9999\", timeout=2)'"])
+        if check.exit_code != 0:
+            daemon_log = container.exec_run(cmd=["bash", "-c", "cat /tmp/repl_daemon.log 2>/dev/null || echo '(no log)'"])
+            log.error(f"daemon-start: daemon did NOT come up! log:\n{daemon_log.output.decode('utf-8', errors='replace')}")
+        else:
+            log.info("daemon-start: daemon is UP")
+
+    def _restart_repl_daemon(self, container):
+        """Kill any existing daemon and start fresh. Variables will be lost."""
+        log.warning("daemon-restart: killing and restarting REPL daemon (state lost)")
+        container.exec_run(cmd=["bash", "-c", "pkill -f repl_daemon.py || true"])
+        time.sleep(0.5)
+        self._start_repl_daemon(container)
 
     # ── Tool 1: bash ──────────────────────────────────────────────────────
 
@@ -448,36 +528,89 @@ class SandboxManager:
 
         # ── Tool 8: execute_cell ──────────────────────────────────────────────
 
+    CELL_TIMEOUT = 300  # Must match the daemon's CELL_TIMEOUT
+
     def execute_cell(self, container_id: str, code: str) -> str:
         """Run python code in the persistent REPL."""
+        cell_id = f"cell-{int(time.time()*1000) % 100000}"
+        code_preview = code.strip()[:80].replace('\n', '↵')
+        log.info(f"[{cell_id}] execute_cell START — code: {code_preview!r}")
+
         err = self._ensure_docker()
         if err:
+            log.error(f"[{cell_id}] docker not available: {err}")
             return err
 
         container = self._get_container(container_id)
         if not container:
+            log.error(f"[{cell_id}] container not found: {container_id[:12]}")
             return f"Error: container not found: {container_id}"
 
+        # ── Step 1: ensure daemon ─────────────────────────────────────────
+        t0 = time.time()
+        log.info(f"[{cell_id}] step1: ensure_repl_daemon...")
         self._ensure_repl_daemon(container)
+        log.info(f"[{cell_id}] step1: done ({time.time()-t0:.2f}s)")
 
+        # ── Step 2: write code file ───────────────────────────────────────
+        t1 = time.time()
+        log.info(f"[{cell_id}] step2: writing .cell_code.py ({len(code)} bytes)...")
         self._write_file_to_container(container, "/workspace/.cell_code.py", code)
-        
-        post_cmd = "python3 -c \"import urllib.request; req = urllib.request.Request('http://127.0.0.1:9999', data=open('/workspace/.cell_code.py', 'rb').read()); print(urllib.request.urlopen(req).read().decode('utf-8'))\""
-        res = container.exec_run(cmd=["bash", "-c", post_cmd])
+        log.info(f"[{cell_id}] step2: done ({time.time()-t1:.2f}s)")
+
+        # ── Step 3: POST to REPL daemon ───────────────────────────────────
+        url_timeout = self.CELL_TIMEOUT + 30
+        post_cmd = (
+            f'python3 -c "'
+            f'import urllib.request, time; '
+            f't=time.time(); '
+            f'req=urllib.request.Request(\\\"http://127.0.0.1:9999\\\", '
+            f'data=open(\\\"/workspace/.cell_code.py\\\",\\\"rb\\\").read()); '
+            f'r=urllib.request.urlopen(req,timeout={url_timeout}); '
+            f'body=r.read(); '
+            f'print(body.decode(\\\"utf-8\\\"))"'
+        )
+
+        t2 = time.time()
+        log.info(f"[{cell_id}] step3: exec_run (POST to daemon, timeout={url_timeout}s)...")
+        try:
+            res = container.exec_run(cmd=["bash", "-c", post_cmd], stdout=True, stderr=True)
+        except Exception as exc:
+            log.error(f"[{cell_id}] step3: exec_run EXCEPTION after {time.time()-t2:.2f}s: {exc}")
+            self._restart_repl_daemon(container)
+            return f"Error: execute_cell failed: {exc}"
+
+        elapsed = time.time() - t2
+        log.info(f"[{cell_id}] step3: exec_run returned (exit={res.exit_code}, {elapsed:.2f}s)")
 
         if res.exit_code != 0:
-            return f"Error connecting to REPL daemon: {res.output.decode('utf-8', errors='replace')}"
+            output = res.output.decode('utf-8', errors='replace')
+            log.warning(f"[{cell_id}] step3: non-zero exit. output: {output[:300]}")
+            if "timed out" in output.lower() or "urlopen" in output.lower():
+                self._restart_repl_daemon(container)
+                return f"Error: cell timed out after {self.CELL_TIMEOUT}s. Daemon restarted — re-import and recompute."
+            return f"Error connecting to REPL daemon: {output}"
 
+        # ── Step 4: parse response ────────────────────────────────────────
         try:
-            data = json.loads(res.output.decode('utf-8'))
+            raw = res.output.decode('utf-8')
+            log.debug(f"[{cell_id}] step4: raw response ({len(raw)} chars)")
+            data = json.loads(raw)
             out = data.get("output", "")
             err_trace = data.get("error", "")
             final = out
             if err_trace:
                 final += f"\n--- ERROR ---\n{err_trace}"
-            return self._truncate_output(final.strip()) if final.strip() else "(Code executed successfully, no output)"
+                if "timed out" in err_trace.lower():
+                    self._restart_repl_daemon(container)
+                    final += "\n[Daemon restarted — variables lost. Re-import and recompute.]"
+            result = self._truncate_output(final.strip()) if final.strip() else "(Code executed successfully, no output)"
+            log.info(f"[{cell_id}] execute_cell DONE ({time.time()-t0:.2f}s total) — output: {result[:80]!r}")
+            return result
         except Exception as e:
-            return f"Error parsing REPL response: {e}\nRaw output: {res.output.decode('utf-8', errors='replace')}"
+            raw = res.output.decode('utf-8', errors='replace')
+            log.error(f"[{cell_id}] step4: JSON parse error: {e} — raw: {raw[:300]}")
+            return f"Error parsing REPL response: {e}\nRaw: {raw[:500]}"
 
     # ── Tool 9: quit_sandbox ──────────────────────────────────────────────
 

@@ -8,6 +8,16 @@ markdown summary.
 
 ---
 
+## DIRECT ACTION MANDATE
+- **NEVER** provide a textual plan or explain what you are "about to do".
+- **NEVER** respond with a summary of intent before executing tools.
+- **ALWAYS** directly execute the next step using the available tools.
+- In your first turn, start immediately with Step 1 (Install Dependencies).
+- Only provide a textual summary to the user (Step 11) AFTER all files have been successfully written to disk.
+- If you respond without a tool call, the pipeline will terminate immediately. Ensure you have completed ALL steps before doing so.
+
+---
+
 ## TOOL USAGE GUIDELINES
 - **`write_file`**: Create new markdown reports and JSON files ONLY. NEVER write Python scripts with this tool.
 - **`edit_file`**: Surgical partial updates if a cell fails. Do not rewrite whole files.
@@ -36,6 +46,7 @@ each as a Python string variable in `execute_cell` — do NOT hardcode any value
 by reading them now and typing them later. Everything flows from these files.
 
 Files to read:
+- `/workspace/metadata.json` → parse to `dataset_metadata` (contains `target_column` and `description` provided by the user)
 - `/workspace/outputs/agent1.md` → `report_agent1`
 - `/workspace/outputs/agent2.md` → `report_agent2`
 - `/workspace/outputs/agent3.md` → `report_agent3`
@@ -45,6 +56,13 @@ Files to read:
 - `/workspace/outputs/agent1_metrics.json` → parse to `metrics_agent1`
 - `/workspace/outputs/agent2_metrics.json` → parse to `metrics_agent2`
 - `/workspace/outputs/agent3_metrics.json` → parse to `metrics_agent3`
+
+After loading `dataset_metadata`, extract:
+```python
+user_description = dataset_metadata.get("description", "")
+target_column = dataset_metadata.get("target_column", "")
+```
+Use `user_description` in the cover page subtitle and executive summary introduction if it is non-empty. Use `target_column` when referencing the prediction target anywhere in the report.
 
 Use `execute_cell` to load and parse the JSON files:
 ```python
@@ -295,6 +313,8 @@ Use the following exact HTML structure to guarantee beautiful Aletheia styling a
     </div>
     <h1>AI Fairness Audit Report</h1>
     <div class="subtitle">{dataset_name}</div>
+    <!-- If user_description is non-empty, inject it here as a second subtitle line -->
+    <div style="color: #7a83a7; font-size: 10pt; text-align: center; margin-top: -10px; margin-bottom: 15px; max-width: 500px;">{dataset_description}</div>
     <div style="display: flex; gap: 10px; justify-content: center;">
       <span style="background: #1e2030; border: 1px solid #bb9af7; color: #bb9af7; padding: 4px 12px; border-radius: 20px; font-size: 8pt;">Data Surveyed</span>
       <span style="background: #1e2030; border: 1px solid #bb9af7; color: #bb9af7; padding: 4px 12px; border-radius: 20px; font-size: 8pt;">Bias Audited</span>

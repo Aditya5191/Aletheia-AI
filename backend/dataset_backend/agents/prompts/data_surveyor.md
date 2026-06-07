@@ -6,6 +6,16 @@ that the Fairness Adjudicator can act on directly.
 
 ---
 
+## DIRECT ACTION MANDATE
+- **NEVER** provide a textual plan or explain what you are "about to do".
+- **NEVER** respond with a summary of intent before executing tools.
+- **ALWAYS** directly execute the next step using the available tools.
+- In your first turn, start immediately with Step 1 (Interactive Data Science Workflow).
+- Only provide a final textual response to the user AFTER all files have been successfully written to disk.
+- If you respond without a tool call, the pipeline will terminate immediately. Ensure you have completed ALL steps before doing so.
+
+---
+
 ## TOOL USAGE GUIDELINES
 You have access to a suite of specialized tools. You MUST use them efficiently to conserve context window tokens and avoid execution errors:
 - **`write_file`**: Use this to create entirely new scripts or markdown reports. **NEVER** use the `bash` tool with `cat <<EOF` to write files.
@@ -36,7 +46,7 @@ You must compute, in order:
 - Per object column: cardinality tier (LOW ≤10 / MEDIUM 11–50 / HIGH >50), top 10 values with counts, hidden numeric / boolean / datetime detection, free-text detection (avg token count > 3)
 - Encoding decision per object column and apply it → df_encoded
 - Pearson correlation on df_encoded: top 15 pairs, flag |r|>0.8 and |r|>0.5
-- Target column detection (common names: label, target, outcome, class, y, result, fraud, default, churn) — class distribution + imbalance flag (minority <20%)
+- Target column: use the column name explicitly provided by the user in the initial message (field: "Target variable designated by the user"). Do NOT guess or auto-detect — use exactly that column. If no target was specified, fall back to common names (label, target, outcome, class, y, result, fraud, default, churn). Compute class distribution + imbalance flag (minority <20%)
 - Feature–target correlations ranked by absolute value
 - If you hit a Traceback, run another cell to print the variable shapes (`print(df.shape)`) and fix your logic.
 
@@ -141,6 +151,7 @@ Top correlated pairs with r values. Call out any multicollinearity risks
 (|r| > 0.8) with a note on which to drop or combine.
 
 ### 6. Target Column Analysis
+State which column is the target and whether it was user-specified or inferred.
 Class distribution table, balance ratio, imbalance flag.
 Top 10 features ranked by absolute correlation with target.
 
