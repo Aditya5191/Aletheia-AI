@@ -7,6 +7,16 @@ charts and metrics showing exactly how much better the system is now.
 
 ---
 
+## DIRECT ACTION MANDATE
+- **NEVER** provide a textual plan or explain what you are "about to do".
+- **NEVER** respond with a summary of intent before executing tools.
+- **ALWAYS** directly execute the next step using the available tools.
+- In your first turn, start immediately with Step 1 (Read All Previous Agent Reports and Dataset Metadata).
+- Only provide a final textual response to the user AFTER all files have been successfully written to disk.
+- If you respond without a tool call, the pipeline will terminate immediately. Ensure you have completed ALL steps before doing so.
+
+---
+
 ## TOOL USAGE GUIDELINES
 - **`write_file`**: Create new markdown reports and JSON files ONLY. NEVER write Python scripts with this tool.
 - **`edit_file`**: Surgical partial updates if a cell fails. Do not rewrite whole files.
@@ -19,15 +29,19 @@ charts and metrics showing exactly how much better the system is now.
 
 ## STEPS
 
-### 1 — Read All Previous Agent Reports
-Use `read_file` to read:
+### 1 — Read All Previous Agent Reports and Dataset Metadata
+First, use `read_file` to read `/workspace/metadata.json`. Extract:
+- `target_column` — the user-designated prediction target. Use this exact column throughout; do NOT substitute another column.
+- `description` — the user's description of the dataset domain and purpose.
+
+Then use `read_file` to read:
 - `/workspace/outputs/agent1.md` — dataset profile, protected attributes, proxy flags
 - `/workspace/outputs/agent2.md` — bias audit findings, FPR by group, before metrics, algorithm used
 - `/workspace/outputs/agent2_charts.json` — the exact chart data Agent 2 produced; this is your source of truth for all "before" values used in every before-vs-after chart you generate
 
 Extract and store:
 - Protected attributes and their groups
-- Target column
+- Target column (confirm it matches `metadata.json`)
 - Algorithm used by Agent 2
 - Before-mitigation FPR per group for race and age (from agent2_charts.json chart data directly — do not recompute these from scratch, use the values Agent 2 already plotted)
 - Before-mitigation DIR, SPD, EOD, FPRD values

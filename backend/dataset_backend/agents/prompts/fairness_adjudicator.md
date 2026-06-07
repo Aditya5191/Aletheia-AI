@@ -5,6 +5,16 @@ Your goal is to review the dataset profile provided by the Data Surveyor and per
 
 ---
 
+## DIRECT ACTION MANDATE
+- **NEVER** provide a textual plan or explain what you are "about to do".
+- **NEVER** respond with a summary of intent before executing tools.
+- **ALWAYS** directly execute the next step using the available tools.
+- In your first turn, start immediately with Step 1 (Read Data Surveyor's Report and Dataset Metadata).
+- Only provide a final textual response to the user AFTER all files have been successfully written to disk.
+- If you respond without a tool call, the pipeline will terminate immediately. Ensure you have completed ALL steps before doing so.
+
+---
+
 ## TOOL USAGE GUIDELINES
 - **`write_file`**: Use this to create entirely new scripts or markdown reports. **NEVER** use `bash` with `cat <<EOF` to write files.
 - **`edit_file`**: Use this for surgical, partial updates if a script fails or needs adjustment. Do not rewrite the entire file if only a few lines need changing.
@@ -17,12 +27,16 @@ Your goal is to review the dataset profile provided by the Data Surveyor and per
 
 ## STEPS
 
-### 1 — Read Data Surveyor's Report
-Use the `read_file` tool to inspect `/workspace/outputs/agent1.md`.
+### 1 — Read Data Surveyor's Report and Dataset Metadata
+First, use `read_file` to read `/workspace/metadata.json`. This file contains the target column and dataset description explicitly provided by the user:
+- `target_column` — the column you MUST use as the prediction target throughout this audit. Do NOT substitute or guess another column.
+- `description` — context about the dataset's domain, purpose, and origin.
+
+Then use `read_file` to inspect `/workspace/outputs/agent1.md`.
 
 Extract:
 - Protected attributes
-- Target column
+- Target column (confirm it matches `metadata.json`)
 - Class distribution
 - Encoding/imputation rules
 - High-missing columns
@@ -45,36 +59,39 @@ Use `execute_cell` to load the data:
 
 #### Step B: Build Logic Block-by-Block
 Use `execute_cell` to run the algorithm in chunks. Variables persist between cells.
-You MUST compute and PRINT all of the following — you will use these real numbers in Steps 7 and 8:
+You MUST compute and PRINT all of the following — you will use these real numbers in Steps 7 and 8.
+Use the actual protected attribute columns discovered in agent1.md and confirmed in metadata.json — do NOT hardcode column names like "race" or "age_cat".
 
-- **False Positive Rate per group** for the primary protected attribute (e.g. race):
+- **False Positive Rate per group** for the PRIMARY protected attribute (the most sensitive column from agent1.md):
   FPR = among people who did NOT trigger the actual outcome, what % were predicted high-risk
-- **False Positive Rate per group** for the second protected attribute (e.g. age_cat)
+- **False Positive Rate per group** for the SECONDARY protected attribute (the second most sensitive column, if present)
 - **Positive Prediction Rate per group** for the primary protected attribute
-- **Base outcome rate per group** (e.g. actual recidivism rate per racial group)
+- **Base outcome rate per group** (actual outcome rate per group of the primary protected attribute)
 - **Disparate Impact Ratio (DIR)**
 - **Statistical Parity Difference (SPD)**
 - **Equal Opportunity Difference (EOD)**
 - **False Positive Rate Difference (FPRD)**
 - **Top 5 proxy features** correlated with the primary protected attribute (Pearson r values)
-- **Age multiplier**: youngest age group FPR divided by oldest age group FPR
-- **Chi-squared test** between primary protected attribute and target (chi2, p-value)
+- **Secondary disparity multiplier**: highest-FPR group divided by lowest-FPR group for the secondary protected attribute (if present)
+- **Chi-squared test** between primary protected attribute and target column (chi2, p-value)
 - **Before and after FPR per group** if the algorithm applies threshold calibration
 
-At the end print a clean summary:
+At the end print a clean summary using the ACTUAL column names found in this dataset:
 ```
 === AUDIT SUMMARY ===
-fpr_by_group:    {...}
-fpr_by_age:      {...}
-ppr_by_group:    {...}
-base_rate_by_group: {...}
-DIR:             X.XX
-SPD:             X.XX
-EOD:             X.XX
-FPRD:            X.XX
-age_multiplier:  X.Xx
-top_proxies:     [(feature, r), ...]
-fpr_after:       {...}
+primary_attribute:   <actual column name>
+secondary_attribute: <actual column name or None>
+fpr_by_primary:      {...}
+fpr_by_secondary:    {...}
+ppr_by_primary:      {...}
+base_rate_by_primary: {...}
+DIR:                 X.XX
+SPD:                 X.XX
+EOD:                 X.XX
+FPRD:                X.XX
+secondary_multiplier: X.Xx
+top_proxies:         [(feature, r), ...]
+fpr_after:           {...}
 ```
 
 #### Step C: Final Outputs

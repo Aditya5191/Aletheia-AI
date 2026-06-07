@@ -5,7 +5,10 @@ Exposes 7 Docker sandbox tools via MCP over SSE:
   bash, write_file, read_file, edit_file, grep, list_files, quit_sandbox
 """
 
+import asyncio
 import logging
+import sys
+import os
 
 from mcp.server import NotificationOptions, Server
 from mcp.server.models import InitializationOptions
@@ -23,6 +26,26 @@ logger = logging.getLogger("mcp_server")
 
 manager = SandboxManager()
 server = Server("sandbox")
+
+
+async def run_sync(func, *args, **kwargs):
+    """Run a blocking function in a thread so the event loop stays free for SSE keepalives."""
+    return await asyncio.to_thread(func, *args, **kwargs)
+
+
+def _pipe_sandbox_logs():
+    """Re-emit sandbox module logs to the MCP server's stdout in real time."""
+    sandbox_log = logging.getLogger("sandbox")
+    if not any(isinstance(h, logging.StreamHandler) for h in sandbox_log.handlers):
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setFormatter(logging.Formatter(
+            "%(asctime)s.%(msecs)03d [SANDBOX] %(levelname)s %(message)s",
+            datefmt="%H:%M:%S"
+        ))
+        sandbox_log.addHandler(handler)
+        sandbox_log.propagate = False
+
+_pipe_sandbox_logs()
 
 
 # ── Tool Definitions ──────────────────────────────────────────────────────
@@ -302,60 +325,55 @@ async def call_tool(name: str, arguments: dict):
     logger.info(f"[TOOL] {name} | container={cid[:12]}")
 
     if name == "bash":
-        text = manager.bash(
-            cid,
-            arguments["command"],
+        text = await run_sync(
+            manager.bash, cid, arguments["command"],
             timeout=arguments.get("timeout", 120),
         )
         return [TextContent(type="text", text=text)]
 
     if name == "write_file":
-        text = manager.write_file(cid, arguments["file_path"], arguments["content"])
+        text = await run_sync(manager.write_file, cid, arguments["file_path"], arguments["content"])
         return [TextContent(type="text", text=text)]
 
     if name == "read_file":
         raw_offset = arguments.get("offset", 1)
         raw_limit = arguments.get("limit")
-        text = manager.read_file(
-            cid,
-            arguments["file_path"],
+        text = await run_sync(
+            manager.read_file, cid, arguments["file_path"],
             offset=int(raw_offset) if raw_offset is not None else 1,
             limit=int(raw_limit) if raw_limit is not None else None,
         )
         return [TextContent(type="text", text=text)]
 
     if name == "edit_file":
-        text = manager.edit_file(
-            cid,
-            arguments["file_path"],
-            arguments["old_text"],
-            arguments["new_text"],
+        text = await run_sync(
+            manager.edit_file, cid, arguments["file_path"],
+            arguments["old_text"], arguments["new_text"],
         )
         return [TextContent(type="text", text=text)]
 
     if name == "grep":
-        text = manager.grep(
-            cid,
-            arguments["pattern"],
+        text = await run_sync(
+            manager.grep, cid, arguments["pattern"],
             path=arguments.get("path", "/workspace"),
             include=arguments.get("include"),
         )
         return [TextContent(type="text", text=text)]
 
     if name == "list_files":
-        text = manager.list_files(cid, path=arguments.get("path", "/workspace"))
+        text = await run_sync(manager.list_files, cid, path=arguments.get("path", "/workspace"))
         return [TextContent(type="text", text=text)]
 
     if name == "lint_code":
-        text = manager.lint_code(cid, arguments["file_path"])
+        text = await run_sync(manager.lint_code, cid, arguments["file_path"])
         return [TextContent(type="text", text=text)]
 
     if name == "execute_cell":
-        text = manager.execute_cell(cid, arguments["code"])
+        text = await run_sync(manager.execute_cell, cid, arguments["code"])
         return [TextContent(type="text", text=text)]
 
     if name == "quit_sandbox":
-        text = manager.quit_sandbox(cid)
+        text = await run_sync(manager.quit_sandbox, cid)
         return [TextContent(type="text", text=text)]
 
     return [TextContent(type="text", text=f"Unknown tool: {name}")]
@@ -412,5 +430,6 @@ starlette_app.add_middleware(
 
 if __name__ == "__main__":
     import uvicorn
-    logger.info("Starting MCP Sandbox Server v2.0.0 on 0.0.0.0:8000")
-    uvicorn.run(starlette_app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    logger.info(f"Starting MCP Sandbox Server v2.0.0 on 0.0.0.0:{port}")
+    uvicorn.run(starlette_app, host="0.0.0.0", port=port)
