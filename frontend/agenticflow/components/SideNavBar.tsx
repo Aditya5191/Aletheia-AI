@@ -36,7 +36,7 @@ export default function SideNavBar() {
 
   return (
     <nav 
-      className={`fixed left-0 top-16 bottom-0 flex flex-col py-4 z-[90] bg-[#15171B] border-r border-[#1F2228] text-sm font-medium transition-all duration-300 ease-in-out ${
+      className={`fixed left-0 top-16 bottom-0 flex flex-col py-4 z-[90] bg-surface border-r border-outline-variant text-sm font-medium transition-all duration-300 ease-in-out ${
         isSidebarCollapsed ? "w-0 -translate-x-full opacity-0 overflow-hidden" : "w-[260px] translate-x-0 opacity-100"
       }`}
     >
@@ -66,7 +66,7 @@ export default function SideNavBar() {
             className={`w-full flex items-center justify-between px-4 py-3 transition-all duration-200 cursor-pointer ${
               item.active
                 ? "bg-violet-500/10 text-violet-400 border-r-4 border-violet-500 shadow-[inset_1px_0_0_0_rgba(139,92,246,0.5)]"
-                : "text-gray-500 hover:text-gray-200 hover:bg-[#1F2228]"
+                : "text-gray-500 hover:text-gray-200 hover:bg-surface-container"
             }`}
           >
             <div className="flex items-center gap-3">
@@ -84,7 +84,7 @@ export default function SideNavBar() {
 
       {/* Bottom Section */}
       <div className="px-6 mt-auto whitespace-nowrap">
-        <div className="flex flex-col gap-2 pt-4 border-t border-[#1F2228]">
+        <div className="flex flex-col gap-2 pt-4 border-t border-outline-variant">
           <button
             onClick={() => setShowTour(true)}
             className="flex items-center gap-3 text-gray-500 hover:text-gray-300 transition-colors text-xs cursor-pointer w-full"

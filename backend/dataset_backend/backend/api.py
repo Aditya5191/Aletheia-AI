@@ -5,17 +5,43 @@ import asyncio
 import json
 import shutil
 import traceback
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, BackgroundTasks, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, BackgroundTasks, HTTPException, Form
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from typing import Dict, Optional
 from websockets.exceptions import ConnectionClosedOK, ConnectionClosedError
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Import the agent graph logic
 import sys
 sys.path.append(os.path.abspath("."))
 from backend.dataset_backend.agents.graph import run_langgraph_agent
+
+# ── Environment config ────────────────────────────────────────────────────────
+DEPLOY_ENV        = os.getenv("DEPLOY_ENV", "local")          # "local" | "prod"
+IS_LOCAL          = DEPLOY_ENV == "local"
+
+SANDBOX_MCP_PORT  = int(os.getenv("SANDBOX_MCP_PORT", "8000"))
+AUDITOR_MCP_PORT  = int(os.getenv("AUDITOR_MCP_PORT", "8001"))
+MISC_MCP_PORT     = int(os.getenv("MISC_MCP_PORT",    "8002"))
+
+# In local mode always use localhost — the *_MCP_URL vars are prod-only
+if IS_LOCAL:
+    SANDBOX_MCP_URL = f"http://localhost:{SANDBOX_MCP_PORT}/sse"
+    AUDITOR_MCP_URL = f"http://localhost:{AUDITOR_MCP_PORT}/sse"
+    MISC_MCP_URL    = f"http://localhost:{MISC_MCP_PORT}/sse"
+else:
+    SANDBOX_MCP_URL = os.getenv("SANDBOX_MCP_URL", f"http://localhost:{SANDBOX_MCP_PORT}/sse")
+    AUDITOR_MCP_URL = os.getenv("AUDITOR_MCP_URL", f"http://localhost:{AUDITOR_MCP_PORT}/sse")
+    MISC_MCP_URL    = os.getenv("MISC_MCP_URL",    f"http://localhost:{MISC_MCP_PORT}/sse")
+
+print(f"[CONFIG] DEPLOY_ENV={DEPLOY_ENV}")
+print(f"[CONFIG] Sandbox MCP  → {SANDBOX_MCP_URL}")
+print(f"[CONFIG] Auditor MCP  → {AUDITOR_MCP_URL}")
+print(f"[CONFIG] Misc MCP     → {MISC_MCP_URL}")
 
 app = FastAPI(title="Aletheia API")
 
@@ -69,8 +95,6 @@ def cleanup_stale_resources():
 # Clean up on startup
 cleanup_stale_resources()
 
-app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
-
 def start_docker_sandbox():
     image = "sandbox-python:latest"
     container_name = f"aletheia-api-{uuid.uuid4().hex[:8]}"
@@ -84,34 +108,47 @@ def start_docker_sandbox():
     ], capture_output=True, text=True, check=True)
     container_id = result.stdout.strip()
     
-    # Copy dataset into the sandbox container
+    # Copy dataset and metadata into the sandbox container
     data_path = os.path.abspath("dataset/data.csv")
     if os.path.exists(data_path):
         subprocess.run(["docker", "cp", data_path, f"{container_id}:/workspace/data.csv"], check=True)
-    
+
+    metadata_path = os.path.abspath("dataset/metadata.json")
+    if os.path.exists(metadata_path):
+        subprocess.run(["docker", "cp", metadata_path, f"{container_id}:/workspace/metadata.json"], check=True)
+
     return container_id
 
 @app.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
-    # Only accept CSV files
+async def upload_file(
+    file: UploadFile = File(...),
+    description: str = Form(""),
+    target_column: str = Form(""),
+):
     if not file.filename or not file.filename.lower().endswith(".csv"):
         return JSONResponse(
             status_code=400,
             content={"status": "error", "message": "Only .csv files are accepted"}
         )
-    
+
     os.makedirs("dataset", exist_ok=True)
-    # Always save as data.csv — this is what gets mounted into Docker
     file_path = os.path.abspath("dataset/data.csv")
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    
+
+    # Persist user-supplied metadata alongside the dataset
+    metadata = {"description": description.strip(), "target_column": target_column.strip()}
+    metadata_path = os.path.abspath("dataset/metadata.json")
+    with open(metadata_path, "w", encoding="utf-8") as f:
+        json.dump(metadata, f, indent=2)
+
     file_size = os.path.getsize(file_path)
     return {
         "status": "success",
         "filename": file.filename,
         "saved_as": "data.csv",
-        "size_bytes": file_size
+        "size_bytes": file_size,
+        "target_column": target_column.strip(),
     }
 
 @app.get("/dataset/status")
@@ -211,72 +248,87 @@ async def audit_websocket(websocket: WebSocket):
         print(f"[AUDIT] Sandbox started: {container_id[:12]}", flush=True)
         await websocket.send_json({"type": "status", "message": f"Sandbox started: {container_id[:12]}"})
         
-        # Start Sandbox MCP (log stderr for debugging)
-        mcp_process = subprocess.Popen(
-            [sys.executable, "mcps/sandbox/mcp_server.py"],
-            env={**os.environ, "PORT": "8000"},
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-        
-        # Start Auditor MCP locally to avoid Railway timeouts
-        auditor_process = subprocess.Popen(
-            [sys.executable, "mcps/auditor/server.py"],
-            env={**os.environ, "PORT": "8001"},
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-        
-        # Start Miscellaneous MCP locally
-        miscellaneous_process = subprocess.Popen(
-            [sys.executable, "mcps/miscellaneous/server.py"],
-            env={**os.environ, "PORT": "8002"},
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-        
-        await asyncio.sleep(3) # Brief initial wait
-        
-        # Verify each MCP server is actually accepting HTTP connections
-        # Note: FastMCP servers (Auditor, Miscellaneous) return 404 at /
-        # but that still proves the HTTP server is alive and listening
         import aiohttp
-        mcp_endpoints = [
-            ("Sandbox MCP", mcp_process, "http://localhost:8000/"),
-            ("Auditor MCP", auditor_process, "http://localhost:8001/sse"),
-            ("Miscellaneous MCP", miscellaneous_process, "http://localhost:8002/sse"),
-        ]
-        for name, proc, url in mcp_endpoints:
-            ready = False
-            for attempt in range(15):  # Retry up to 15 times (30 seconds total)
-                if proc.poll() is not None:
-                    stderr_out = proc.stderr.read().decode() if proc.stderr else ""
-                    stdout_out = proc.stdout.read().decode() if proc.stdout else ""
-                    print(f"[ERROR] {name} crashed on startup (exit code {proc.returncode})", flush=True)
-                    print(f"[ERROR] {name} stderr: {stderr_out}", flush=True)
-                    print(f"[ERROR] {name} stdout: {stdout_out}", flush=True)
-                    raise RuntimeError(f"{name} failed to start: {stderr_out[:500]}")
-                try:
-                    async with aiohttp.ClientSession() as session:
-                        async with session.get(url, timeout=aiohttp.ClientTimeout(total=2)) as resp:
-                            # Any HTTP response means the server is alive
-                            ready = True
-                            print(f"[OK] {name} is ready (PID {proc.pid}, attempt {attempt+1}, status={resp.status})", flush=True)
-                            break
-                except Exception:
-                    pass
-                await asyncio.sleep(2)
-            if not ready:
-                raise RuntimeError(f"{name} did not become ready after 30 seconds")
+
+        if IS_LOCAL:
+            # ── Local mode: spawn MCP servers as subprocesses ──────────────────
+            # Sandbox MCP: inherit stdout/stderr so sandbox logs appear in the backend console
+            mcp_process = subprocess.Popen(
+                [sys.executable, "mcps/sandbox/mcp_server.py"],
+                env={**os.environ, "PORT": str(SANDBOX_MCP_PORT)},
+                stdout=None,   # inherit — sandbox logs print directly to terminal
+                stderr=None
+            )
+            auditor_process = subprocess.Popen(
+                [sys.executable, "mcps/auditor/server.py"],
+                env={**os.environ, "PORT": str(AUDITOR_MCP_PORT)},
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            miscellaneous_process = subprocess.Popen(
+                [sys.executable, "mcps/miscellaneous/server.py"],
+                env={**os.environ, "PORT": str(MISC_MCP_PORT)},
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+
+            await asyncio.sleep(3)
+
+            # Verify each local MCP is up
+            mcp_endpoints = [
+                ("Sandbox MCP",      mcp_process,           f"http://localhost:{SANDBOX_MCP_PORT}/"),
+                ("Auditor MCP",      auditor_process,        f"http://localhost:{AUDITOR_MCP_PORT}/sse"),
+                ("Miscellaneous MCP", miscellaneous_process, f"http://localhost:{MISC_MCP_PORT}/sse"),
+            ]
+            for name, proc, url in mcp_endpoints:
+                ready = False
+                for attempt in range(15):
+                    if proc.poll() is not None:
+                        stderr_out = proc.stderr.read().decode() if proc.stderr else "(no stderr pipe)"
+                        print(f"[ERROR] {name} crashed (exit {proc.returncode}): {stderr_out}", flush=True)
+                        raise RuntimeError(f"{name} failed to start: {stderr_out[:500]}")
+                    try:
+                        async with aiohttp.ClientSession() as session:
+                            async with session.get(url, timeout=aiohttp.ClientTimeout(total=2)) as resp:
+                                ready = True
+                                print(f"[OK] {name} ready (PID {proc.pid}, attempt {attempt+1}, status={resp.status})", flush=True)
+                                break
+                    except Exception:
+                        pass
+                    await asyncio.sleep(2)
+                if not ready:
+                    raise RuntimeError(f"{name} did not become ready after 30 seconds")
+        else:
+            # ── Prod mode: MCPs are already running at their dedicated URLs ────
+            print("[CONFIG] Prod mode — verifying dedicated MCP endpoints...", flush=True)
+            mcp_endpoints_prod = [
+                ("Sandbox MCP",       SANDBOX_MCP_URL.replace("/sse", "/")),
+                ("Auditor MCP",       AUDITOR_MCP_URL),
+                ("Miscellaneous MCP", MISC_MCP_URL),
+            ]
+            for name, url in mcp_endpoints_prod:
+                ready = False
+                for attempt in range(10):
+                    try:
+                        async with aiohttp.ClientSession() as session:
+                            async with session.get(url, timeout=aiohttp.ClientTimeout(total=3)) as resp:
+                                ready = True
+                                print(f"[OK] {name} reachable (attempt {attempt+1}, status={resp.status})", flush=True)
+                                break
+                    except Exception:
+                        pass
+                    await asyncio.sleep(2)
+                if not ready:
+                    raise RuntimeError(f"{name} not reachable at {url}")
 
         
         current_sender = None
         
         async for event in run_langgraph_agent(
-            container_id, 
-            sandbox_url="http://localhost:8000/sse", 
-            aletheia_url="http://localhost:8001/sse",
-            miscellaneous_url="http://localhost:8002/sse"
+            container_id,
+            sandbox_url=SANDBOX_MCP_URL,
+            aletheia_url=AUDITOR_MCP_URL,
+            miscellaneous_url=MISC_MCP_URL,
         ):
             try:
                 await websocket.send_json(event)
@@ -380,12 +432,14 @@ async def audit_websocket(websocket: WebSocket):
         except:
             pass
     finally:
-        if mcp_process:
-            mcp_process.terminate()
-        if auditor_process:
-            auditor_process.terminate()
-        if miscellaneous_process:
-            miscellaneous_process.terminate()
+        # Only terminate if we spawned them (local mode)
+        if IS_LOCAL:
+            if mcp_process:
+                mcp_process.terminate()
+            if auditor_process:
+                auditor_process.terminate()
+            if miscellaneous_process:
+                miscellaneous_process.terminate()
         
         if container_id:
             print(f"[CLEANUP] Syncing outputs from {container_id[:12]}...")

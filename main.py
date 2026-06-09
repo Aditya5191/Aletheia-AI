@@ -51,7 +51,7 @@ def run_test():
     time.sleep(3)
     
     try:
-        sys.path.append(os.path.abspath("agents"))
+        sys.path.append(os.path.abspath("."))
         from backend.dataset_backend.agents.graph import run_langgraph_agent
         asyncio.run(run_langgraph_agent(container_id))
     except KeyboardInterrupt:

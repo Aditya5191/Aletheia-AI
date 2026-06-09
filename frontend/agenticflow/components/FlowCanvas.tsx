@@ -812,7 +812,7 @@ export default function FlowCanvas() {
           nodeColor={(n) =>
             n.data?.isSelected ? "#d0bcff" : "#494454"
           }
-          maskColor="rgba(17, 19, 23, 0.8)"
+          maskColor="var(--color-background)"
           className="!bg-surface-container-lowest/80 !backdrop-blur-md !border !border-outline-variant !rounded-lg !shadow-2xl"
           pannable
           zoomable
