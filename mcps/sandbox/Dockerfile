@@ -13,7 +13,10 @@ RUN pip install --no-cache-dir \
     seaborn \
     joblib \
     tabulate \
-    weasyprint
+    weasyprint \
+    xgboost \
+    lightgbm \
+    catboost
 
 RUN mkdir -p /workspace/outputs
 
