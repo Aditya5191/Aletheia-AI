@@ -1,3 +1,5 @@
+# api.py
+
 import os
 import uuid
 import subprocess
@@ -5,21 +7,19 @@ import asyncio
 import json
 import shutil
 import traceback
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, BackgroundTasks, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from typing import Dict, Optional
 from websockets.exceptions import ConnectionClosedOK, ConnectionClosedError
 
-# Import the agent graph logic
 import sys
 sys.path.append(os.path.abspath("."))
-from agents.model_graph import run_model_pipeline
+from backend.model_backend.agents.model_graph import run_model_pipeline
 
-app = FastAPI(title="Aletheia Model API")
+app = FastAPI(title="Aletheia Model Audit API")
 
-# Enable CORS for frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,17 +28,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global state to track active sessions (if needed)
 active_sessions: Dict[str, dict] = {}
 
 def cleanup_stale_resources():
-    """Remove any leftover sandbox containers and clear stale outputs.
-    Handles the case where a user reloads mid-audit."""
     print("[CLEANUP] Cleaning stale sandbox containers and outputs...")
-    # Kill and remove all aletheia sandbox containers
     try:
         result = subprocess.run(
-            ["docker", "ps", "-a", "--filter", "name=aletheia-api-", "--format", "{{.ID}}"],
+            ["docker", "ps", "-a", "--filter", "name=aletheia-model-", "--format", "{{.ID}}"],
             capture_output=True, text=True, timeout=10
         )
         container_ids = result.stdout.strip().split("\n")
@@ -48,84 +44,202 @@ def cleanup_stale_resources():
                 print(f"[CLEANUP] Removed stale container {cid[:12]}")
     except Exception as e:
         print(f"[CLEANUP] Error cleaning containers: {e}")
-    
-    # Clear stale agent outputs
-    os.makedirs("outputs", exist_ok=True)
-    for fname in os.listdir("outputs"):
-        if fname.startswith("agent") and (fname.endswith(".json") or fname.endswith(".md")):
+
+    os.makedirs("model_outputs", exist_ok=True)
+    for fname in os.listdir("model_outputs"):
+        if fname.startswith("model_agent") and (fname.endswith(".json") or fname.endswith(".md")):
             try:
-                os.remove(os.path.join("outputs", fname))
+                os.remove(os.path.join("model_outputs", fname))
             except:
                 pass
-    # Also clear any leftover chart images
-    for fname in os.listdir("outputs"):
+    for fname in os.listdir("model_outputs"):
         if fname.endswith(".png") or fname.endswith(".svg"):
             try:
-                os.remove(os.path.join("outputs", fname))
+                os.remove(os.path.join("model_outputs", fname))
             except:
                 pass
     print("[CLEANUP] Done.")
 
-# Clean up on startup
 cleanup_stale_resources()
 
-app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
+app.mount("/model_outputs", StaticFiles(directory="model_outputs"), name="model_outputs")
+
 
 def start_docker_sandbox():
-    image = "sandbox-python:latest"
-    container_name = f"aletheia-api-{uuid.uuid4().hex[:8]}"
-    os.makedirs("dataset", exist_ok=True)
-    os.makedirs("outputs", exist_ok=True)
-    
-    # Start container without volume mounts (Docker-in-Docker can't map container paths)
+    image          = "sandbox-python:latest"
+    container_name = f"aletheia-model-{uuid.uuid4().hex[:8]}"
+    os.makedirs("model_upload", exist_ok=True)
+    os.makedirs("model_outputs", exist_ok=True)
+
     result = subprocess.run([
         "docker", "run", "-d", "--name", container_name,
         "--network", "bridge", image, "tail", "-f", "/dev/null"
     ], capture_output=True, text=True, check=True)
     container_id = result.stdout.strip()
-    
-    # Copy dataset into the sandbox container
-    data_path = os.path.abspath("dataset/data.csv")
-    if os.path.exists(data_path):
-        subprocess.run(["docker", "cp", data_path, f"{container_id}:/workspace/data.csv"], check=True)
-    
+
+    # Copy model file
+    model_path  = os.path.abspath("model_upload/model.pkl")
+    joblib_path = os.path.abspath("model_upload/model.joblib")
+
+    if os.path.exists(model_path):
+        subprocess.run(
+            ["docker", "cp", model_path, f"{container_id}:/workspace/model.pkl"],
+            check=True
+        )
+        print("[SANDBOX] Copied model.pkl into container")
+    elif os.path.exists(joblib_path):
+        subprocess.run(
+            ["docker", "cp", joblib_path, f"{container_id}:/workspace/model.joblib"],
+            check=True
+        )
+        print("[SANDBOX] Copied model.joblib into container")
+    else:
+        raise FileNotFoundError("No model file found. Upload a .pkl or .joblib file first.")
+
+    # Copy sample CSV
+    sample_path = os.path.abspath("model_upload/sample.csv")
+    if os.path.exists(sample_path):
+        subprocess.run(
+            ["docker", "cp", sample_path, f"{container_id}:/workspace/sample.csv"],
+            check=True
+        )
+        print("[SANDBOX] Copied sample.csv into container")
+    else:
+        raise FileNotFoundError("No sample.csv found. Upload a sample CSV file first.")
+
+    # Copy audit_config.json if it exists (optional user column config)
+    config_path = os.path.abspath("model_upload/audit_config.json")
+    if os.path.exists(config_path):
+        subprocess.run(
+            ["docker", "cp", config_path, f"{container_id}:/workspace/audit_config.json"],
+            check=True
+        )
+        print("[SANDBOX] Copied audit_config.json into container")
+
     return container_id
 
-@app.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
-    # Only accept CSV files
-    if not file.filename or not file.filename.lower().endswith(".csv"):
+
+# ─────────────────────────────────────────────────────────────────
+# UPLOAD ENDPOINTS
+# ─────────────────────────────────────────────────────────────────
+
+@app.post("/upload/model")
+async def upload_model(
+    file:       UploadFile = File(...),
+    model_type: str        = Form("classification")   # "classification" or "regression"
+):
+    """Accept .pkl or .joblib model files. User must specify model_type."""
+    if not file.filename:
+        return JSONResponse(status_code=400, content={"status": "error", "message": "No filename provided"})
+
+    fname = file.filename.lower()
+    if not (fname.endswith(".pkl") or fname.endswith(".joblib")):
         return JSONResponse(
             status_code=400,
-            content={"status": "error", "message": "Only .csv files are accepted"}
+            content={"status": "error", "message": "Only .pkl or .joblib model files are accepted"}
         )
-    
-    os.makedirs("dataset", exist_ok=True)
-    # Always save as data.csv — this is what gets mounted into Docker
-    file_path = os.path.abspath("dataset/data.csv")
-    with open(file_path, "wb") as buffer:
+
+    if model_type not in ("classification", "regression"):
+        return JSONResponse(
+            status_code=400,
+            content={"status": "error", "message": "model_type must be 'classification' or 'regression'"}
+        )
+
+    os.makedirs("model_upload", exist_ok=True)
+
+    ext       = ".pkl" if fname.endswith(".pkl") else ".joblib"
+    save_path = os.path.abspath(f"model_upload/model{ext}")
+    with open(save_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    
-    file_size = os.path.getsize(file_path)
+
+    # Persist model_type for the websocket to read later
+    with open("model_upload/model_type.txt", "w") as f:
+        f.write(model_type)
+
+    file_size = os.path.getsize(save_path)
     return {
-        "status": "success",
-        "filename": file.filename,
-        "saved_as": "data.csv",
+        "status":     "success",
+        "filename":   file.filename,
+        "saved_as":   f"model{ext}",
+        "model_type": model_type,
         "size_bytes": file_size
     }
 
-@app.get("/dataset/status")
-async def dataset_status():
-    """Check if a dataset already exists."""
-    file_path = os.path.abspath("dataset/data.csv")
-    if os.path.exists(file_path) and os.path.getsize(file_path) > 10:
-        size = os.path.getsize(file_path)
-        return {"exists": True, "filename": "data.csv", "size_bytes": size}
-    return {"exists": False}
+
+@app.post("/upload/sample")
+async def upload_sample(file: UploadFile = File(...)):
+    """Accept sample CSV files only."""
+    if not file.filename or not file.filename.lower().endswith(".csv"):
+        return JSONResponse(
+            status_code=400,
+            content={"status": "error", "message": "Only .csv sample files are accepted"}
+        )
+
+    os.makedirs("model_upload", exist_ok=True)
+    save_path = os.path.abspath("model_upload/sample.csv")
+    with open(save_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    file_size = os.path.getsize(save_path)
+    return {
+        "status":    "success",
+        "filename":  file.filename,
+        "saved_as":  "sample.csv",
+        "size_bytes": file_size
+    }
+
+
+@app.post("/upload/config")
+async def upload_config(config: dict):
+    """
+    Optional. Save user's column configuration before starting audit.
+    Accepts: { target_column, protected_attributes }
+    """
+    os.makedirs("model_upload", exist_ok=True)
+    with open("model_upload/audit_config.json", "w") as f:
+        json.dump(config, f)
+    return {"status": "saved"}
+
+
+# ─────────────────────────────────────────────────────────────────
+# STATUS ENDPOINTS
+# ─────────────────────────────────────────────────────────────────
+
+@app.get("/model/status")
+async def model_status():
+    model_pkl    = os.path.abspath("model_upload/model.pkl")
+    model_joblib = os.path.abspath("model_upload/model.joblib")
+    sample_csv   = os.path.abspath("model_upload/sample.csv")
+    type_file    = os.path.abspath("model_upload/model_type.txt")
+
+    model_exists  = (
+        (os.path.exists(model_pkl)    and os.path.getsize(model_pkl)    > 10) or
+        (os.path.exists(model_joblib) and os.path.getsize(model_joblib) > 10)
+    )
+    sample_exists = os.path.exists(sample_csv) and os.path.getsize(sample_csv) > 10
+    model_type    = open(type_file).read().strip() if os.path.exists(type_file) else None
+
+    return {
+        "model_exists":  model_exists,
+        "sample_exists": sample_exists,
+        "model_type":    model_type,
+        "ready":         model_exists and sample_exists and model_type is not None
+    }
+
+
+@app.get("/model/columns")
+async def get_model_columns():
+    """Return column names from uploaded sample so frontend can show column selector."""
+    sample_path = os.path.abspath("model_upload/sample.csv")
+    if not os.path.exists(sample_path):
+        return {"columns": []}
+    import pandas as pd
+    df = pd.read_csv(sample_path, nrows=1)
+    return {"columns": df.columns.tolist()}
+
 
 @app.get("/docker/status/{container_id}")
 async def get_docker_status(container_id: str):
-    """Check if a docker container is currently running."""
     try:
         process = await asyncio.create_subprocess_exec(
             "docker", "inspect", "-f", "{{.State.Running}}", container_id,
@@ -133,7 +247,6 @@ async def get_docker_status(container_id: str):
             stderr=asyncio.subprocess.PIPE
         )
         stdout, stderr = await process.communicate()
-        
         if process.returncode == 0:
             is_running = stdout.decode().strip().lower() == "true"
             return {"status": "running" if is_running else "stopped"}
@@ -142,143 +255,190 @@ async def get_docker_status(container_id: str):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-@app.get("/outputs/{filename}")
+
+@app.get("/model_outputs/{filename}")
 async def get_output_file(filename: str):
-    """Serve generated JSON files or plots from the outputs directory."""
-    file_path = os.path.abspath(os.path.join("outputs", filename))
-    # Security check to prevent path traversal
-    if not file_path.startswith(os.path.abspath("outputs")):
+    file_path = os.path.abspath(os.path.join("model_outputs", filename))
+    if not file_path.startswith(os.path.abspath("model_outputs")):
         raise HTTPException(status_code=403, detail="Access denied")
-    
     if os.path.exists(file_path):
         return FileResponse(file_path)
     raise HTTPException(status_code=404, detail="File not found")
 
-@app.websocket("/ws/audit")
-async def audit_websocket(websocket: WebSocket):
+
+# ─────────────────────────────────────────────────────────────────
+# WEBSOCKET — reads model_type from file, routes to correct pipeline
+# ─────────────────────────────────────────────────────────────────
+
+@app.websocket("/ws/model_audit")
+async def model_audit_websocket(websocket: WebSocket):
     await websocket.accept()
-    
-    # Guard: ensure dataset exists before starting
-    data_path = os.path.abspath("dataset/data.csv")
-    if not os.path.exists(data_path) or os.path.getsize(data_path) < 10:
-        await websocket.send_json({
-            "type": "error",
-            "message": "No dataset uploaded. Please upload a CSV file first."
-        })
+    print("[WS] Model audit WebSocket accepted...", flush=True)
+
+    # Guard: files must exist
+    model_pkl    = os.path.abspath("model_upload/model.pkl")
+    model_joblib = os.path.abspath("model_upload/model.joblib")
+    sample_csv   = os.path.abspath("model_upload/sample.csv")
+    type_file    = os.path.abspath("model_upload/model_type.txt")
+
+    model_exists  = (
+        (os.path.exists(model_pkl)    and os.path.getsize(model_pkl)    > 10) or
+        (os.path.exists(model_joblib) and os.path.getsize(model_joblib) > 10)
+    )
+    sample_exists = os.path.exists(sample_csv) and os.path.getsize(sample_csv) > 10
+
+    if not model_exists:
+        await websocket.send_json({"type": "error", "message": "No model file uploaded."})
         await websocket.close()
         return
-    
-    container_id = None
-    mcp_process = None
-    auditor_process = None
+
+    if not sample_exists:
+        await websocket.send_json({"type": "error", "message": "No sample CSV uploaded."})
+        await websocket.close()
+        return
+
+    if not os.path.exists(type_file):
+        await websocket.send_json({"type": "error", "message": "Model type not set. Upload model with model_type field."})
+        await websocket.close()
+        return
+
+    # Read model_type — determines which prompt set to use
+    model_type = open(type_file).read().strip()
+    if model_type not in ("classification", "regression"):
+        await websocket.send_json({"type": "error", "message": f"Invalid model_type '{model_type}'. Must be classification or regression."})
+        await websocket.close()
+        return
+
+    print(f"[MODEL AUDIT] model_type={model_type}", flush=True)
+
+    # Agent sender names depend on model_type
+    if model_type == "classification":
+        sender_to_agent = {
+            "MODEL_INSPECTOR":      1,
+            "BEHAVIORAL_AUDITOR":   2,
+            "THRESHOLD_CALIBRATOR": 3,
+            "REPORT_COMPILER":      4,
+        }
+    else:
+        sender_to_agent = {
+            "MODEL_PROFILER":      1,
+            "DISPARITY_AUDITOR":   2,
+            "OUTPUT_RECALIBRATOR": 3,
+            "REPORT_COMPILER":     4,
+        }
+
+    container_id          = None
+    mcp_process           = None
+    auditor_process       = None
     miscellaneous_process = None
-    
-    # Track code cells per agent for the Code tab
-    sender_to_agent = {
-        "DATA_SURVEYOR": 1,
-        "FAIRNESS_ADJUDICATOR": 2,
-        "MITIGATION_AGENT": 3,
-        "REPORT_COMPILER": 4,
-    }
-    code_cells: Dict[int, list] = {1: [], 2: [], 3: [], 4: []}
-    # Track pending execute_cell calls awaiting their tool_result
+
+    code_cells:    Dict[int, list] = {1: [], 2: [], 3: [], 4: []}
     pending_cells: Dict[str, dict] = {}
-    
+
     def is_error_output(output: str) -> bool:
-        """Check if a cell output indicates an execution error."""
         if not output:
             return False
-        error_signals = ["Traceback (most recent call last)", "Error:", "Exception:", "SyntaxError", "NameError", "TypeError", "ValueError", "KeyError", "IndexError", "AttributeError", "ImportError", "ModuleNotFoundError", "FileNotFoundError", "ZeroDivisionError"]
+        error_signals = [
+            "Traceback (most recent call last)", "Error:", "Exception:",
+            "SyntaxError", "NameError", "TypeError", "ValueError",
+            "KeyError", "IndexError", "AttributeError", "ImportError",
+            "ModuleNotFoundError", "FileNotFoundError", "ZeroDivisionError"
+        ]
         return any(sig in output for sig in error_signals)
-    
+
     def save_code_cells(agent_num: int):
-        """Persist only successfully executed code cells to outputs/agentN_code.json"""
         successful = [c for c in code_cells[agent_num] if not is_error_output(c.get("output") or "")]
-        path = os.path.join("outputs", f"agent{agent_num}_code.json")
+        path = os.path.join("model_outputs", f"model_agent{agent_num}_code.json")
         with open(path, "w", encoding="utf-8") as f:
             json.dump(successful, f, indent=2)
-    
+
     try:
-        # Clean up any stale containers/outputs from previous runs (handles mid-audit reload)
+        print("[MODEL AUDIT] Starting...", flush=True)
         cleanup_stale_resources()
-        
+
         container_id = start_docker_sandbox()
-        await websocket.send_json({"type": "status", "message": f"Sandbox started: {container_id[:12]}"})
-        
-        # Start Sandbox MCP (log stderr for debugging)
+        print(f"[MODEL AUDIT] Sandbox started: {container_id[:12]}", flush=True)
+        await websocket.send_json({
+            "type":       "status",
+            "message":    f"Sandbox started: {container_id[:12]}",
+            "model_type": model_type
+        })
+
+        # Start MCPs
         mcp_process = subprocess.Popen(
             [sys.executable, "mcps/sandbox/mcp_server.py"],
             env={**os.environ, "PORT": "8000"},
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
-        
-        # Start Auditor MCP locally to avoid Railway timeouts
         auditor_process = subprocess.Popen(
             [sys.executable, "mcps/auditor/server.py"],
             env={**os.environ, "PORT": "8001"},
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
-        
-        # Start Miscellaneous MCP locally
         miscellaneous_process = subprocess.Popen(
             [sys.executable, "mcps/miscellaneous/server.py"],
             env={**os.environ, "PORT": "8002"},
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
-        
-        await asyncio.sleep(5) # Wait for server boot
-        
-        # Check if MCP servers are still running
-        for name, proc in [("Sandbox MCP", mcp_process), ("Auditor MCP", auditor_process), ("Miscellaneous MCP", miscellaneous_process)]:
-            if proc.poll() is not None:
-                stderr_out = proc.stderr.read().decode() if proc.stderr else ""
-                stdout_out = proc.stdout.read().decode() if proc.stdout else ""
-                print(f"[ERROR] {name} crashed on startup (exit code {proc.returncode})")
-                print(f"[ERROR] {name} stderr: {stderr_out}")
-                print(f"[ERROR] {name} stdout: {stdout_out}")
-                raise RuntimeError(f"{name} failed to start: {stderr_out[:500]}")
-            else:
-                print(f"[OK] {name} is running (PID {proc.pid})")
 
-        
+        await asyncio.sleep(3)
+
+        import aiohttp
+        mcp_endpoints = [
+            ("Sandbox MCP",       mcp_process,          "http://localhost:8000/"),
+            ("Auditor MCP",       auditor_process,      "http://localhost:8001/sse"),
+            ("Miscellaneous MCP", miscellaneous_process, "http://localhost:8002/sse"),
+        ]
+        for name, proc, url in mcp_endpoints:
+            ready = False
+            for attempt in range(15):
+                if proc.poll() is not None:
+                    stderr_out = proc.stderr.read().decode() if proc.stderr else ""
+                    raise RuntimeError(f"{name} failed to start: {stderr_out[:500]}")
+                try:
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(url, timeout=aiohttp.ClientTimeout(total=2)) as resp:
+                            ready = True
+                            print(f"[OK] {name} ready (attempt {attempt+1}, status={resp.status})", flush=True)
+                            break
+                except Exception:
+                    pass
+                await asyncio.sleep(2)
+            if not ready:
+                raise RuntimeError(f"{name} did not become ready after 30 seconds")
+
         current_sender = None
-        
+
         async for event in run_model_pipeline(
-            container_id, 
-            sandbox_url="http://localhost:8000/sse", 
+            container_id,
+            model_type=model_type,
+            sandbox_url="http://localhost:8000/sse",
             aletheia_url="http://localhost:8001/sse",
             miscellaneous_url="http://localhost:8002/sse"
         ):
             try:
                 await websocket.send_json(event)
-                
-                # Track which agent is currently active
+
                 if event.get("sender") and event["sender"] in sender_to_agent:
                     current_sender = event["sender"]
-                
-                # --- Capture execute_cell code from tool_calls ---
+
+                # Capture execute_cell calls
                 if event.get("type") == "tool_calls" and current_sender:
                     agent_num = sender_to_agent.get(current_sender)
                     if agent_num:
                         for tc in event.get("tool_calls", []):
                             if tc.get("name") == "execute_cell":
-                                args = tc.get("args", {})
-                                code = args.get("code", "") if isinstance(args, dict) else ""
+                                args    = tc.get("args", {})
+                                code    = args.get("code", "") if isinstance(args, dict) else ""
                                 cell_id = tc.get("id", "")
-                                cell = {"code": code, "output": None}
+                                cell    = {"code": code, "output": None}
                                 code_cells[agent_num].append(cell)
-                                # Track by tool call ID so we can match the result
                                 pending_cells[cell_id] = cell
                                 save_code_cells(agent_num)
-                
-                # --- Capture tool results for execute_cell ---
+
+                # Capture execute_cell results
                 if event.get("type") == "tool_result" and event.get("name") == "execute_cell":
-                    # Match output to the most recent pending cell
-                    output = event.get("content", "")
-                    # Try to find and fill the most recent unfilled cell
+                    output  = event.get("content", "")
                     matched = False
                     for cid, cell in reversed(list(pending_cells.items())):
                         if cell["output"] is None:
@@ -290,29 +450,35 @@ async def audit_websocket(websocket: WebSocket):
                         agent_num = sender_to_agent.get(current_sender)
                         if agent_num:
                             save_code_cells(agent_num)
-                
-                # Check if Agent 1 (Data Surveyor) just finished to extract attributes
-                if event.get("sender") == "DATA_SURVEYOR" and event.get("type") == "message":
-                    # Run docker exec to read attributes.json
+
+                # After Agent 1 finishes, extract model_attributes.json
+                agent1_sender = (
+                    "MODEL_INSPECTOR" if model_type == "classification"
+                    else "MODEL_PROFILER"
+                )
+                if event.get("sender") == agent1_sender and event.get("type") == "message":
                     try:
                         read_proc = subprocess.run(
-                            ["docker", "exec", container_id, "cat", "/workspace/outputs/attributes.json"],
+                            ["docker", "exec", container_id, "cat",
+                             "/workspace/outputs/model_attributes.json"],
                             capture_output=True, text=True
                         )
                         if read_proc.returncode == 0:
                             attr_data = json.loads(read_proc.stdout)
                             await websocket.send_json({
-                                "type": "attributes_discovered",
-                                "attributes": attr_data.get("protected_attributes", [])
+                                "type":       "attributes_discovered",
+                                "attributes": attr_data.get("protected_attributes", []),
+                                "task_type":  attr_data.get("task_type", model_type)
                             })
                     except Exception as e:
-                        print(f"[ERROR] Failed to read attributes.json: {e}")
+                        print(f"[ERROR] Failed to read model_attributes.json: {e}")
 
-                # Sync outputs from sandbox container after every tool result
+                # Sync outputs after every tool result
                 if event.get("type") == "tool_result" and container_id:
                     try:
                         subprocess.run(
-                            ["docker", "cp", f"{container_id}:/workspace/outputs/.", "outputs/"],
+                            ["docker", "cp",
+                             f"{container_id}:/workspace/outputs/.", "model_outputs/"],
                             capture_output=True, timeout=10
                         )
                     except Exception:
@@ -321,28 +487,27 @@ async def audit_websocket(websocket: WebSocket):
             except (WebSocketDisconnect, ConnectionClosedOK, ConnectionClosedError):
                 print("[WS] Client disconnected during event stream.")
                 break
-        
-        # Save final code cells for all agents
+
         for agent_num in [1, 2, 3, 4]:
             if code_cells[agent_num]:
                 save_code_cells(agent_num)
-        
-        # Explicitly signal completion to the frontend
+
         try:
-            await websocket.send_json({"type": "status", "message": "Audit complete."})
-            await asyncio.sleep(1) # Give WS time to flush
+            await websocket.send_json({"type": "status", "message": f"{model_type.title()} model audit complete."})
+            await asyncio.sleep(1)
         except:
             pass
-            
-    except (WebSocketDisconnect, ConnectionClosedOK, ConnectionClosedError):
-        print("[WS] Client disconnected.")
+
+    except (WebSocketDisconnect, ConnectionClosedOK, ConnectionClosedError) as e:
+        print(f"[WS] Client disconnected: {e}", flush=True)
     except RuntimeError as e:
-        print(f"[WS] Runtime error during cleanup (safe to ignore): {e}")
+        print(f"[WS] Runtime error: {e}", flush=True)
+        import traceback as tb
+        tb.print_exc()
     except Exception as e:
         full_tb = traceback.format_exc()
-        print(f"[ERROR] Audit failed: {e}")
+        print(f"[ERROR] Model audit failed: {e}")
         print(f"[ERROR] Full traceback:\n{full_tb}")
-        # Also print sub-exceptions for ExceptionGroups
         if hasattr(e, 'exceptions'):
             for i, sub_e in enumerate(e.exceptions):
                 print(f"[ERROR] Sub-exception {i}: {sub_e}")
@@ -358,32 +523,31 @@ async def audit_websocket(websocket: WebSocket):
             auditor_process.terminate()
         if miscellaneous_process:
             miscellaneous_process.terminate()
-        
+
         if container_id:
             print(f"[CLEANUP] Syncing outputs from {container_id[:12]}...")
-            # Ensure the outputs directory exists on the host
-            os.makedirs("outputs", exist_ok=True)
-            # Sync outputs back to host BEFORE removing container
-            subprocess.run(["docker", "cp", f"{container_id}:/workspace/outputs/.", "outputs/"], capture_output=True)
+            os.makedirs("model_outputs", exist_ok=True)
+            subprocess.run(
+                ["docker", "cp", f"{container_id}:/workspace/outputs/.", "model_outputs/"],
+                capture_output=True
+            )
             print(f"[CLEANUP] Removing container {container_id[:12]}...")
             subprocess.run(["docker", "rm", "-f", container_id], capture_output=True)
-        
+
         try:
             await websocket.close()
         except:
             pass
 
 
-@app.get("/outputs")
-async def list_outputs():
-    os.makedirs("outputs", exist_ok=True)
-    files = os.listdir("outputs")
-    return {"files": files}
+@app.get("/model_outputs")
+async def list_model_outputs():
+    os.makedirs("model_outputs", exist_ok=True)
+    return {"files": os.listdir("model_outputs")}
 
-# Serve generated outputs (plots/markdown)
-os.makedirs("outputs", exist_ok=True)
-app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
+
+os.makedirs("model_outputs", exist_ok=True)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8005)
+    uvicorn.run(app, host="0.0.0.0", port=8006)

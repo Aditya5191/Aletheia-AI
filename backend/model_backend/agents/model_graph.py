@@ -1,3 +1,5 @@
+# model_graph.py
+
 import asyncio
 import os
 from typing import TypedDict, Annotated, Sequence, Literal
@@ -33,13 +35,109 @@ def clean_messages(messages):
     return clean
 
 
+# ─────────────────────────────────────────────────────────────────
+# PROMPT FILENAME MAP
+# Each model_type maps to its four agent prompt filenames
+# Classification uses: model_inspector, behavioral_auditor,
+#                      threshold_calibrator, report_compiler
+# Regression uses:     model_profiler, disparity_auditor,
+#                      output_recalibrator, report_compiler
+# ─────────────────────────────────────────────────────────────────
+
+PROMPT_MAP = {
+    "classification": {
+        "agent1":  "classification/model_inspector.md",
+        "agent2":  "classification/behavioral_auditor.md",
+        "agent3":  "classification/threshold_calibrator.md",
+        "agent4":  "classification/report_compiler.md",
+        # Sender names for api.py agent tracking
+        "sender1": "model_inspector",
+        "sender2": "behavioral_auditor",
+        "sender3": "threshold_calibrator",
+        "sender4": "report_compiler",
+        # Handoff messages
+        "handoff1": (
+            "Model Inspector complete. "
+            "model_agent1.md, predictions.csv, and model_attributes.json "
+            "saved to /workspace/outputs/. "
+            "Read them and begin the behavioral fairness audit."
+        ),
+        "handoff2": (
+            "Behavioral Auditor complete. "
+            "model_agent2.md, model_agent2_charts.json, model_agent2_metrics.json, "
+            "and model_algorithm_selection.json saved to /workspace/outputs/. "
+            "Read model_algorithm_selection.json first to get the mitigation algorithm. "
+            "Then begin threshold calibration."
+        ),
+        "handoff3": (
+            "Threshold Calibrator complete. "
+            "model_agent3.md, model_agent3_charts.json, model_agent3_metrics.json, "
+            "threshold_map.json, and fixed_predictions.csv "
+            "saved to /workspace/outputs/. "
+            "Read them and begin report compilation."
+        ),
+        "initial_message": (
+            "Please begin the classification model audit. "
+            "Model Inspector: load and profile the uploaded model and sample. "
+            "Behavioral Auditor: follow up with the fairness audit on model predictions. "
+            "Threshold Calibrator: follow up with threshold calibration and mitigation. "
+            "Report Compiler: follow up with the final report."
+        ),
+    },
+    "regression": {
+        "agent1":  "regression/model_profiler.md",
+        "agent2":  "regression/disparity_auditor.md",
+        "agent3":  "regression/output_recalibrator.md",
+        "agent4":  "regression/report_compiler.md",
+        "sender1": "model_profiler",
+        "sender2": "disparity_auditor",
+        "sender3": "output_recalibrator",
+        "sender4": "report_compiler",
+        "handoff1": (
+            "Model Profiler complete. "
+            "model_agent1.md, predictions.csv, and model_attributes.json "
+            "saved to /workspace/outputs/. "
+            "Read them and begin the disparity audit."
+        ),
+        "handoff2": (
+            "Disparity Auditor complete. "
+            "model_agent2.md, model_agent2_charts.json, model_agent2_metrics.json, "
+            "and model_algorithm_selection.json saved to /workspace/outputs/. "
+            "Read model_algorithm_selection.json first to get the mitigation algorithm. "
+            "Then begin output recalibration."
+        ),
+        "handoff3": (
+            "Output Recalibrator complete. "
+            "model_agent3.md, model_agent3_charts.json, model_agent3_metrics.json, "
+            "correction_map.json, and fixed_predictions.csv "
+            "saved to /workspace/outputs/. "
+            "Read them and begin report compilation."
+        ),
+        "initial_message": (
+            "Please begin the regression model disparity audit. "
+            "Model Profiler: load and profile the uploaded model and sample. "
+            "Disparity Auditor: follow up with the disparity audit on model predictions. "
+            "Output Recalibrator: follow up with output recalibration. "
+            "Report Compiler: follow up with the final report."
+        ),
+    }
+}
+
+
 async def run_model_pipeline(
     container_id: str,
+    model_type: Literal["classification", "regression"] = "classification",
     sandbox_url: str = "http://localhost:8000/sse",
     aletheia_url: str = "https://web-production-6c63b.up.railway.app/sse",
     miscellaneous_url: str = "http://localhost:8002/sse"
 ):
-    print(f"[MODEL PIPELINE] Starting for container '{container_id}'")
+    if model_type not in PROMPT_MAP:
+        raise ValueError(f"model_type must be 'classification' or 'regression', got '{model_type}'")
+
+    prompts   = PROMPT_MAP[model_type]
+    prompts_dir = os.path.join(os.path.dirname(__file__), "..", "prompts")
+
+    print(f"[MODEL PIPELINE] Starting — model_type='{model_type}', container='{container_id}'")
 
     print(f"[NETWORK] Connecting to Sandbox MCP at {sandbox_url}...")
     async with sse_client(sandbox_url, timeout=300) as (sandbox_r, sandbox_w):
@@ -89,115 +187,76 @@ async def run_model_pipeline(
                                 }
                             )
 
-                            # Agent 1 only needs sandbox + misc — no auditor MCP calls yet
-                            llm_inspector   = llm.bind_tools(sandbox_tools + misc_tools)
+                            # Agent 1 only needs sandbox + misc — no auditor MCP yet
+                            llm_agent1 = llm.bind_tools(sandbox_tools + misc_tools)
                             # Agents 2, 3, 4 need all tools including auditor MCP
-                            llm_auditor     = llm.bind_tools(all_tools)
-                            llm_calibrator  = llm.bind_tools(all_tools)
-                            llm_compiler    = llm.bind_tools(all_tools)
+                            llm_agent2 = llm.bind_tools(all_tools)
+                            llm_agent3 = llm.bind_tools(all_tools)
+                            llm_agent4 = llm.bind_tools(all_tools)
 
                             # ─────────────────────────────────────────────
-                            # AGENT NODES
+                            # HELPER — loads prompt by key from PROMPT_MAP
                             # ─────────────────────────────────────────────
 
-                            def model_inspector(state: AgentState):
-                                prompt_path = os.path.join(
-                                    os.path.dirname(__file__), "..", "prompts", "model_inspector.md"
-                                )
-                                with open(prompt_path, "r", encoding="utf-8") as f:
-                                    raw_prompt = f.read()
-                                system_prompt = SystemMessage(
-                                    content=raw_prompt.replace("{container_id}", container_id)
-                                )
-                                response = llm_inspector.invoke(
-                                    [system_prompt] + clean_messages(state["messages"])
-                                )
-                                return {"messages": [response], "sender": "model_inspector"}
+                            def load_prompt(key: str) -> str:
+                                path = os.path.join(prompts_dir, prompts[key])
+                                with open(path, "r", encoding="utf-8") as f:
+                                    return f.read().replace("{container_id}", container_id)
 
-                            def behavioral_auditor(state: AgentState):
-                                prompt_path = os.path.join(
-                                    os.path.dirname(__file__), "..", "prompts", "behavioral_auditor.md"
-                                )
-                                with open(prompt_path, "r", encoding="utf-8") as f:
-                                    raw_prompt = f.read()
-                                system_prompt = SystemMessage(
-                                    content=raw_prompt.replace("{container_id}", container_id)
-                                )
-                                response = llm_auditor.invoke(
-                                    [system_prompt] + clean_messages(state["messages"])
-                                )
-                                return {"messages": [response], "sender": "behavioral_auditor"}
+                            # ─────────────────────────────────────────────
+                            # AGENT NODES — generic, read prompt by key
+                            # ─────────────────────────────────────────────
 
-                            def threshold_calibrator(state: AgentState):
-                                prompt_path = os.path.join(
-                                    os.path.dirname(__file__), "..", "prompts", "threshold_calibrator.md"
+                            def agent1(state: AgentState):
+                                response = llm_agent1.invoke(
+                                    [SystemMessage(content=load_prompt("agent1"))]
+                                    + clean_messages(state["messages"])
                                 )
-                                with open(prompt_path, "r", encoding="utf-8") as f:
-                                    raw_prompt = f.read()
-                                system_prompt = SystemMessage(
-                                    content=raw_prompt.replace("{container_id}", container_id)
-                                )
-                                response = llm_calibrator.invoke(
-                                    [system_prompt] + clean_messages(state["messages"])
-                                )
-                                return {"messages": [response], "sender": "threshold_calibrator"}
+                                return {"messages": [response], "sender": prompts["sender1"]}
 
-                            def report_compiler(state: AgentState):
-                                # Shared prompt with dataset pipeline — reads same output file names
-                                prompt_path = os.path.join(
-                                    os.path.dirname(__file__), "..", "prompts", "report_compiler.md"
+                            def agent2(state: AgentState):
+                                response = llm_agent2.invoke(
+                                    [SystemMessage(content=load_prompt("agent2"))]
+                                    + clean_messages(state["messages"])
                                 )
-                                with open(prompt_path, "r", encoding="utf-8") as f:
-                                    raw_prompt = f.read()
-                                system_prompt = SystemMessage(
-                                    content=raw_prompt.replace("{container_id}", container_id)
+                                return {"messages": [response], "sender": prompts["sender2"]}
+
+                            def agent3(state: AgentState):
+                                response = llm_agent3.invoke(
+                                    [SystemMessage(content=load_prompt("agent3"))]
+                                    + clean_messages(state["messages"])
                                 )
-                                response = llm_compiler.invoke(
-                                    [system_prompt] + clean_messages(state["messages"])
+                                return {"messages": [response], "sender": prompts["sender3"]}
+
+                            def agent4(state: AgentState):
+                                response = llm_agent4.invoke(
+                                    [SystemMessage(content=load_prompt("agent4"))]
+                                    + clean_messages(state["messages"])
                                 )
-                                return {"messages": [response], "sender": "report_compiler"}
+                                return {"messages": [response], "sender": prompts["sender4"]}
 
                             # ─────────────────────────────────────────────
                             # HANDOFF NODES
                             # ─────────────────────────────────────────────
 
-                            def handoff_to_behavioral_auditor(state: AgentState):
+                            def handoff_to_agent2(state: AgentState):
                                 delete_messages = [RemoveMessage(id=m.id) for m in state["messages"]]
-                                handoff_msg = HumanMessage(content=(
-                                    "Model Inspector complete. "
-                                    "model_profile.md, predictions.csv, and attributes.json "
-                                    "saved to /workspace/outputs/. "
-                                    "Read them via bash and begin the behavioral fairness audit."
-                                ))
                                 return {
-                                    "messages": delete_messages + [handoff_msg],
+                                    "messages": delete_messages + [HumanMessage(content=prompts["handoff1"])],
                                     "sender": "handoff"
                                 }
 
-                            def handoff_to_threshold_calibrator(state: AgentState):
+                            def handoff_to_agent3(state: AgentState):
                                 delete_messages = [RemoveMessage(id=m.id) for m in state["messages"]]
-                                handoff_msg = HumanMessage(content=(
-                                    "Behavioral Auditor complete. "
-                                    "agent2.md, agent2_charts.json, and agent2_metrics.json "
-                                    "saved to /workspace/outputs/. "
-                                    "Read them via bash and begin threshold calibration."
-                                ))
                                 return {
-                                    "messages": delete_messages + [handoff_msg],
+                                    "messages": delete_messages + [HumanMessage(content=prompts["handoff2"])],
                                     "sender": "handoff"
                                 }
 
-                            def handoff_to_compiler(state: AgentState):
+                            def handoff_to_agent4(state: AgentState):
                                 delete_messages = [RemoveMessage(id=m.id) for m in state["messages"]]
-                                handoff_msg = HumanMessage(content=(
-                                    "Threshold Calibrator complete. "
-                                    "agent3.md, agent3_charts.json, agent3_metrics.json, "
-                                    "threshold_map.json, and fixed_predictions.csv "
-                                    "saved to /workspace/outputs/. "
-                                    "Read them via bash and begin report compilation."
-                                ))
                                 return {
-                                    "messages": delete_messages + [handoff_msg],
+                                    "messages": delete_messages + [HumanMessage(content=prompts["handoff3"])],
                                     "sender": "handoff"
                                 }
 
@@ -207,24 +266,17 @@ async def run_model_pipeline(
 
                             def router(state: AgentState):
                                 last_msg = state["messages"][-1]
-                                sender = state.get("sender", "")
+                                sender   = state.get("sender", "")
 
-                                # If the last message has tool calls, always go to tools first
                                 if last_msg.tool_calls:
                                     return "tools"
 
-                                # After tool execution returns, go back to whoever called the tool
-                                # This is handled by the tools → sender edge below
-
-                                # When an agent finishes (no tool calls), advance to next handoff
-                                if sender == "model_inspector":
-                                    return "handoff_to_behavioral_auditor"
-
-                                if sender == "behavioral_auditor":
-                                    return "handoff_to_threshold_calibrator"
-
-                                if sender == "threshold_calibrator":
-                                    return "handoff_to_compiler"
+                                if sender == prompts["sender1"]:
+                                    return "handoff_to_agent2"
+                                if sender == prompts["sender2"]:
+                                    return "handoff_to_agent3"
+                                if sender == prompts["sender3"]:
+                                    return "handoff_to_agent4"
 
                                 return END
 
@@ -236,59 +288,38 @@ async def run_model_pipeline(
 
                             workflow = StateGraph(AgentState)
 
-                            # Agent nodes
-                            workflow.add_node("model_inspector",              model_inspector)
-                            workflow.add_node("behavioral_auditor",           behavioral_auditor)
-                            workflow.add_node("threshold_calibrator",         threshold_calibrator)
-                            workflow.add_node("report_compiler",              report_compiler)
+                            workflow.add_node("agent1",           agent1)
+                            workflow.add_node("agent2",           agent2)
+                            workflow.add_node("agent3",           agent3)
+                            workflow.add_node("agent4",           agent4)
+                            workflow.add_node("handoff_to_agent2", handoff_to_agent2)
+                            workflow.add_node("handoff_to_agent3", handoff_to_agent3)
+                            workflow.add_node("handoff_to_agent4", handoff_to_agent4)
+                            workflow.add_node("tools",             tools_node)
 
-                            # Handoff nodes
-                            workflow.add_node("handoff_to_behavioral_auditor",  handoff_to_behavioral_auditor)
-                            workflow.add_node("handoff_to_threshold_calibrator", handoff_to_threshold_calibrator)
-                            workflow.add_node("handoff_to_compiler",            handoff_to_compiler)
-
-                            # Shared tools node
-                            workflow.add_node("tools", tools_node)
-
-                            # Edges
-                            workflow.add_edge(START, "model_inspector")
+                            workflow.add_edge(START, "agent1")
 
                             workflow.add_conditional_edges(
-                                "model_inspector", router,
-                                {
-                                    "tools": "tools",
-                                    "handoff_to_behavioral_auditor": "handoff_to_behavioral_auditor"
-                                }
+                                "agent1", router,
+                                {"tools": "tools", "handoff_to_agent2": "handoff_to_agent2"}
                             )
-
-                            workflow.add_edge("handoff_to_behavioral_auditor", "behavioral_auditor")
+                            workflow.add_edge("handoff_to_agent2", "agent2")
 
                             workflow.add_conditional_edges(
-                                "behavioral_auditor", router,
-                                {
-                                    "tools": "tools",
-                                    "handoff_to_threshold_calibrator": "handoff_to_threshold_calibrator"
-                                }
+                                "agent2", router,
+                                {"tools": "tools", "handoff_to_agent3": "handoff_to_agent3"}
                             )
-
-                            workflow.add_edge("handoff_to_threshold_calibrator", "threshold_calibrator")
+                            workflow.add_edge("handoff_to_agent3", "agent3")
 
                             workflow.add_conditional_edges(
-                                "threshold_calibrator", router,
-                                {
-                                    "tools": "tools",
-                                    "handoff_to_compiler": "handoff_to_compiler"
-                                }
+                                "agent3", router,
+                                {"tools": "tools", "handoff_to_agent4": "handoff_to_agent4"}
                             )
-
-                            workflow.add_edge("handoff_to_compiler", "report_compiler")
+                            workflow.add_edge("handoff_to_agent4", "agent4")
 
                             workflow.add_conditional_edges(
-                                "report_compiler", router,
-                                {
-                                    "tools": "tools",
-                                    END: END
-                                }
+                                "agent4", router,
+                                {"tools": "tools", END: END}
                             )
 
                             # After any tool call completes, return to whoever called it
@@ -296,10 +327,10 @@ async def run_model_pipeline(
                                 "tools",
                                 lambda x: x["sender"],
                                 {
-                                    "model_inspector":      "model_inspector",
-                                    "behavioral_auditor":   "behavioral_auditor",
-                                    "threshold_calibrator": "threshold_calibrator",
-                                    "report_compiler":      "report_compiler"
+                                    prompts["sender1"]: "agent1",
+                                    prompts["sender2"]: "agent2",
+                                    prompts["sender3"]: "agent3",
+                                    prompts["sender4"]: "agent4",
                                 }
                             )
 
@@ -307,28 +338,20 @@ async def run_model_pipeline(
 
                             # ─────────────────────────────────────────────
                             # RUN + STREAM
-                            # Identical streaming pattern to graph.py
                             # ─────────────────────────────────────────────
 
-                            initial_message = HumanMessage(content=(
-                                "Please begin the model audit execution. "
-                                "Model Inspector: load and profile the uploaded model and sample. "
-                                "Behavioral Auditor: follow up with the fairness audit on model predictions. "
-                                "Threshold Calibrator: follow up with threshold calibration and mitigation. "
-                                "Report Compiler: follow up with the final report."
-                            ))
+                            initial_message = HumanMessage(content=prompts["initial_message"])
 
-                            print("\n\033[1m\033[96m" + "="*50 + "\nStarting Model Audit Pipeline...\n" + "="*50 + "\033[0m\n")
+                            print("\n\033[1m\033[96m" + "="*50 + f"\nStarting {model_type.title()} Model Audit Pipeline...\n" + "="*50 + "\033[0m\n")
 
                             async for event in app.astream(
                                 {"messages": [initial_message], "sender": "user"},
                                 stream_mode="values"
                             ):
-                                # --- Mitigation for 429 Resource Exhausted ---
-                                await asyncio.sleep(2) # Give the API a moment between events
-                                
+                                await asyncio.sleep(2)
+
                                 last_message = event["messages"][-1]
-                                sender = event.get("sender", "SYSTEM").upper()
+                                sender       = event.get("sender", "SYSTEM").upper()
 
                                 if isinstance(last_message, HumanMessage):
                                     print(f"\033[1m\033[92m[USER]\033[0m\n{last_message.content}\n")
@@ -349,7 +372,7 @@ async def run_model_pipeline(
                                         yield {"type": "message", "sender": sender, "content": last_message.content}
 
                                 elif isinstance(last_message, ToolMessage):
-                                    limit = 350
+                                    limit   = 350
                                     res_str = str(last_message.content)
                                     if len(res_str) > limit:
                                         res_str = res_str[:limit] + f"\n... [TRUNCATED {len(res_str)-limit} bytes]"
