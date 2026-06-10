@@ -50,12 +50,12 @@ export default function TopAppBar() {
       <div className="flex items-center gap-4">
         <button 
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          className="p-2 rounded-lg text-gray-400 hover:bg-violet-500/10 hover:text-violet-300 transition-colors cursor-pointer"
+          className="p-2 rounded-lg text-gray-400 hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
           title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         >
           <Menu className="w-5 h-5" />
         </button>
-        <span className="text-xl font-black tracking-tighter text-violet-500 uppercase select-none">
+        <span className="text-xl font-black tracking-tighter text-primary uppercase select-none">
           Aletheia
         </span>
       </div>
@@ -68,7 +68,7 @@ export default function TopAppBar() {
             onClick={() => setViewMode("developer")}
             className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold transition-all duration-300 ${
               viewMode === "developer"
-                ? "bg-violet-600 text-white shadow-lg shadow-violet-900/40"
+                ? "bg-primary text-white shadow-lg shadow-primary/40"
                 : "text-gray-500 hover:text-gray-300"
             }`}
           >
@@ -90,7 +90,7 @@ export default function TopAppBar() {
             onClick={() => setViewMode("user")}
             className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold transition-all duration-300 ${
               viewMode === "user"
-                ? "bg-violet-600 text-white shadow-lg shadow-violet-900/40"
+                ? "bg-primary text-white shadow-lg shadow-primary/40"
                 : "text-gray-500 hover:text-gray-300"
             }`}
           >
@@ -105,7 +105,7 @@ export default function TopAppBar() {
           <input
             type="text"
             placeholder="Search components..."
-            className="w-full bg-surface border border-outline-variant text-white rounded-md pl-9 pr-3 py-1.5 text-sm focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all placeholder:text-gray-600"
+            className="w-full bg-surface border border-outline-variant text-white rounded-md pl-9 pr-3 py-1.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-gray-600"
           />
         </div>
 
@@ -114,7 +114,7 @@ export default function TopAppBar() {
           <button className="px-3 py-1.5 text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">
             Execute
           </button>
-          <button className="px-4 py-1.5 text-sm font-semibold bg-violet-600 hover:bg-violet-500 text-white rounded-md transition-colors shadow-lg shadow-violet-900/20 cursor-pointer">
+          <button className="px-4 py-1.5 text-sm font-semibold bg-primary hover:bg-primary text-white rounded-md transition-colors shadow-lg shadow-primary/20 cursor-pointer">
             Deploy
           </button>
         </div>
@@ -130,7 +130,7 @@ export default function TopAppBar() {
                 setShowProfile(false);
               }}
               className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors cursor-pointer ${
-                showHistory ? "bg-violet-600 text-white" : "text-gray-400 hover:bg-violet-500/10 hover:text-violet-300"
+                showHistory ? "bg-primary text-white" : "text-gray-400 hover:bg-primary/10 hover:text-primary"
               }`}
             >
               <History className="w-5 h-5" />
@@ -142,15 +142,15 @@ export default function TopAppBar() {
                   <span className="font-bold text-white text-sm">Recent Activity</span>
                 </div>
                 <div className="max-h-[280px] overflow-y-auto">
-                  <div className="px-4 py-2.5 hover:bg-surface-container transition-colors cursor-pointer group border-l-2 border-transparent hover:border-violet-500">
+                  <div className="px-4 py-2.5 hover:bg-surface-container transition-colors cursor-pointer group border-l-2 border-transparent hover:border-primary">
                     <p className="text-[13px] text-gray-200 font-medium">Adult_Census_Audit.v1</p>
                     <p className="text-[10px] text-gray-500 mt-0.5">2 hours ago • Fairness Score: 84</p>
                   </div>
-                  <div className="px-4 py-2.5 hover:bg-surface-container transition-colors cursor-pointer group border-l-2 border-transparent hover:border-violet-500">
+                  <div className="px-4 py-2.5 hover:bg-surface-container transition-colors cursor-pointer group border-l-2 border-transparent hover:border-primary">
                     <p className="text-[13px] text-gray-200 font-medium">Loan_Approval_Pipeline</p>
                     <p className="text-[10px] text-gray-500 mt-0.5">Yesterday • Fairness Score: 91</p>
                   </div>
-                  <div className="px-4 py-2.5 hover:bg-surface-container transition-colors cursor-pointer group border-l-2 border-transparent hover:border-violet-500">
+                  <div className="px-4 py-2.5 hover:bg-surface-container transition-colors cursor-pointer group border-l-2 border-transparent hover:border-primary">
                     <p className="text-[13px] text-gray-200 font-medium">Recidivism_Risk_Analysis</p>
                     <p className="text-[10px] text-gray-500 mt-0.5">Oct 24, 2023 • Fairness Score: 78</p>
                   </div>
@@ -173,7 +173,7 @@ export default function TopAppBar() {
                 setShowHistory(false);
               }}
               className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors cursor-pointer ${
-                showNotifications ? "bg-violet-600 text-white" : "text-gray-400 hover:bg-violet-500/10 hover:text-violet-300"
+                showNotifications ? "bg-primary text-white" : "text-gray-400 hover:bg-primary/10 hover:text-primary"
               }`}
             >
               <Bell className="w-5 h-5" />
@@ -184,7 +184,7 @@ export default function TopAppBar() {
               <div className="absolute right-0 mt-3 w-80 bg-surface border border-outline-variant rounded-xl shadow-2xl shadow-black/80 py-2 z-[110] animate-in fade-in zoom-in duration-200">
                 <div className="px-4 py-2 border-b border-outline-variant flex justify-between items-center mb-1">
                   <span className="font-bold text-white">Notifications</span>
-                  <span className="text-[10px] text-violet-400 bg-violet-400/10 px-2 py-0.5 rounded-full uppercase tracking-widest font-black">2 New</span>
+                  <span className="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-widest font-black">2 New</span>
                 </div>
                 <div className="max-h-[320px] overflow-y-auto">
                   <div className="px-4 py-3 hover:bg-surface-container transition-colors cursor-pointer group">
@@ -200,8 +200,8 @@ export default function TopAppBar() {
                   </div>
                   <div className="px-4 py-3 hover:bg-surface-container transition-colors cursor-pointer group">
                     <div className="flex gap-3">
-                      <div className="w-8 h-8 rounded-full bg-violet-500/10 flex items-center justify-center shrink-0">
-                        <Terminal className="w-4 h-4 text-violet-500" />
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <Terminal className="w-4 h-4 text-primary" />
                       </div>
                       <div>
                         <p className="text-sm text-gray-200 leading-tight">New Sandbox Initialized</p>
@@ -211,7 +211,7 @@ export default function TopAppBar() {
                   </div>
                 </div>
                 <div className="px-4 py-2 border-t border-outline-variant mt-1 text-center">
-                  <button className="text-[11px] text-violet-400 font-bold hover:text-violet-300 transition-colors uppercase tracking-wider">
+                  <button className="text-[11px] text-primary font-bold hover:text-primary transition-colors uppercase tracking-wider">
                     View All Activity
                   </button>
                 </div>
@@ -228,7 +228,7 @@ export default function TopAppBar() {
                 setShowHistory(false);
               }}
               className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors cursor-pointer ${
-                showProfile ? "bg-violet-600 text-white" : "text-gray-400 hover:bg-violet-500/10 hover:text-violet-300"
+                showProfile ? "bg-primary text-white" : "text-gray-400 hover:bg-primary/10 hover:text-primary"
               }`}
             >
               <UserCircle className="w-5 h-5" />
@@ -241,12 +241,12 @@ export default function TopAppBar() {
                   <p className="text-xs text-gray-500 truncate">rushil@agenticflow.ai</p>
                 </div>
                 <div className="px-2">
-                  <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-violet-500/10 transition-all text-sm group">
-                    <User className="w-4 h-4 group-hover:text-violet-400" />
+                  <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-primary/10 transition-all text-sm group">
+                    <User className="w-4 h-4 group-hover:text-primary" />
                     My Profile
                   </button>
-                  <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-violet-500/10 transition-all text-sm group">
-                    <SettingsIcon className="w-4 h-4 group-hover:text-violet-400" />
+                  <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-primary/10 transition-all text-sm group">
+                    <SettingsIcon className="w-4 h-4 group-hover:text-primary" />
                     Account Settings
                   </button>
                 </div>

@@ -161,7 +161,7 @@ function DockerNode({ data }: NodeProps<DockerNodeType>) {
 
           {/* Container ID */}
           {data.containerId && (isRunning || status === "stopped") && (
-            <p className="text-[9px] text-outline font-mono mt-2 opacity-60">
+            <p className="text-[9px] text-on-surface-variant font-mono mt-2 opacity-60">
               {data.containerId}
             </p>
           )}

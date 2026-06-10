@@ -37,7 +37,7 @@ export type AgentNodeType = Node<AgentNodeData, "agent">;
 const iconMap = {
   database: {
     bg: "bg-secondary-container/20",
-    icon: <Database className="w-4 h-4 text-secondary" />,
+    icon: <Database className="w-4 h-4 text-primary" />,
   },
   brain: {
     bg: "bg-primary-container/20",
@@ -45,7 +45,7 @@ const iconMap = {
   },
   code: {
     bg: "bg-tertiary-container/20",
-    icon: <Code className="w-4 h-4 text-tertiary" />,
+    icon: <Code className="w-4 h-4 text-error" />,
   },
 };
 
@@ -139,7 +139,7 @@ function AgentNode({ id, data, selected }: NodeProps<AgentNodeType>) {
             disabled={isAgentRunning}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest transition-all cursor-pointer shadow-sm uppercase ${
               isAgentRunning 
-                ? "bg-secondary-container/20 text-secondary border border-secondary/20 cursor-default" 
+                ? "bg-secondary-container/20 text-primary border border-secondary/20 cursor-default" 
                 : "bg-primary text-on-primary hover:bg-primary-container hover:text-on-primary-container shadow-[0_0_12px_rgba(208,188,255,0.2)] hover:shadow-[0_0_16px_rgba(208,188,255,0.4)]"
             }`}
           >
@@ -166,7 +166,7 @@ function AgentNode({ id, data, selected }: NodeProps<AgentNodeType>) {
             </span>
           </div>
         ) : (
-          <button className="text-outline hover:text-on-surface transition-colors cursor-pointer">
+          <button className="text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer">
             <MoreHorizontal className="w-[18px] h-[18px]" />
           </button>
         )}
@@ -238,10 +238,10 @@ function AgentNode({ id, data, selected }: NodeProps<AgentNodeType>) {
                     return (
                       <button
                         onClick={(e) => toggleTool(e, tool.id)}
-                        className="w-full flex items-center gap-2 p-2 text-xs text-outline hover:text-on-surface hover:bg-[var(--color-outline)] transition-colors"
+                        className="w-full flex items-center gap-2 p-2 text-xs text-on-surface-variant hover:text-on-surface hover:bg-[var(--color-outline)] transition-colors"
                       >
                         <div className="w-5 h-5 rounded-full bg-surface border border-outline-variant/30 flex items-center justify-center shrink-0">
-                          <Wrench className="w-3 h-3 text-outline" />
+                          <Wrench className="w-3 h-3 text-on-surface-variant" />
                         </div>
                         <span className="flex-1 text-left font-mono truncate" title={displayTitle}>{displayTitle}</span>
                         {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -255,7 +255,7 @@ function AgentNode({ id, data, selected }: NodeProps<AgentNodeType>) {
                         {/* Parameters */}
                         {tool.inputs && (
                           <div>
-                            <div className="inline-block bg-surface-container text-outline px-1.5 py-0.5 rounded text-[9px] mb-1.5">
+                            <div className="inline-block bg-surface-container text-on-surface-variant px-1.5 py-0.5 rounded text-[9px] mb-1.5">
                               Parameters
                             </div>
                             <pre className="text-[#9ECE6A] whitespace-pre-wrap break-all">
@@ -265,7 +265,7 @@ function AgentNode({ id, data, selected }: NodeProps<AgentNodeType>) {
                         )}
                         {/* Result */}
                         <div>
-                          <div className="inline-block bg-surface-container text-outline px-1.5 py-0.5 rounded text-[9px] mb-1.5">
+                          <div className="inline-block bg-surface-container text-on-surface-variant px-1.5 py-0.5 rounded text-[9px] mb-1.5">
                             Result
                           </div>
                           <pre className="text-[#A9B1D6] whitespace-pre-wrap break-all">
@@ -288,7 +288,7 @@ function AgentNode({ id, data, selected }: NodeProps<AgentNodeType>) {
           </span>
           <span
             className={`text-xs ${
-              data.outputVariant === "active" ? "text-primary" : "text-outline"
+              data.outputVariant === "active" ? "text-primary" : "text-on-surface-variant"
             }`}
           >
             {data.outputLabel}

@@ -16,7 +16,7 @@ export default function CanvasControls({ isLocked, onToggleLock }: CanvasControl
     <div className="absolute bottom-8 left-8 z-50 flex flex-col gap-2 bg-surface/80 backdrop-blur-xl border border-outline-variant p-1.5 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
       <button
         onClick={() => zoomIn()}
-        className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:bg-violet-500/20 hover:text-violet-400 transition-all active:scale-90 group relative"
+        className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:bg-primary/20 hover:text-primary transition-all active:scale-90 group relative"
         title="Zoom In"
       >
         <Plus className="w-5 h-5" />
@@ -29,7 +29,7 @@ export default function CanvasControls({ isLocked, onToggleLock }: CanvasControl
 
       <button
         onClick={() => zoomOut()}
-        className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:bg-violet-500/20 hover:text-violet-400 transition-all active:scale-90 group relative"
+        className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:bg-primary/20 hover:text-primary transition-all active:scale-90 group relative"
         title="Zoom Out"
       >
         <Minus className="w-5 h-5" />
@@ -42,7 +42,7 @@ export default function CanvasControls({ isLocked, onToggleLock }: CanvasControl
 
       <button
         onClick={() => fitView({ duration: 800 })}
-        className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:bg-violet-500/20 hover:text-violet-400 transition-all active:scale-90 group relative"
+        className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:bg-primary/20 hover:text-primary transition-all active:scale-90 group relative"
         title="Fit View"
       >
         <Maximize className="w-4 h-4" />
@@ -59,7 +59,7 @@ export default function CanvasControls({ isLocked, onToggleLock }: CanvasControl
             className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-90 group relative ${
               isLocked 
                 ? "text-orange-400 bg-orange-400/10 hover:bg-orange-400/20" 
-                : "text-gray-400 hover:bg-violet-500/20 hover:text-violet-400"
+                : "text-gray-400 hover:bg-primary/20 hover:text-primary"
             }`}
             title={isLocked ? "Unlock Canvas" : "Lock Canvas"}
           >

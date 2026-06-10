@@ -109,7 +109,7 @@ const nodeDetails: Record<string, NodeDetailData> = {
         id: "feature_variance",
         label: "Feature Imbalance",
         type: "bar",
-        color: "#d0bcff", // primary purple
+        color: "#FF691A", // primary purple
         data: [
           { label: "Income", value: 68 },
           { label: "Age", value: 45 },
@@ -246,7 +246,7 @@ metrics = compute_fairness_metrics(df, 'gender', 'approved')
 
 # Generate Plots
 plt.figure(figsize=(8,6))
-sns.barplot(x=['Privileged', 'Unprivileged'], y=[0.85, 0.45], palette=['#6B5996', '#ff5252'])
+sns.barplot(x=['Privileged', 'Unprivileged'], y=[0.85, 0.45], palette=['#183F60', '#ff5252'])
 plt.title('Approval Rates by Group')
 plt.savefig('/workspace/outputs/dir_bar_chart.png')
 
@@ -257,13 +257,13 @@ print("Audit complete. Plots generated and saved to /workspace/outputs/agent2.md
     title: "Mitigation Expert",
     iconType: "code",
     statusLabel: "Running",
-    statusColor: "#d0bcff",
+    statusColor: "#FF691A",
     charts: [
       {
         id: "mitigation_results",
         label: "Fairness Improvement (DIR)",
         type: "bar",
-        color: "#d0bcff",
+        color: "#FF691A",
         data: [
           { label: "Before Mitigation", value: 81 },
           { label: "After Reweighing", value: 98 },
@@ -460,7 +460,7 @@ function InteractiveLineChart({ chartDef }: { chartDef: ChartDef }) {
                 x={PAD_X - 8}
                 y={y + 4}
                 textAnchor="end"
-                className="fill-outline text-[10px]"
+                className="fill-on-surface-variant text-[10px]"
               >
                 {fmtVal(rawVal)}
               </text>
@@ -572,7 +572,7 @@ function InteractiveLineChart({ chartDef }: { chartDef: ChartDef }) {
               y={PAD_TOP + chartH + 16}
               textAnchor="end"
               transform={`rotate(-40 ${p.x} ${PAD_TOP + chartH + 16})`}
-              className="fill-outline text-[9px]"
+              className="fill-on-surface-variant text-[9px]"
             >
               {data[i].label.length > 20 ? data[i].label.substring(0, 18) + ".." : data[i].label}
             </text>
@@ -636,7 +636,7 @@ function InteractiveBarChart({ chartDef }: { chartDef: ChartDef }) {
                 x={PAD_X - 8}
                 y={y + 4}
                 textAnchor="end"
-                className="fill-outline text-[10px]"
+                className="fill-on-surface-variant text-[10px]"
               >
                 {fmtVal(rawVal)}
               </text>
@@ -715,7 +715,7 @@ function InteractiveBarChart({ chartDef }: { chartDef: ChartDef }) {
                 y={PAD_TOP + chartH + 16}
                 textAnchor="end"
                 transform={`rotate(-40 ${x + barWidth / 2} ${PAD_TOP + chartH + 16})`}
-                className="fill-outline text-[9px]"
+                className="fill-on-surface-variant text-[9px]"
               >
                 {d.label.length > 20 ? d.label.substring(0, 18) + ".." : d.label}
               </text>
@@ -763,7 +763,7 @@ function InteractiveGroupedBarChart({ chartDef }: { chartDef: ChartDef }) {
           return (
             <g key={frac}>
               <line x1={PAD_X} y1={y} x2={W - PAD_X} y2={y} stroke="rgba(149,142,160,0.1)" strokeDasharray="4 4" />
-              <text x={PAD_X - 8} y={y + 4} textAnchor="end" className="fill-outline text-[10px]">{fmtVal(rawVal)}</text>
+              <text x={PAD_X - 8} y={y + 4} textAnchor="end" className="fill-on-surface-variant text-[10px]">{fmtVal(rawVal)}</text>
             </g>
           );
         })}
@@ -818,7 +818,7 @@ function InteractiveGroupedBarChart({ chartDef }: { chartDef: ChartDef }) {
           {series.map((s: any, i: number) => (
             <g key={i} transform={`translate(0, ${i * 14})`}>
               <rect width={8} height={8} fill={s.color} rx={1} />
-              <text x={12} y={7} className="fill-outline text-[9px]">{s.name}</text>
+              <text x={12} y={7} className="fill-on-surface-variant text-[9px]">{s.name}</text>
             </g>
           ))}
         </g>
@@ -861,7 +861,7 @@ function InteractiveStackedBarChart({ chartDef }: { chartDef: ChartDef }) {
           return (
             <g key={frac}>
               <line x1={PAD_X} y1={y} x2={W - PAD_X} y2={y} stroke="rgba(149,142,160,0.1)" strokeDasharray="4 4" />
-              <text x={PAD_X - 8} y={y + 4} textAnchor="end" className="fill-outline text-[10px]">{fmtVal(rawVal)}</text>
+              <text x={PAD_X - 8} y={y + 4} textAnchor="end" className="fill-on-surface-variant text-[10px]">{fmtVal(rawVal)}</text>
             </g>
           );
         })}
@@ -923,7 +923,7 @@ function InteractiveStackedBarChart({ chartDef }: { chartDef: ChartDef }) {
           {series.map((s: any, i: number) => (
             <g key={i} transform={`translate(0, ${i * 14})`}>
               <rect width={8} height={8} fill={s.color} rx={1} />
-              <text x={12} y={7} className="fill-outline text-[9px]">{s.name}</text>
+              <text x={12} y={7} className="fill-on-surface-variant text-[9px]">{s.name}</text>
             </g>
           ))}
         </g>
@@ -970,7 +970,7 @@ function InteractiveBoxPlot({ chartDef }: { chartDef: ChartDef }) {
           return (
             <g key={frac}>
               <line x1={PAD_X} y1={y} x2={W - 20} y2={y} stroke="rgba(149,142,160,0.1)" strokeDasharray="4 4" />
-              <text x={PAD_X - 8} y={y + 4} textAnchor="end" className="fill-outline text-[10px]">{fmtVal(rawVal)}</text>
+              <text x={PAD_X - 8} y={y + 4} textAnchor="end" className="fill-on-surface-variant text-[10px]">{fmtVal(rawVal)}</text>
             </g>
           );
         })}
@@ -1015,7 +1015,7 @@ function InteractiveBoxPlot({ chartDef }: { chartDef: ChartDef }) {
                 y={PAD_TOP + chartH + 15}
                 textAnchor="end"
                 transform={`rotate(-35 ${cx} ${PAD_TOP + chartH + 15})`}
-                className="fill-outline text-[9px]"
+                className="fill-on-surface-variant text-[9px]"
               >
                 {d.label.length > 15 ? d.label.substring(0, 13) + ".." : d.label}
               </text>
@@ -1024,10 +1024,10 @@ function InteractiveBoxPlot({ chartDef }: { chartDef: ChartDef }) {
               {isHovered && (
                 <g>
                   <rect x={cx + boxW/2 + 5} y={yMed - 30} width={90} height={60} rx={4} fill="#1a1b2e" stroke={chartColor} strokeWidth="1" />
-                  <text x={cx + boxW/2 + 10} y={yMed - 18} className="text-[9px] fill-outline">Max: {fmtVal(d.max)}</text>
+                  <text x={cx + boxW/2 + 10} y={yMed - 18} className="text-[9px] fill-on-surface-variant">Max: {fmtVal(d.max)}</text>
                   <text x={cx + boxW/2 + 10} y={yMed - 8} className="text-[9px] fill-white font-bold">Med: {fmtVal(d.median)}</text>
-                  <text x={cx + boxW/2 + 10} y={yMed + 2} className="text-[9px] fill-outline">Min: {fmtVal(d.min)}</text>
-                  <text x={cx + boxW/2 + 10} y={yMed + 12} className="text-[9px] fill-outline">Q1/Q3: {fmtVal(d.q1)}/{fmtVal(d.q3)}</text>
+                  <text x={cx + boxW/2 + 10} y={yMed + 2} className="text-[9px] fill-on-surface-variant">Min: {fmtVal(d.min)}</text>
+                  <text x={cx + boxW/2 + 10} y={yMed + 12} className="text-[9px] fill-on-surface-variant">Q1/Q3: {fmtVal(d.q1)}/{fmtVal(d.q3)}</text>
                 </g>
               )}
             </g>
@@ -1054,7 +1054,7 @@ function InteractivePieChart({ chartDef }: { chartDef: ChartDef }) {
   // Palette generated based on base color (simplified to 4 distinct shades)
   const colors = [
     chartDef.color,
-    "#d0bcff",
+    "#FF691A",
     "#958ea0",
     "#ffea7f",
     "#ffb4ab"
@@ -1157,7 +1157,7 @@ function InteractivePieChart({ chartDef }: { chartDef: ChartDef }) {
           y={centerY + 16}
           textAnchor="middle"
           alignmentBaseline="middle"
-          className="fill-outline text-[9px] uppercase tracking-widest pointer-events-none"
+          className="fill-on-surface-variant text-[9px] uppercase tracking-widest pointer-events-none"
         >
           {hoveredIdx !== null ? data[hoveredIdx].label : "Total"}
         </text>
@@ -1233,7 +1233,7 @@ function InteractiveScatterChart({ chartDef }: { chartDef: ChartDef }) {
                 x={PAD_X - 8}
                 y={y + 4}
                 textAnchor="end"
-                className="fill-outline text-[10px]"
+                className="fill-on-surface-variant text-[10px]"
               >
                 {fmtVal(val)}
               </text>
@@ -1260,7 +1260,7 @@ function InteractiveScatterChart({ chartDef }: { chartDef: ChartDef }) {
                 x={x}
                 y={PAD_TOP + chartH + 16}
                 textAnchor="middle"
-                className="fill-outline text-[10px]"
+                className="fill-on-surface-variant text-[10px]"
               >
                 {fmtVal(val)}
               </text>
@@ -1274,7 +1274,7 @@ function InteractiveScatterChart({ chartDef }: { chartDef: ChartDef }) {
           y={PAD_TOP + chartH / 2}
           transform={`rotate(-90 ${PAD_X / 2 - 10} ${PAD_TOP + chartH / 2})`}
           textAnchor="middle"
-          className="fill-outline text-[9px] font-semibold uppercase tracking-widest"
+          className="fill-on-surface-variant text-[9px] font-semibold uppercase tracking-widest"
         >
           {yAxisLabel}
         </text>
@@ -1282,7 +1282,7 @@ function InteractiveScatterChart({ chartDef }: { chartDef: ChartDef }) {
           x={PAD_X + chartW / 2}
           y={H - 5}
           textAnchor="middle"
-          className="fill-outline text-[9px] font-semibold uppercase tracking-widest"
+          className="fill-on-surface-variant text-[9px] font-semibold uppercase tracking-widest"
         >
           {xAxisLabel}
         </text>
@@ -1345,7 +1345,7 @@ function InteractiveScatterChart({ chartDef }: { chartDef: ChartDef }) {
 
 function InteractiveHeatmap({ chartDef }: { chartDef: ChartDef }) {
   const [hovered, setHovered] = useState<{r: number, c: number} | null>(null);
-  const { data, xLabels = [], yLabels = [], colorScale = ["var(--color-surface)", "#d0bcff", "#ff5252"] } = chartDef;
+  const { data, xLabels = [], yLabels = [], colorScale = ["var(--color-surface)", "#FF691A", "#ff5252"] } = chartDef;
   
   const W = 560;
   const H = 380;
@@ -1411,7 +1411,7 @@ function InteractiveHeatmap({ chartDef }: { chartDef: ChartDef }) {
             y={PAD_TOP + (i + 0.5) * cellH}
             textAnchor="end"
             alignmentBaseline="middle"
-            className="fill-outline text-[9px]"
+            className="fill-on-surface-variant text-[9px]"
           >
             {lbl.length > 15 ? lbl.substring(0, 13) + ".." : lbl}
           </text>
@@ -1425,7 +1425,7 @@ function InteractiveHeatmap({ chartDef }: { chartDef: ChartDef }) {
             y={PAD_TOP + chartH + 15}
             textAnchor="end"
             transform={`rotate(-40 ${PAD_LEFT + (j + 0.5) * cellW} ${PAD_TOP + chartH + 15})`}
-            className="fill-outline text-[9px]"
+            className="fill-on-surface-variant text-[9px]"
           >
             {lbl.length > 15 ? lbl.substring(0, 13) + ".." : lbl}
           </text>
@@ -1522,7 +1522,7 @@ function InteractiveHeatmap({ chartDef }: { chartDef: ChartDef }) {
                 x={legendX}
                 y={legendY + legendH + 12}
                 textAnchor="start"
-                className="fill-outline text-[9px]"
+                className="fill-on-surface-variant text-[9px]"
               >
                 {fmtVal(minVal)} (Low)
               </text>
@@ -1532,7 +1532,7 @@ function InteractiveHeatmap({ chartDef }: { chartDef: ChartDef }) {
                 x={legendX + legendW / 2}
                 y={legendY + legendH + 12}
                 textAnchor="middle"
-                className="fill-outline text-[9px]"
+                className="fill-on-surface-variant text-[9px]"
               >
                 {fmtVal(minVal + range / 2)}
               </text>
@@ -1542,7 +1542,7 @@ function InteractiveHeatmap({ chartDef }: { chartDef: ChartDef }) {
                 x={legendX + legendW}
                 y={legendY + legendH + 12}
                 textAnchor="end"
-                className="fill-outline text-[9px]"
+                className="fill-on-surface-variant text-[9px]"
               >
                 {fmtVal(maxVal)} (High)
               </text>
@@ -1560,9 +1560,9 @@ function InteractiveHeatmap({ chartDef }: { chartDef: ChartDef }) {
 
 function SeverityIcon({ severity }: { severity: "success" | "warning" | "error" }) {
   if (severity === "success")
-    return <CheckCircle2 className="w-4 h-4 text-secondary shrink-0 mt-0.5" />;
+    return <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />;
   if (severity === "warning")
-    return <AlertTriangle className="w-4 h-4 text-tertiary shrink-0 mt-0.5" />;
+    return <AlertTriangle className="w-4 h-4 text-error shrink-0 mt-0.5" />;
   return <AlertTriangle className="w-4 h-4 text-error shrink-0 mt-0.5" />;
 }
 
@@ -1664,9 +1664,9 @@ function parseOutput(raw: string): string {
 /* ------------------------------------------------------------------ */
 
 const iconMap = {
-  database: <Database className="w-5 h-5 text-secondary" />,
+  database: <Database className="w-5 h-5 text-primary" />,
   brain: <Brain className="w-5 h-5 text-primary" />,
-  code: <Code className="w-5 h-5 text-tertiary" />,
+  code: <Code className="w-5 h-5 text-error" />,
 };
 
 /* ------------------------------------------------------------------ */
@@ -1717,7 +1717,7 @@ function ChartSection({ charts }: { charts: ChartDef[] }) {
               className="flex items-center justify-between gap-3 bg-surface-lowest border border-outline-variant text-on-surface-variant text-[11px] font-medium rounded-full px-4 py-1.5 hover:border-outline hover:text-on-surface focus:outline-none focus:border-primary transition-colors cursor-pointer min-w-[160px]"
             >
               <span className="truncate">{activeChart.title || activeChart.label || `Chart ${activeIdx + 1}`}</span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 text-outline ${isDropdownOpen ? "rotate-180" : ""}`} />
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 text-on-surface-variant ${isDropdownOpen ? "rotate-180" : ""}`} />
             </button>
             
             {isDropdownOpen && (
@@ -1928,8 +1928,8 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                 <span className="text-xs" style={{ color: detail.statusColor }}>
                   {detail.statusLabel}
                 </span>
-                <span className="text-xs text-outline">·</span>
-                <span className="text-xs text-outline flex items-center gap-1">
+                <span className="text-xs text-on-surface-variant">·</span>
+                <span className="text-xs text-on-surface-variant flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   Last run {detail.lastRun}
                 </span>
@@ -1938,7 +1938,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -1953,7 +1953,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                 className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
                   activeTab === "chart"
                     ? "bg-surface-container text-primary border border-b-0 border-outline-variant"
-                    : "text-outline hover:text-on-surface-variant"
+                    : "text-on-surface-variant hover:text-on-surface-variant"
                 }`}
               >
                 <span className="flex items-center gap-2">
@@ -1967,7 +1967,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
               className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
                 activeTab === "review"
                   ? "bg-surface-container text-primary border border-b-0 border-outline-variant"
-                  : "text-outline hover:text-on-surface-variant"
+                  : "text-on-surface-variant hover:text-on-surface-variant"
               }`}
             >
               <span className="flex items-center gap-2">
@@ -1981,7 +1981,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                 className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
                   activeTab === "code"
                     ? "bg-surface-container text-primary border border-b-0 border-outline-variant"
-                    : "text-outline hover:text-on-surface-variant"
+                    : "text-on-surface-variant hover:text-on-surface-variant"
                 }`}
               >
                 <span className="flex items-center gap-2">
@@ -2029,7 +2029,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                   <div className="bg-surface-container rounded-xl border border-outline-variant p-5 flex flex-col h-[300px] items-center justify-center">
                     <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
                     <p className="text-on-surface font-medium">Making charts...</p>
-                    <p className="text-xs text-outline mt-1">Waiting for agent to generate data</p>
+                    <p className="text-xs text-on-surface-variant mt-1">Waiting for agent to generate data</p>
                   </div>
                 ) : (
                   <ChartSection charts={chartsToRender} />
@@ -2045,7 +2045,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                       key={m.label}
                       className="bg-surface-container rounded-xl border border-outline-variant p-4 flex flex-col gap-1 hover:border-primary-container/40 transition-colors overflow-hidden"
                     >
-                      <span className="text-[11px] text-outline uppercase tracking-wider truncate" title={m.label}>
+                      <span className="text-[11px] text-on-surface-variant uppercase tracking-wider truncate" title={m.label}>
                         {m.label}
                       </span>
                       <span
@@ -2059,7 +2059,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                       {m.change && (
                         <span
                           className={`text-xs font-medium flex items-center gap-1 ${
-                            m.up ? "text-secondary" : "text-tertiary"
+                            m.up ? "text-primary" : "text-error"
                           }`}
                         >
                           <TrendingUp
@@ -2097,7 +2097,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                     key={m.label}
                     className="bg-surface-container rounded-xl border border-outline-variant p-4 text-center overflow-hidden"
                   >
-                    <span className="text-[10px] text-outline uppercase tracking-wider block truncate" title={m.label}>
+                    <span className="text-[10px] text-on-surface-variant uppercase tracking-wider block truncate" title={m.label}>
                       {m.label}
                     </span>
                     <span
@@ -2119,20 +2119,20 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
               {/* Notebook Header */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <Terminal className="w-4 h-4 text-tertiary" />
+                  <Terminal className="w-4 h-4 text-error" />
                   <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Execution Notebook</span>
-                  <span className="ml-1 text-[10px] uppercase tracking-wider font-semibold text-secondary bg-secondary/10 px-2 py-0.5 rounded-full border border-secondary/20">
+                  <span className="ml-1 text-[10px] uppercase tracking-wider font-semibold text-primary bg-secondary/10 px-2 py-0.5 rounded-full border border-secondary/20">
                     {dynamicCode ? `${dynamicCode.length} cells` : "Loading..."}
                   </span>
                 </div>
                 <button
                   onClick={handleCopy}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-outline hover:text-on-surface hover:bg-surface-container transition-all cursor-pointer border border-outline-variant"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all cursor-pointer border border-outline-variant"
                 >
                   {copied ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-secondary" />
-                      <span className="text-secondary">Copied!</span>
+                      <Check className="w-3.5 h-3.5 text-primary" />
+                      <span className="text-primary">Copied!</span>
                     </>
                   ) : (
                     <>
@@ -2148,7 +2148,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                 <div className="bg-surface-container rounded-xl border border-outline-variant p-8 flex flex-col items-center justify-center">
                   <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
                   <p className="text-on-surface font-medium">Waiting for code cells...</p>
-                  <p className="text-xs text-outline mt-1">Code will appear as the agent executes</p>
+                  <p className="text-xs text-on-surface-variant mt-1">Code will appear as the agent executes</p>
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
@@ -2157,8 +2157,8 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                       {/* Cell Header */}
                       <div className="flex items-center justify-between px-4 py-2 bg-surface-container border-b border-outline-variant">
                         <div className="flex items-center gap-2">
-                          <Play className="w-3 h-3 text-secondary" />
-                          <span className="text-[10px] font-mono text-outline">In [{idx + 1}]</span>
+                          <Play className="w-3 h-3 text-primary" />
+                          <span className="text-[10px] font-mono text-on-surface-variant">In [{idx + 1}]</span>
                         </div>
                         <button
                           onClick={() => {
@@ -2166,12 +2166,12 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                             setCopiedCellIdx(idx);
                             setTimeout(() => setCopiedCellIdx(null), 1500);
                           }}
-                          className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium text-outline hover:text-on-surface hover:bg-[var(--color-outline)] transition-all cursor-pointer"
+                          className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium text-on-surface-variant hover:text-on-surface hover:bg-[var(--color-outline)] transition-all cursor-pointer"
                         >
                           {copiedCellIdx === idx ? (
                             <>
-                              <Check className="w-3 h-3 text-secondary" />
-                              <span className="text-secondary">Copied</span>
+                              <Check className="w-3 h-3 text-primary" />
+                              <span className="text-primary">Copied</span>
                             </>
                           ) : (
                             <>
@@ -2198,8 +2198,8 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                       {cell.output && (
                         <div className="px-4 py-3 bg-[#0D1117]">
                           <div className="flex items-center gap-2 mb-1.5">
-                            <Hash className="w-3 h-3 text-outline" />
-                            <span className="text-[10px] font-mono text-outline">Out [{idx + 1}]</span>
+                            <Hash className="w-3 h-3 text-on-surface-variant" />
+                            <span className="text-[10px] font-mono text-on-surface-variant">Out [{idx + 1}]</span>
                           </div>
                           <pre className="text-[11px] font-mono leading-relaxed whitespace-pre-wrap break-words max-h-[200px] overflow-y-auto" style={{color:'#7AA2F7'}}>
                             {parseOutput(cell.output)}

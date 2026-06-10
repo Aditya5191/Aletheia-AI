@@ -46,7 +46,7 @@ export default function SideNavBar() {
           Workspace
         </h2>
         <div className="text-lg font-bold text-white flex items-center gap-2">
-          <div className="w-6 h-6 rounded bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center shadow-md">
+          <div className="w-6 h-6 rounded bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-md">
             <Zap className="w-3.5 h-3.5 text-white" />
           </div>
           AI Production
@@ -65,18 +65,18 @@ export default function SideNavBar() {
             }}
             className={`w-full flex items-center justify-between px-4 py-3 transition-all duration-200 cursor-pointer ${
               item.active
-                ? "bg-violet-500/10 text-violet-400 border-r-4 border-violet-500 shadow-[inset_1px_0_0_0_rgba(139,92,246,0.5)]"
+                ? "bg-primary/10 text-primary border-r-4 border-primary shadow-[inset_1px_0_0_0_rgba(139,92,246,0.5)]"
                 : "text-gray-500 hover:text-gray-200 hover:bg-surface-container"
             }`}
           >
             <div className="flex items-center gap-3">
-              <div className={item.active ? "text-violet-400" : "text-gray-500"}>
+              <div className={item.active ? "text-primary" : "text-gray-500"}>
                 {item.icon}
               </div>
               <span className="font-bold tracking-tight">{item.label}</span>
             </div>
             {item.comingSoon && (
-              <span className="text-[9px] bg-violet-500/10 text-violet-500/60 px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter border border-violet-500/20">Soon</span>
+              <span className="text-[9px] bg-primary/10 text-primary/60 px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter border border-primary/20">Soon</span>
             )}
           </button>
         ))}

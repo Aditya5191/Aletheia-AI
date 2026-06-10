@@ -183,7 +183,7 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
           </div>
           <span className="text-sm font-semibold text-on-surface">Upload Dataset</span>
         </div>
-        <button className="w-7 h-7 flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-[#1F2228] transition-colors cursor-pointer">
+        <button className="w-7 h-7 flex items-center justify-center rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-[#1F2228] transition-colors cursor-pointer">
           <MoreHorizontal className="w-4 h-4" />
         </button>
       </div>
@@ -202,16 +202,16 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
             onClick={() => { if (data.isTourMode) return; inputRef.current?.click(); }}
           >
             <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#1F2228]">
-              <CloudUpload className="w-5 h-5 text-outline" />
+              <CloudUpload className="w-5 h-5 text-on-surface-variant" />
             </div>
             <div className="text-center">
               <p className="text-[13px] font-medium text-on-surface">Drag & drop files here</p>
-              <p className="text-[11px] text-outline mt-1">
+              <p className="text-[11px] text-on-surface-variant mt-1">
                 or <span className="text-primary hover:underline cursor-pointer">click to browse</span>
               </p>
             </div>
-            <p className="text-[10px] text-outline/60">CSV (Max 50MB)</p>
-            {error && <p className="text-[10px] text-tertiary font-medium">{error}</p>}
+            <p className="text-[10px] text-on-surface-variant/60">CSV (Max 50MB)</p>
+            {error && <p className="text-[10px] text-error font-medium">{error}</p>}
           </div>
           <input ref={inputRef} type="file" accept=".csv" className="hidden" onChange={handleInputChange} />
         </div>
@@ -224,10 +224,10 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
           <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20">
             <File className="w-3.5 h-3.5 text-primary flex-shrink-0" />
             <span className="text-[12px] font-medium text-on-surface flex-1 truncate">{pendingFile.name}</span>
-            <span className="text-[10px] text-outline flex-shrink-0">{formatSize(pendingFile.size)}</span>
+            <span className="text-[10px] text-on-surface-variant flex-shrink-0">{formatSize(pendingFile.size)}</span>
             <button
               onClick={() => { setPendingFile(null); setCsvColumns([]); setError(""); }}
-              className="text-outline hover:text-on-surface text-[11px] flex-shrink-0 cursor-pointer"
+              className="text-on-surface-variant hover:text-on-surface text-[11px] flex-shrink-0 cursor-pointer"
             >
               ✕
             </button>
@@ -235,7 +235,7 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
 
           {/* Description */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] text-outline uppercase tracking-widest font-semibold">
+            <label className="text-[10px] text-on-surface-variant uppercase tracking-widest font-semibold">
               Dataset Description
             </label>
             <textarea
@@ -243,13 +243,13 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
               placeholder="e.g. Loan application records for credit scoring. Contains demographic and financial features."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full resize-none rounded-lg bg-[#111317] border border-[#2A2D35] focus:border-primary/50 outline-none px-3 py-2 text-[12px] text-on-surface placeholder:text-outline/50 transition-colors"
+              className="w-full resize-none rounded-lg bg-[#111317] border border-[#2A2D35] focus:border-primary/50 outline-none px-3 py-2 text-[12px] text-on-surface placeholder:text-on-surface-variant/50 transition-colors"
             />
           </div>
 
           {/* Target column */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] text-outline uppercase tracking-widest font-semibold">
+            <label className="text-[10px] text-on-surface-variant uppercase tracking-widest font-semibold">
               Target Variable
             </label>
             {csvColumns.length > 0 ? (
@@ -263,7 +263,7 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
                     <option key={`${col}-${i}`} value={col}>{col}</option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-outline pointer-events-none" />
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-on-surface-variant pointer-events-none" />
               </div>
             ) : (
               <input
@@ -271,12 +271,12 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
                 placeholder="Column name (e.g. loan_status)"
                 value={targetColumn}
                 onChange={(e) => setTargetColumn(e.target.value)}
-                className="w-full rounded-lg bg-[#111317] border border-[#2A2D35] focus:border-primary/50 outline-none px-3 py-2 text-[12px] text-on-surface placeholder:text-outline/50 transition-colors"
+                className="w-full rounded-lg bg-[#111317] border border-[#2A2D35] focus:border-primary/50 outline-none px-3 py-2 text-[12px] text-on-surface placeholder:text-on-surface-variant/50 transition-colors"
               />
             )}
           </div>
 
-          {error && <p className="text-[10px] text-tertiary font-medium">{error}</p>}
+          {error && <p className="text-[10px] text-error font-medium">{error}</p>}
 
           {/* Submit */}
           <button
@@ -293,7 +293,7 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
       {/* ---- Recent Uploads (only when no pending file) ---- */}
       {recentUploads.length > 0 && !pendingFile && (
         <div className="px-4 pb-4">
-          <p className="text-[10px] text-outline uppercase tracking-widest font-semibold mb-2.5">Recent Uploads</p>
+          <p className="text-[10px] text-on-surface-variant uppercase tracking-widest font-semibold mb-2.5">Recent Uploads</p>
           <div className="flex flex-col gap-2">
             {recentUploads.map((f, i) => (
               <div
@@ -303,12 +303,12 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
                 }`}
               >
                 <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${f.active ? "bg-secondary/15" : "bg-[#1F2228]"}`}>
-                  {f.active ? <Check className="w-3.5 h-3.5 text-secondary" /> : <File className="w-3.5 h-3.5 text-outline" />}
+                  {f.active ? <Check className="w-3.5 h-3.5 text-primary" /> : <File className="w-3.5 h-3.5 text-on-surface-variant" />}
                 </div>
-                <span className={`text-[12px] font-medium flex-1 truncate ${f.active ? "text-on-surface" : "text-outline"}`} title={f.name}>
+                <span className={`text-[12px] font-medium flex-1 truncate ${f.active ? "text-on-surface" : "text-on-surface-variant"}`} title={f.name}>
                   {f.name}
                 </span>
-                <span className="text-[10px] text-outline flex-shrink-0">{f.size}</span>
+                <span className="text-[10px] text-on-surface-variant flex-shrink-0">{f.size}</span>
               </div>
             ))}
           </div>

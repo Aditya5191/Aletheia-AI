@@ -31,8 +31,9 @@ AgenticFlow is a high-fidelity, professional AI observability and orchestration 
 ## Tech Stack
 - **Frontend:** Next.js 14, React 18, TypeScript
 - **Flow Engine:** React Flow (@xyflow/react)
-- **Styling:** Tailwind CSS, Lucide React (Icons)
-- **Visualizations:** Custom highly-responsive SVGs with RGB color interpolation for heatmaps.
+- **Styling:** Tailwind CSS, Lucide React (Icons), Custom Centralized CSS Variables Theme
+- **Typography:** Plus Jakarta Sans for crisp, modern geometric readability.
+- **Visualizations:** Custom highly-responsive SVGs with dynamic theme-aware styling and RGB color interpolation.
 - **Data Sync:** Real-time artifact polling from the FastAPI backend (Port 8005).
 - **Animations:** CSS3 Keyframes (Custom "Live Drawing" and container spawning effects)
 
@@ -77,4 +78,4 @@ AgenticFlow is a high-fidelity, professional AI observability and orchestration 
 5. **Inspect Results:** Click on any agent node to open the forensic detail modal, view executed code, read bias reports, and interact with the dynamically-scaled negative-value charts.
 
 ---
-Built with 💜 for advanced AI Observability.
+Built with 🧡 for advanced AI Observability.

@@ -15,7 +15,7 @@ export default function DocsModal({ onClose }: DocsModalProps) {
         {/* Header */}
         <div className="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-violet-500/10 text-violet-400">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <Book className="w-5 h-5" />
             </div>
             <div>
@@ -36,11 +36,11 @@ export default function DocsModal({ onClose }: DocsModalProps) {
           
           {/* Quick Start */}
           <section className="mb-12">
-            <h3 className="text-sm font-bold text-violet-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-primary uppercase tracking-widest mb-6 flex items-center gap-2">
               <Zap className="w-4 h-4" /> Quick Start Guide
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-surface border border-outline-variant hover:border-violet-500/30 transition-colors group">
+              <div className="p-4 rounded-xl bg-surface border border-outline-variant hover:border-primary/30 transition-colors group">
                 <div className="flex gap-4">
                   <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white font-bold text-sm shrink-0">1</div>
                   <div>
@@ -49,7 +49,7 @@ export default function DocsModal({ onClose }: DocsModalProps) {
                   </div>
                 </div>
               </div>
-              <div className="p-4 rounded-xl bg-surface border border-outline-variant hover:border-violet-500/30 transition-colors">
+              <div className="p-4 rounded-xl bg-surface border border-outline-variant hover:border-primary/30 transition-colors">
                 <div className="flex gap-4">
                   <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white font-bold text-sm shrink-0">2</div>
                   <div>
@@ -58,7 +58,7 @@ export default function DocsModal({ onClose }: DocsModalProps) {
                   </div>
                 </div>
               </div>
-              <div className="p-4 rounded-xl bg-surface border border-outline-variant hover:border-violet-500/30 transition-colors">
+              <div className="p-4 rounded-xl bg-surface border border-outline-variant hover:border-primary/30 transition-colors">
                 <div className="flex gap-4">
                   <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white font-bold text-sm shrink-0">3</div>
                   <div>
@@ -67,7 +67,7 @@ export default function DocsModal({ onClose }: DocsModalProps) {
                   </div>
                 </div>
               </div>
-              <div className="p-4 rounded-xl bg-surface border border-outline-variant hover:border-violet-500/30 transition-colors">
+              <div className="p-4 rounded-xl bg-surface border border-outline-variant hover:border-primary/30 transition-colors">
                 <div className="flex gap-4">
                   <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white font-bold text-sm shrink-0">4</div>
                   <div>
@@ -81,14 +81,14 @@ export default function DocsModal({ onClose }: DocsModalProps) {
 
           {/* Core Concepts */}
           <section className="mb-12">
-            <h3 className="text-sm font-bold text-violet-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-primary uppercase tracking-widest mb-6 flex items-center gap-2">
               <Shield className="w-4 h-4" /> Core Concepts
             </h3>
             <div className="space-y-4">
               <div className="p-5 rounded-xl bg-surface border border-outline-variant">
                 <div className="flex justify-between items-start mb-3">
                   <p className="text-white font-semibold">The 80% Rule (Disparate Impact)</p>
-                  <span className="text-[10px] bg-violet-500/10 text-violet-400 px-2 py-0.5 rounded font-bold">LEGAL STANDARD</span>
+                  <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded font-bold">LEGAL STANDARD</span>
                 </div>
                 <p className="text-sm text-gray-400 leading-relaxed">
                   A selection rate for any group which is less than four-fifths (80%) of the rate for the group with the highest rate will generally be regarded as evidence of adverse impact.
@@ -108,7 +108,7 @@ export default function DocsModal({ onClose }: DocsModalProps) {
 
           {/* Technical Reference */}
           <section>
-            <h3 className="text-sm font-bold text-violet-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-primary uppercase tracking-widest mb-6 flex items-center gap-2">
               <Terminal className="w-4 h-4" /> Technical Reference
             </h3>
             <div className="rounded-xl border border-outline-variant divide-y divide-[var(--color-outline-variant)]">
@@ -117,28 +117,28 @@ export default function DocsModal({ onClose }: DocsModalProps) {
                   <FileText className="w-5 h-5 text-gray-500" />
                   <p className="text-sm text-gray-300">MCP Tool Definitions</p>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-700 group-hover:text-violet-500" />
+                <ChevronRight className="w-4 h-4 text-gray-700 group-hover:text-primary" />
               </div>
               <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer group">
                 <div className="flex items-center gap-4">
                   <FileText className="w-5 h-5 text-gray-500" />
                   <p className="text-sm text-gray-300">Algorithm Metadata Schemas</p>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-700 group-hover:text-violet-500" />
+                <ChevronRight className="w-4 h-4 text-gray-700 group-hover:text-primary" />
               </div>
               <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer group">
                 <div className="flex items-center gap-4">
                   <FileText className="w-5 h-5 text-gray-500" />
                   <p className="text-sm text-gray-300">WebSocket Event Protocol</p>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-700 group-hover:text-violet-500" />
+                <ChevronRight className="w-4 h-4 text-gray-700 group-hover:text-primary" />
               </div>
               <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer group">
                 <div className="flex items-center gap-4">
                   <FileText className="w-5 h-5 text-gray-500" />
                   <p className="text-sm text-gray-300">Fairness Metric Mathematical Proofs</p>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-700 group-hover:text-violet-500" />
+                <ChevronRight className="w-4 h-4 text-gray-700 group-hover:text-primary" />
               </div>
             </div>
           </section>
@@ -149,8 +149,8 @@ export default function DocsModal({ onClose }: DocsModalProps) {
         <div className="px-6 py-4 border-t border-outline-variant bg-surface flex justify-between items-center text-[11px] text-gray-600">
           <p>© 2026 Aletheia AI Framework v1.0</p>
           <div className="flex gap-4">
-            <a href="#" className="hover:text-violet-400">Privacy Policy</a>
-            <a href="#" className="hover:text-violet-400">Github</a>
+            <a href="#" className="hover:text-primary">Privacy Policy</a>
+            <a href="#" className="hover:text-primary">Github</a>
           </div>
         </div>
       </div>
