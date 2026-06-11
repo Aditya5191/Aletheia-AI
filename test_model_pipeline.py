@@ -17,7 +17,7 @@ def start_docker_sandbox():
     # Generate test assets if they don't exist
     if not os.path.exists("classification_model_testing/lending_model.pkl") or not os.path.exists("classification_model_testing/lending_sample.csv"):
         print("[SETUP] Generating complex lending model and sample...")
-        subprocess.run([sys.executable, "generate_lending_assets.py"], check=True)
+        subprocess.run([sys.executable, "generate_test_models/generate_lending_assets.py"], check=True)
 
     data_path = os.path.abspath("dataset/data.csv")
     model_path = os.path.abspath("classification_model_testing/lending_model.pkl")

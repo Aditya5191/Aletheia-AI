@@ -17,7 +17,7 @@ def start_docker_sandbox():
     # Generate regression assets if they don't exist
     if not os.path.exists("regression_model_testing/regression_model.pkl") or not os.path.exists("regression_model_testing/regression_sample.csv"):
         print("[SETUP] Generating complex regression model and sample...")
-        subprocess.run([sys.executable, "generate_regression_assets.py"], check=True)
+        subprocess.run([sys.executable, "generate_test_models/generate_regression_assets.py"], check=True)
 
     data_path = os.path.abspath("dataset/data.csv")
     model_path = os.path.abspath("regression_model_testing/regression_model.pkl")
