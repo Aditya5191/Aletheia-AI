@@ -56,13 +56,13 @@ def generate_regression_data():
     model.fit(X_train, y_train)
     
     # Save Model
-    joblib.dump(model, 'regression_model.pkl')
+    joblib.dump(model, 'regression_model_testing/regression_model.pkl')
     
     # Save Sample
     test_df = df.iloc[X_test.index].copy()
-    test_df.to_csv('regression_sample.csv', index=False)
+    test_df.to_csv('regression_model_testing/regression_sample.csv', index=False)
     
-    print(f"Created regression_model.pkl and regression_sample.csv")
+    print(f"Created regression_model_testing/regression_model.pkl and regression_model_testing/regression_sample.csv")
     print(f"Mean Interest Rate - Black: {df[df['race']=='Black']['interest_rate'].mean():.2f}%")
     print(f"Mean Interest Rate - White: {df[df['race']=='White']['interest_rate'].mean():.2f}%")
 

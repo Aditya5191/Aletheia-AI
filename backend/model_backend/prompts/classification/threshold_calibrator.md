@@ -114,20 +114,45 @@ mkdir -p /workspace/outputs
 
 ---
 
-## 3 — Load Algorithm Knowledge
+## 3 — Read Algorithm Selection and Load Knowledge
 
-Read `model_agent2.md` and determine the algorithm chosen by the Behavioral Auditor.
+**Read the algorithm selection from the JSON file saved by the Behavioral Auditor.
+Do NOT parse model_agent2.md. Do NOT guess. Read the file directly.**
 
-Load:
+Use `execute_cell`:
 
 ```python
-load_algorithm_knowledge(
-    algorithm_id
-)
+import json
+
+with open('/workspace/outputs/model_algorithm_selection.json') as f:
+    selection = json.load(f)
+
+mitigation_algorithm = selection['mitigation_algorithm']
+has_ground_truth     = selection['has_ground_truth']
+
+print(f"=== ALGORITHM TO USE ===")
+print(f"mitigation_algorithm: {mitigation_algorithm}")
+print(f"has_ground_truth:     {has_ground_truth}")
+print(f"reasoning log entries: {len(selection.get('reasoning_log', []))}")
+
+# Print the reasoning that led to this selection
+for entry in selection.get('reasoning_log', []):
+    if entry['verdict'] == 'SELECTED_MITIGATION':
+        print(f"Selection reason: {entry['reason']}")
 ```
 
-Follow the algorithm guidance exactly when calibrating thresholds.
+Now call `load_algorithm_knowledge(mitigation_algorithm)` via MCP tool
+using the exact value of `mitigation_algorithm` printed above.
 
+Read the loaded knowledge document fully. It specifies:
+- Which fairness metric to equalize
+- The exact mathematical calibration procedure to follow
+- How to handle base rate impossibility if present
+- What to document in the report
+
+**Follow the loaded algorithm knowledge for all calibration logic in Step 5.
+Do not use generic hardcoded ROC curve code. Let the algorithm specification
+guide the implementation.**
 ---
 
 ## 4 — Load Data and Model

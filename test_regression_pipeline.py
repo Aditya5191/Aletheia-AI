@@ -15,13 +15,13 @@ def start_docker_sandbox():
     os.makedirs("outputs", exist_ok=True)
     
     # Generate regression assets if they don't exist
-    if not os.path.exists("regression_model.pkl") or not os.path.exists("regression_sample.csv"):
+    if not os.path.exists("regression_model_testing/regression_model.pkl") or not os.path.exists("regression_model_testing/regression_sample.csv"):
         print("[SETUP] Generating complex regression model and sample...")
         subprocess.run([sys.executable, "generate_regression_assets.py"], check=True)
 
     data_path = os.path.abspath("dataset/data.csv")
-    model_path = os.path.abspath("regression_model.pkl")
-    sample_path = os.path.abspath("regression_sample.csv")
+    model_path = os.path.abspath("regression_model_testing/regression_model.pkl")
+    sample_path = os.path.abspath("regression_model_testing/regression_sample.csv")
     
     try:
         # Mount the model and sample CSV into the sandbox root

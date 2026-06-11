@@ -68,13 +68,13 @@ def generate_lending_data():
     model.fit(X_train, y_train)
     
     # Save Model
-    joblib.dump(model, 'lending_model.pkl')
+    joblib.dump(model, 'classification_model_testing/lending_model.pkl')
     
     # Save Sample (With Protected Attributes for the Audit)
     test_df = df.iloc[X_test.index].copy()
-    test_df.to_csv('lending_sample.csv', index=False)
+    test_df.to_csv('classification_model_testing/lending_sample.csv', index=False)
     
-    print(f"Created lending_model.pkl and lending_sample.csv ({len(test_df)} test samples)")
+    print(f"Created classification_model_testing/lending_model.pkl and classification_model_testing/lending_sample.csv ({len(test_df)} test samples)")
     print(f"Intersectional Black-Female Approval Rate: {df[(df['race']=='Black') & (df['gender']=='Female')]['approved'].mean():.2%}")
     print(f"White-Male Approval Rate: {df[(df['race']=='White') & (df['gender']=='Male')]['approved'].mean():.2%}")
 

@@ -9,7 +9,7 @@ import os
 os.makedirs('dataset', exist_ok=True)
 
 # 1. Generate Dummy Model and Data
-print("Generating test_model.pkl and test_sample.csv...")
+print("Generating classification_model_testing/test_model.pkl and classification_model_testing/test_sample.csv...")
 
 # Make a simple binary classification dataset
 X, y = make_classification(n_samples=500, n_features=5, random_state=42)
@@ -31,7 +31,7 @@ X_train = df[feature_cols]
 model.fit(X_train, y)
 
 # Save files locally
-joblib.dump(model, 'test_model.pkl')
-df.to_csv('test_sample.csv', index=False)
+joblib.dump(model, 'classification_model_testing/test_model.pkl')
+df.to_csv('classification_model_testing/test_sample.csv', index=False)
 
-print("Test files created: test_model.pkl, test_sample.csv")
+print("Test files created: classification_model_testing/test_model.pkl, classification_model_testing/test_sample.csv")

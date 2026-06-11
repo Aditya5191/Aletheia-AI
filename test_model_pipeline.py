@@ -15,13 +15,13 @@ def start_docker_sandbox():
     os.makedirs("outputs", exist_ok=True)
     
     # Generate test assets if they don't exist
-    if not os.path.exists("lending_model.pkl") or not os.path.exists("lending_sample.csv"):
+    if not os.path.exists("classification_model_testing/lending_model.pkl") or not os.path.exists("classification_model_testing/lending_sample.csv"):
         print("[SETUP] Generating complex lending model and sample...")
         subprocess.run([sys.executable, "generate_lending_assets.py"], check=True)
 
     data_path = os.path.abspath("dataset/data.csv")
-    model_path = os.path.abspath("lending_model.pkl")
-    sample_path = os.path.abspath("lending_sample.csv")
+    model_path = os.path.abspath("classification_model_testing/lending_model.pkl")
+    sample_path = os.path.abspath("classification_model_testing/lending_sample.csv")
     
     try:
         # Mount the model and sample CSV into the sandbox root
