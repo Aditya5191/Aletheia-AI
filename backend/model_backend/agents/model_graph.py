@@ -135,7 +135,7 @@ async def run_model_pipeline(
         raise ValueError(f"model_type must be 'classification' or 'regression', got '{model_type}'")
 
     prompts   = PROMPT_MAP[model_type]
-    prompts_dir = os.path.join(os.path.dirname(__file__), "..", "prompts")
+    prompts_dir = os.path.join(os.path.dirname(__file__), "." , "prompts")
 
     print(f"[MODEL PIPELINE] Starting — model_type='{model_type}', container='{container_id}'")
 
