@@ -1,0 +1,29 @@
+{
+  "metrics": {
+    "DIR": 0.6111,
+    "SPD": 0.1944,
+    "EOD": 0.3367,
+    "FPRD": 0.2741,
+    "Counterfactual_Delta": 0.0
+  },
+  "findings": [
+    {
+      "text": "The model systematically harms males, who receive positive predictions at only 30.6% compared to 50.0% for females, despite males having a higher actual base outcome rate (50.0% vs 32.1%)."
+    },
+    {
+      "text": "This disparity leads to severe violations of Equal Opportunity (EOD = 0.3367) and Equalized Odds, meaning qualified males are disproportionately falsely rejected."
+    },
+    {
+      "text": "Counterfactual probing reveals a delta of 0.0, indicating the model achieves 'fairness through unawareness' by not using gender directly, but it still exhibits severe bias through proxy features."
+    },
+    {
+      "text": "SHAP Proxy Detection flagged 'reading score' as a significant proxy for gender (Score: 0.0912), leaking demographic information into the model's predictions."
+    },
+    {
+      "text": "Intersectional scanning identified the subgroup of Male, Group D as the most severely impacted, with a positive prediction rate of only 21.1%."
+    },
+    {
+      "text": "To mitigate these harms, the 'equality_of_opportunity' algorithm has been selected to optimize group-specific thresholds and equalize True Positive and False Positive rates across genders."
+    }
+  ]
+}

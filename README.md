@@ -31,7 +31,12 @@ Algorithmic bias is one of the most consequential unsolved problems in applied A
 
 Most organisations know this is happening. Almost none have the tools to prove it, measure it precisely, fix it, and document the fix for regulators — without a dedicated team of ML fairness researchers.
 
-**Aletheia solves this end to end.** Upload a CSV. Get a legally-referenced, plain-English audit report with before/after comparisons, compliance status, and a fixed dataset — fully automated, in minutes.
+**Aletheia solves this end to end.** Upload a dataset — *or a trained model and a sample of its data* — and get a legally-referenced, plain-English audit report with before/after comparisons, compliance status, and a drop-in fix — fully automated, in minutes.
+
+Aletheia ships **two audit modes**:
+
+- **Dataset Auditor** — upload a CSV. Profiles the data, detects historical bias and proxies, mitigates it, and returns a fixed dataset.
+- **Model Auditor** — upload a trained classification or regression model (`.pkl` / `.joblib`) plus a sample CSV. Audits the *model's behaviour* — the groups it disadvantages and the proxies it has internalised — and returns a drop-in fix that needs **no retraining**.
 
 ---
 
@@ -54,27 +59,30 @@ Most organisations know this is happening. Almost none have the tools to prove i
 Aletheia is a distributed multi-agent system built on three core layers:
 
 ```
-├── agents/                     # LangGraph Multi-Agent Orchestration
-│   ├── prompts/                # Externalized Markdown agent prompts
-│   └── graph.py                # Dual-MCP state machine logic
-├── backend/                    # FastAPI Server — WebSocket Streaming
-│   └── api.py                  # Orchestrates agent graph, serves artifacts
-├── frontend/                   # React/Next.js AgenticFlow Dashboard
-│   └── agenticflow/            # Live observability, interactive nodes, deep-dive modal
-├── mcps/                       # Unified Model Context Protocol Servers
-│   ├── auditor/                # Aletheia Algorithm Knowledge Delivery (13 algorithms)
-│   ├── sandbox/                # Dockerized Python Execution Environment
-│   └── miscellaneous/          # UI Blueprint and Chart Schema Delivery
-├── dataset/                    # Source data input (data.csv)
-├── outputs/                    # Host-synced charts, JSON, code logs, PDF report
-├── main.py                     # CLI entry point
-├── Procfile                    # Railway deployment config
+├── backend/                        # FastAPI WebSocket streaming servers
+│   ├── dataset_backend/            # Dataset Auditor  (CSV in → fixed dataset)
+│   │   ├── agents/                 #   LangGraph 4-agent graph + Markdown prompts
+│   │   └── backend/api.py          #   Streaming API, artifacts on :8005
+│   └── model_backend/              # Model Auditor    (trained model in → drop-in fix)
+│       ├── agents/                 #   Classification + Regression graphs & prompts
+│       └── backend/api.py          #   Streaming API, artifacts on :8006
+├── frontend/agenticflow/           # React/Next.js AgenticFlow Dashboard
+│   └── components/                 # FlowCanvas + ModelFlowCanvas, deep-dive modal
+├── mcps/                           # Shared Model Context Protocol Servers
+│   ├── auditor/                    # Algorithm Knowledge Delivery (13 algorithms)
+│   ├── sandbox/                    # Dockerized Python Execution Environment
+│   └── miscellaneous/              # UI Blueprint and Chart Schema Delivery
+├── dataset/                        # Dataset-mode input (data.csv)
+├── model_upload/                   # Model-mode input (model.pkl/.joblib + sample.csv)
+├── outputs/   ·   model_outputs/   # Host-synced charts, JSON, code logs, PDF reports
+├── main.py                         # CLI entry point
+├── Procfile                        # Railway deployment config
 └── requirements.txt
 ```
 
 ![Agent Workflow](./diagram/USER%20FLOW%20DIAGRAM.png)
 
-### The Four-Agent Pipeline
+### The Dataset Auditor — Four-Agent Pipeline
 
 Each agent is a specialised LLM instance with its own tools, prompt, and responsibility boundary. They communicate via a shared state graph orchestrated by LangGraph.
 
@@ -84,6 +92,32 @@ Each agent is a specialised LLM instance with its own tools, prompt, and respons
 | **Fairness Adjudicator** | Selects the optimal algorithm from 13 options, implements it exactly, computes FPR/TPR/DIR/SPD/EOD/FPRD per group, generates plain-English findings | `list_algorithms`, `load_algorithm_knowledge`, `execute_cell`, `get_chart_schemas` |
 | **Bias Mitigator** | Applies group-specific calibration or residualization, computes before/after metrics, calculates fairness score improvement, saves fixed dataset | `load_algorithm_knowledge`, `execute_cell`, `write_file` |
 | **Report Compiler** | Reads all three agent outputs, generates matplotlib/seaborn charts as PNGs, compiles a full multi-section PDF using ReportLab with tables, compliance status, and executive summary | `execute_cell`, `read_file`, `write_file` |
+
+---
+
+### The Model Auditor — Two Specialised Pipelines
+
+The Model Auditor audits a **trained model directly** instead of a raw dataset. Upload a serialised model (`.pkl` / `.joblib`) and a representative sample CSV, choose **Classification** or **Regression**, and a parallel four-agent pipeline audits the model's *behaviour* — its predictions, the groups it disadvantages, and the proxies it has internalised — then ships a drop-in fix that requires **no retraining**. The same MCP layer (algorithm knowledge, Docker sandbox, chart schemas) powers both modes; the agents differ by task type.
+
+**Classification models**
+
+| Agent | Role |
+|-------|------|
+| **Model Inspector** | Loads and validates the classifier, generates predictions + probabilities on the sample, computes SHAP feature importance, detects protected attributes and proxy features |
+| **Behavioral Auditor** | Selects a fairness algorithm via the MCP, computes per-group PPR/FPR/TPR and DIR/SPD/EOD/FPRD, runs proxy + intersectional detection, and probes the model counterfactually (identical candidate, protected attribute flipped) |
+| **Threshold Calibrator** | Derives per-group decision thresholds that equalise the failing fairness metrics, produces a before/after comparison, and emits a drop-in `threshold_map.json` |
+| **Report Compiler** | Renders all charts as PNGs and compiles the full PDF report plus the frontend summary |
+
+**Regression models**
+
+| Agent | Role |
+|-------|------|
+| **Model Profiler** | Loads and validates the regressor, generates predictions, computes SHAP importance (in output units), detects protected attributes and proxies |
+| **Disparity Auditor** | Measures systematic over-/under-prediction per group (prediction gap, MPE, MAE, R²), runs proxy + intersectional detection, and probes counterfactually in real units (dollars, points, years) |
+| **Output Recalibrator** | Computes per-group output corrections that remove the systematic gap and emits a drop-in `correction_map.json` — applied at inference with no model change |
+| **Report Compiler** | Renders all charts as PNGs and compiles the full PDF report plus the frontend summary |
+
+Both pipelines deliver a `fixed_predictions.csv`, a fairness score before/after, compliance status, and a publication-ready PDF — identical in spirit to the Dataset Auditor, but operating on a live model.
 
 ---
 
@@ -180,6 +214,12 @@ For every dataset, Aletheia automatically generates:
 - ISO 24027 bias taxonomy documentation
 - Full reproducible audit trail across all four agents
 
+**For Model Audits (trained model + sample)**
+- SHAP feature importance and proxy attribution for the live model
+- Counterfactual evidence — the exact score/output delta from flipping only the protected attribute
+- A drop-in `threshold_map.json` (classification) or `correction_map.json` (regression) — apply the fix at inference with no retraining
+- `fixed_predictions.csv` with calibrated/corrected outputs, plus the full PDF report
+
 ---
 
 ## Security and Privacy
@@ -209,14 +249,16 @@ For every dataset, Aletheia automatically generates:
 The frontend is a live forensic observability dashboard built in Next.js with real-time WebSocket streaming.
 
 **Key interface features:**
+- **Two workspaces** — switch between the **Workflows** (Dataset Auditor) and **Model Auditor** tabs in the sidebar; each renders its own live agent graph
+- **Model upload flow** — a **Classification / Regression** toggle plus drag-and-drop drop zones for the model (`.pkl` / `.joblib`) and its sample CSV
 - **Interactive Guided Tour** — a built-in "Show Tour" feature that visually walks users through the entire multi-agent fairness pipeline using mock test data
 - **Smart Notifications** — animated, bouncing tooltips that guide users to inspect agent nodes as soon as their tasks are completed
 - Drag-and-drop CSV upload with instant dataset preview
-- Interactive agent node graph — click any agent to inspect its live output, charts, and code
+- Interactive agent node graph — click any agent to inspect its live output, charts, and code (works identically for dataset and model agents)
 - Deep-dive modal per agent showing Analytics, Review, and Code tabs
 - Dynamic chart rendering from agent-generated JSON using the chart schema system
 - Plain-English findings panel with colour-coded severity (error/warning/success)
-- One-click download for PDF report, fixed CSV, and technical ZIP
+- One-click download for the PDF report, fixed CSV / fixed predictions, and the drop-in threshold or correction map
 
 The chart schema system (`get_chart_schemas` MCP tool) ensures the agent always generates JSON that matches exactly what the frontend can render — bar, grouped bar, stacked bar, line, scatter, box plot, heatmap, waterfall — with no hardcoded chart types.
 
@@ -285,8 +327,11 @@ python main.py
 ### AgenticFlow Web Dashboard
 
 ```bash
-# Start the FastAPI backend (Port 8000-8002, artifacts on Port 8005)
-python backend/api.py
+# Start the Dataset Auditor backend (MCP servers on 8000-8002, artifacts on 8005)
+uvicorn backend.dataset_backend.backend.api:app --host 0.0.0.0 --port 8005
+
+# Start the Model Auditor backend (artifacts on 8006) — run alongside for the Model Auditor tab
+uvicorn backend.model_backend.backend.api:app --host 0.0.0.0 --port 8006
 
 # Start the frontend
 cd frontend/agenticflow
@@ -294,6 +339,8 @@ npm install
 npm run dev
 # Open http://localhost:3000
 ```
+
+> The frontend points the Model Auditor tab at the model backend via `NEXT_PUBLIC_MODEL_API_URL` (defaults to `http://localhost:8006`).
 
 ---
 

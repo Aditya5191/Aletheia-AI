@@ -11,31 +11,11 @@ import {
 
 import { useViewMode } from "./ViewModeContext";
 
-interface NavItem {
-  label: string;
-  icon: React.ReactNode;
-  active?: boolean;
-  comingSoon?: boolean;
-}
-
-const navItems: NavItem[] = [
-  {
-    label: "Workflows",
-    icon: <GitBranch className="w-5 h-5" />,
-    active: true,
-  },
-  {
-    label: "Model Auditor",
-    icon: <Fingerprint className="w-5 h-5" />,
-    comingSoon: true,
-  },
-];
-
 export default function SideNavBar() {
-  const { isSidebarCollapsed, setShowDocs, setShowTour } = useViewMode();
+  const { isSidebarCollapsed, setShowTour, currentView, setCurrentView } = useViewMode();
 
   return (
-    <nav 
+    <nav
       className={`fixed left-0 top-16 bottom-0 flex flex-col py-4 z-[90] bg-surface border-r border-outline-variant text-sm font-medium transition-all duration-300 ease-in-out ${
         isSidebarCollapsed ? "w-0 -translate-x-full opacity-0 overflow-hidden" : "w-[260px] translate-x-0 opacity-100"
       }`}
@@ -55,31 +35,29 @@ export default function SideNavBar() {
 
       {/* Nav Items */}
       <div className="flex-1 flex flex-col gap-1 px-2 whitespace-nowrap">
-        {navItems.map((item) => (
-          <button
-            key={item.label}
-            onClick={() => {
-              if (item.comingSoon) {
-                alert("Model Auditor is coming soon! This feature will enable deep forensic analysis of weights, biases, and drift for deployed models.");
-              }
-            }}
-            className={`w-full flex items-center justify-between px-4 py-3 transition-all duration-200 cursor-pointer ${
-              item.active
-                ? "bg-primary/10 text-primary border-r-4 border-primary shadow-[inset_1px_0_0_0_rgba(139,92,246,0.5)]"
-                : "text-gray-500 hover:text-gray-200 hover:bg-surface-container"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <div className={item.active ? "text-primary" : "text-gray-500"}>
-                {item.icon}
-              </div>
-              <span className="font-bold tracking-tight">{item.label}</span>
-            </div>
-            {item.comingSoon && (
-              <span className="text-[9px] bg-primary/10 text-primary/60 px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter border border-primary/20">Soon</span>
-            )}
-          </button>
-        ))}
+        <button
+          onClick={() => setCurrentView("dataset")}
+          className={`w-full flex items-center gap-3 px-4 py-3 transition-all duration-200 cursor-pointer ${
+            currentView === "dataset"
+              ? "bg-primary/10 text-primary border-r-4 border-primary shadow-[inset_1px_0_0_0_rgba(139,92,246,0.5)]"
+              : "text-gray-500 hover:text-gray-200 hover:bg-surface-container"
+          }`}
+        >
+          <GitBranch className={`w-5 h-5 ${currentView === "dataset" ? "text-primary" : "text-gray-500"}`} />
+          <span className="font-bold tracking-tight">Workflows</span>
+        </button>
+
+        <button
+          onClick={() => setCurrentView("model")}
+          className={`w-full flex items-center gap-3 px-4 py-3 transition-all duration-200 cursor-pointer ${
+            currentView === "model"
+              ? "bg-secondary/10 text-secondary border-r-4 border-secondary shadow-[inset_1px_0_0_0_rgba(100,200,255,0.3)]"
+              : "text-gray-500 hover:text-gray-200 hover:bg-surface-container"
+          }`}
+        >
+          <Fingerprint className={`w-5 h-5 ${currentView === "model" ? "text-secondary" : "text-gray-500"}`} />
+          <span className="font-bold tracking-tight">Model Auditor</span>
+        </button>
       </div>
 
       {/* Bottom Section */}

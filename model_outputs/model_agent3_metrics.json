@@ -1,0 +1,31 @@
+{
+  "metrics": {
+    "accuracy_before": 0.773,
+    "accuracy_after": 0.847,
+    "eod_before": 0.337,
+    "eod_after": 0.022,
+    "fprd_before": 0.274,
+    "fprd_after": 0.045,
+    "dir_before": 0.611,
+    "dir_after": 0.699,
+    "spd_before": 0.194,
+    "spd_after": 0.138
+  },
+  "findings": [
+    {
+      "text": "Applied `equality_of_opportunity` (Equalized Odds mode) to calibrate group-specific thresholds."
+    },
+    {
+      "text": "Equal Opportunity Difference (EOD) gap reduced by 93%, from 0.337 to 0.022."
+    },
+    {
+      "text": "False Positive Rate Difference (FPRD) gap reduced by 84%, from 0.274 to 0.045."
+    },
+    {
+      "text": "Most harmed group (Male) saw True Positive Rate improve from 58.3% to 77.8%."
+    },
+    {
+      "text": "Accuracy improved by +7.4% (from 77.3% to 84.7%), as the default 0.5 threshold was suboptimal."
+    }
+  ]
+}

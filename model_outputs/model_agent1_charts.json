@@ -1,0 +1,55 @@
+[
+  {
+    "type": "bar",
+    "title": "SHAP Feature Importance",
+    "color": "#7AA2F7",
+    "data": [
+      { "label": "reading score", "value": 0.180 },
+      { "label": "writing score", "value": 0.133 }
+    ]
+  },
+  {
+    "type": "bar",
+    "title": "Positive Prediction Rate by Gender",
+    "color": "#9ECE6A",
+    "data": [
+      { "label": "Female", "value": 0.500 },
+      { "label": "Male", "value": 0.306 }
+    ]
+  },
+  {
+    "type": "box_plot",
+    "title": "Prediction Probability Distribution by Gender",
+    "color": "#BB9AF7",
+    "data": [
+      {
+        "label": "Male",
+        "min": 0.004,
+        "q1": 0.009,
+        "median": 0.191,
+        "q3": 0.555,
+        "max": 1.0,
+        "outliers": []
+      },
+      {
+        "label": "Female",
+        "min": 0.004,
+        "q1": 0.186,
+        "median": 0.492,
+        "q3": 0.809,
+        "max": 1.0,
+        "outliers": []
+      }
+    ]
+  },
+  {
+    "type": "bar",
+    "title": "Proxy Feature Correlation with Gender",
+    "color": "#F7768E",
+    "data": [
+      { "label": "lunch", "value": 0.131 },
+      { "label": "parental level of education", "value": -0.051 },
+      { "label": "test preparation course", "value": -0.002 }
+    ]
+  }
+]

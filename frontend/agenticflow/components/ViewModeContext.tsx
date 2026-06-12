@@ -3,10 +3,13 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 export type ViewMode = "developer" | "user" | "test-developer";
+export type CurrentView = "dataset" | "model";
 
 interface ViewModeContextType {
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
+  currentView: CurrentView;
+  setCurrentView: (view: CurrentView) => void;
   isSidebarCollapsed: boolean;
   setIsSidebarCollapsed: (collapsed: boolean) => void;
   showDocs: boolean;
@@ -24,6 +27,7 @@ const ViewModeContext = createContext<ViewModeContextType | undefined>(undefined
 
 export function ViewModeProvider({ children }: { children: ReactNode }) {
   const [viewMode, setViewMode] = useState<ViewMode>("developer");
+  const [currentView, setCurrentView] = useState<CurrentView>("dataset");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showDocs, setShowDocs] = useState(false);
   const [showTour, setShowTour] = useState(false);
@@ -31,10 +35,12 @@ export function ViewModeProvider({ children }: { children: ReactNode }) {
   const [tourTab, setTourTab] = useState<"chart" | "review" | "code" | null>(null);
 
   return (
-    <ViewModeContext.Provider value={{ 
-      viewMode, 
-      setViewMode, 
-      isSidebarCollapsed, 
+    <ViewModeContext.Provider value={{
+      viewMode,
+      setViewMode,
+      currentView,
+      setCurrentView,
+      isSidebarCollapsed,
       setIsSidebarCollapsed,
       showDocs,
       setShowDocs,

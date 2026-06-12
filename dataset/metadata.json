@@ -1,4 +1,4 @@
 {
-  "description": "",
-  "target_column": "writing score"
+  "description": "please find bias",
+  "target_column": "gender"
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { API_BASE_URL } from "../lib/config";
+import { API_BASE_URL, MODEL_API_BASE_URL } from "../lib/config";
 import {
   X,
   Database,
@@ -1760,8 +1760,26 @@ function ChartSection({ charts }: { charts: ChartDef[] }) {
 export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: NodeDetailModalProps) {
   const { viewMode, tourTab } = useViewMode();
   const isTestMode = forceTestMode || viewMode === "test-developer";
-  const detail = nodeDetails[nodeId];
-  const [activeTab, setActiveTab] = useState<"chart" | "review" | "code">(nodeId === "report-writer" ? "review" : "chart");
+  // Model Auditor nodes share the same modal as the dataset agents, but they
+  // have no static entry in `nodeDetails`. Synthesize a detail header for them.
+  const MODEL_NODE_META: Record<string, { title: string; iconType: "database" | "brain" | "code" }> = {
+    "model-inspector":      { title: "Model Inspector",      iconType: "database" },
+    "behavioral-auditor":   { title: "Behavioral Auditor",   iconType: "brain" },
+    "threshold-calibrator": { title: "Threshold Calibrator", iconType: "code" },
+    "report-compiler":      { title: "Report Compiler",      iconType: "code" },
+  };
+  const isModel = nodeId in MODEL_NODE_META;
+  const isReportNode = nodeId === "report-writer" || nodeId === "report-compiler";
+
+  const detail: NodeDetailData | undefined = nodeDetails[nodeId] ?? (isModel ? {
+    title: MODEL_NODE_META[nodeId].title,
+    iconType: MODEL_NODE_META[nodeId].iconType,
+    statusLabel: "Completed",
+    statusColor: "#64c8ff",
+    charts: [], metrics: [], findings: [], review: "", codeSnippet: "", lastRun: "just now",
+  } : undefined);
+
+  const [activeTab, setActiveTab] = useState<"chart" | "review" | "code">(isReportNode ? "review" : "chart");
   const [copied, setCopied] = useState(false);
   const [copiedCellIdx, setCopiedCellIdx] = useState<number | null>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -1777,9 +1795,21 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
     "data-inspector": 1,
     "fairness-adjudicator": 2,
     "mitigation-expert": 3,
-    "report-writer": 4
+    "report-writer": 4,
+    // Model Auditor agents map to the same 1–4 slots
+    "model-inspector": 1,
+    "behavioral-auditor": 2,
+    "threshold-calibrator": 3,
+    "report-compiler": 4,
   };
   const agentNum = agentMap[nodeId];
+
+  // Route fetches to the correct backend + output dir + file prefix.
+  // Dataset:  {API_BASE_URL}/outputs/agent{n}_*.json
+  // Model:    {MODEL_API_BASE_URL}/model_outputs/model_agent{n}_*.json
+  const baseUrl    = isModel ? MODEL_API_BASE_URL : API_BASE_URL;
+  const outDir     = isModel ? "model_outputs" : "outputs";
+  const filePrefix = isModel ? "model_agent" : "agent";
 
   const [dynamicCharts, setDynamicCharts] = useState<ChartDef[] | null>(null);
   const [dynamicMetrics, setDynamicMetrics] = useState<{ metrics: any[], findings: any[] } | null>(null);
@@ -1807,7 +1837,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
 
       if (agentNum !== 4) {
         try {
-          const resCharts = await fetch(`${API_BASE_URL}/outputs/agent${agentNum}_charts.json?t=${ts}`);
+          const resCharts = await fetch(`${baseUrl}/${outDir}/${filePrefix}${agentNum}_charts.json?t=${ts}`);
           if (resCharts.ok) {
             const chartsData = await resCharts.json();
             setDynamicCharts(chartsData);
@@ -1819,7 +1849,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
       }
 
       try {
-        const resMetrics = await fetch(`${API_BASE_URL}/outputs/agent${agentNum}_metrics.json?t=${ts}`);
+        const resMetrics = await fetch(`${baseUrl}/${outDir}/${filePrefix}${agentNum}_metrics.json?t=${ts}`);
         if (resMetrics.ok) {
           const metricsData = await resMetrics.json();
           setDynamicMetrics(metricsData);
@@ -1830,7 +1860,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
       }
 
       try {
-        const resReview = await fetch(`${API_BASE_URL}/outputs/agent${agentNum}.md?t=${ts}`);
+        const resReview = await fetch(`${baseUrl}/${outDir}/${filePrefix}${agentNum}.md?t=${ts}`);
         if (resReview.ok) {
           const reviewText = await resReview.text();
           setDynamicReview(reviewText);
@@ -1841,7 +1871,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
       }
 
       try {
-        const resCode = await fetch(`${API_BASE_URL}/outputs/agent${agentNum}_code.json?t=${ts}`);
+        const resCode = await fetch(`${baseUrl}/${outDir}/${filePrefix}${agentNum}_code.json?t=${ts}`);
         if (resCode.ok) {
           const codeData = await resCode.json();
           setDynamicCode(codeData);
@@ -1947,7 +1977,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
         {/* ---- Tabs ---- */}
         <div className="flex gap-1 px-6 pt-4 pb-0 items-center justify-between">
           <div className="flex gap-1">
-            {nodeId !== "report-writer" && (
+            {!isReportNode && (
               <button
                 onClick={() => setActiveTab("chart")}
                 className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
@@ -1975,7 +2005,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                 Review
               </span>
             </button>
-            {nodeId !== "report-writer" && (
+            {!isReportNode && (
               <button
                 onClick={() => setActiveTab("code")}
                 className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
@@ -1992,22 +2022,26 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
             )}
           </div>
 
-          {/* Download buttons — only for Report Writer */}
-          {nodeId === "report-writer" && (
+          {/* Download buttons — only for the Report node (dataset or model) */}
+          {isReportNode && (
             <div className="flex items-center gap-3">
               <a
-                href={`${API_BASE_URL}/outputs/fixed_dataset.csv`}
-                download="Aletheia_Fixed_Dataset.csv"
+                href={isModel
+                  ? `${MODEL_API_BASE_URL}/model_outputs/fixed_predictions.csv`
+                  : `${API_BASE_URL}/outputs/fixed_dataset.csv`}
+                download={isModel ? "Aletheia_Fixed_Predictions.csv" : "Aletheia_Fixed_Dataset.csv"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-[#7AA2F7] text-[#7AA2F7] hover:bg-[#7AA2F7]/10 transition-all cursor-pointer"
               >
                 <Download className="w-4 h-4" />
-                Fixed Data
+                {isModel ? "Fixed Predictions" : "Fixed Data"}
               </a>
               <a
-                href={`${API_BASE_URL}/outputs/final_report.pdf`}
-                download="Aletheia_Fairness_Report.pdf"
+                href={isModel
+                  ? `${MODEL_API_BASE_URL}/model_outputs/model_final_report.pdf`
+                  : `${API_BASE_URL}/outputs/final_report.pdf`}
+                download={isModel ? "Aletheia_Model_Audit_Report.pdf" : "Aletheia_Fairness_Report.pdf"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-[#7AA2F7] to-[#BB9AF7] text-[#1a1b26] hover:shadow-[0_0_20px_rgba(122,162,247,0.4)] transition-all cursor-pointer"

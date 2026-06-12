@@ -1,0 +1,12 @@
+{
+  "task_type": "classification",
+  "protected_attributes": ["gender", "race/ethnicity"],
+  "proxy_candidates": ["parental level of education", "lunch", "test preparation course"],
+  "ground_truth_column": "outcome",
+  "target_column": "predicted_label",
+  "model_type": "RandomForestClassifier",
+  "model_file": "model.pkl",
+  "sample_file": "sample.csv",
+  "feature_names": ["reading score", "writing score"],
+  "encoding_map": {}
+}

@@ -104,7 +104,7 @@ async def _discover_tool_schemas(url: str, label: str) -> list:
 async def run_langgraph_agent(
     container_id: str,
     sandbox_url: str = "http://localhost:8000/sse",
-    aletheia_url: str = "https://web-production-6c63b.up.railway.app/sse",
+    aletheia_url: str = "http://localhost:8001/sse",
     miscellaneous_url: str = "http://localhost:8002/sse"
 ):
     # ── Step 1: Discover Auditor & Misc tool schemas (brief connect, then disconnect) ──

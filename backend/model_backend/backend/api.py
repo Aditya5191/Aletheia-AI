@@ -364,21 +364,19 @@ async def model_audit_websocket(websocket: WebSocket):
             "model_type": model_type
         })
 
-        # Start MCPs
+        # Start MCPs — inherit stdout/stderr so logs flow to the API console
+        # (PIPE would deadlock once the buffer fills if nobody reads it)
         mcp_process = subprocess.Popen(
             [sys.executable, "mcps/sandbox/mcp_server.py"],
             env={**os.environ, "PORT": "8000"},
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
         auditor_process = subprocess.Popen(
             [sys.executable, "mcps/auditor/server.py"],
             env={**os.environ, "PORT": "8001"},
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
         miscellaneous_process = subprocess.Popen(
             [sys.executable, "mcps/miscellaneous/server.py"],
             env={**os.environ, "PORT": "8002"},
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
 
         await asyncio.sleep(3)
@@ -393,8 +391,7 @@ async def model_audit_websocket(websocket: WebSocket):
             ready = False
             for attempt in range(15):
                 if proc.poll() is not None:
-                    stderr_out = proc.stderr.read().decode() if proc.stderr else ""
-                    raise RuntimeError(f"{name} failed to start: {stderr_out[:500]}")
+                    raise RuntimeError(f"{name} process exited unexpectedly (check console logs)")
                 try:
                     async with aiohttp.ClientSession() as session:
                         async with session.get(url, timeout=aiohttp.ClientTimeout(total=2)) as resp:

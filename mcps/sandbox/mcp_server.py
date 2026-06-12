@@ -22,6 +22,14 @@ from starlette.middleware.cors import CORSMiddleware
 from sandbox import SandboxManager
 
 logging.basicConfig(level=logging.INFO)
+# `sandbox` (imported above) already configured the root logger, so the basicConfig
+# call above is a no-op. Force the root level to INFO explicitly and silence the
+# chatty third-party loggers (SSE pings, HTTP transport, docker) so only meaningful
+# sandbox tool events reach the terminal.
+logging.getLogger().setLevel(logging.INFO)
+for _noisy in ("mcp", "sse_starlette", "anyio", "asyncio", "httpcore",
+               "httpx", "urllib3", "docker", "uvicorn.access"):
+    logging.getLogger(_noisy).setLevel(logging.WARNING)
 logger = logging.getLogger("mcp_server")
 
 manager = SandboxManager()
@@ -413,7 +421,7 @@ async def heartbeat(request):
 
 
 starlette_app = Starlette(
-    debug=True,
+    debug=False,
     routes=[
         Route("/", endpoint=heartbeat),
         Route("/sse", endpoint=handle_sse, methods=["GET", "POST"]),

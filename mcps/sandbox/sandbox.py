@@ -25,10 +25,12 @@ from typing import Optional
 
 import docker
 
-# Sandbox logger — emits to stdout so the MCP server process captures it
+# Sandbox logger — emits to stdout so the MCP server process captures it.
+# Keep this at INFO: DEBUG floods the terminal with SSE keepalive pings and
+# transport chatter from every library that shares the root logger.
 log = logging.getLogger("sandbox")
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s.%(msecs)03d [SANDBOX] %(levelname)s %(message)s",
     datefmt="%H:%M:%S",
 )
