@@ -133,8 +133,8 @@ function ModelUploadNode({ data }: NodeProps<ModelUploadNodeType>) {
       {/* Title Bar */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#1F2228]">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-secondary/15 flex items-center justify-center">
-            <Box className="w-4 h-4 text-secondary" />
+          <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
+            <Box className="w-4 h-4 text-primary" />
           </div>
           <span className="text-sm font-semibold text-on-surface">Upload Model</span>
         </div>
@@ -162,7 +162,7 @@ function ModelUploadNode({ data }: NodeProps<ModelUploadNodeType>) {
                 }}
                 className={`flex-1 py-2 text-[11px] font-semibold transition-all cursor-pointer ${
                   modelType === type
-                    ? "bg-secondary/20 text-secondary"
+                    ? "bg-primary/20 text-primary"
                     : "text-on-surface-variant hover:text-on-surface"
                 }`}
               >
@@ -178,8 +178,8 @@ function ModelUploadNode({ data }: NodeProps<ModelUploadNodeType>) {
             Model File <span className="normal-case text-on-surface-variant/50">(.pkl / .joblib)</span>
           </label>
           {modelFile ? (
-            <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-secondary/5 border border-secondary/20">
-              <File className="w-3.5 h-3.5 text-secondary flex-shrink-0" />
+            <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20">
+              <File className="w-3.5 h-3.5 text-primary flex-shrink-0" />
               <span className="text-[12px] font-medium text-on-surface flex-1 truncate">{modelFile.name}</span>
               <span className="text-[10px] text-on-surface-variant flex-shrink-0">{formatSize(modelFile.size)}</span>
               {!isDoneUploading && (
@@ -191,7 +191,7 @@ function ModelUploadNode({ data }: NodeProps<ModelUploadNodeType>) {
           ) : (
             <div
               className={`relative rounded-xl border-2 border-dashed p-4 flex flex-col items-center gap-2 transition-all cursor-pointer ${
-                isDragOverModel ? "border-secondary bg-secondary/5" : "border-[#2A2D35] hover:border-[#3A3D45] bg-[#111317]"
+                isDragOverModel ? "border-primary bg-primary/5" : "border-[#2A2D35] hover:border-[#3A3D45] bg-[#111317]"
               }`}
               onDragOver={(e) => { e.preventDefault(); setIsDragOverModel(true); }}
               onDragLeave={() => setIsDragOverModel(false)}
@@ -200,7 +200,7 @@ function ModelUploadNode({ data }: NodeProps<ModelUploadNodeType>) {
             >
               <CloudUpload className="w-5 h-5 text-on-surface-variant" />
               <p className="text-[11px] text-on-surface-variant">
-                Drop or <span className="text-secondary">browse</span>
+                Drop or <span className="text-primary">browse</span>
               </p>
             </div>
           )}
@@ -213,8 +213,8 @@ function ModelUploadNode({ data }: NodeProps<ModelUploadNodeType>) {
             Sample Data <span className="normal-case text-on-surface-variant/50">(.csv)</span>
           </label>
           {sampleFile ? (
-            <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-secondary/5 border border-secondary/20">
-              <File className="w-3.5 h-3.5 text-secondary flex-shrink-0" />
+            <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20">
+              <File className="w-3.5 h-3.5 text-primary flex-shrink-0" />
               <span className="text-[12px] font-medium text-on-surface flex-1 truncate">{sampleFile.name}</span>
               <span className="text-[10px] text-on-surface-variant flex-shrink-0">{formatSize(sampleFile.size)}</span>
               {!isDoneUploading && (
@@ -226,7 +226,7 @@ function ModelUploadNode({ data }: NodeProps<ModelUploadNodeType>) {
           ) : (
             <div
               className={`relative rounded-xl border-2 border-dashed p-4 flex flex-col items-center gap-2 transition-all cursor-pointer ${
-                isDragOverSample ? "border-secondary bg-secondary/5" : "border-[#2A2D35] hover:border-[#3A3D45] bg-[#111317]"
+                isDragOverSample ? "border-primary bg-primary/5" : "border-[#2A2D35] hover:border-[#3A3D45] bg-[#111317]"
               }`}
               onDragOver={(e) => { e.preventDefault(); setIsDragOverSample(true); }}
               onDragLeave={() => setIsDragOverSample(false)}
@@ -235,7 +235,7 @@ function ModelUploadNode({ data }: NodeProps<ModelUploadNodeType>) {
             >
               <CloudUpload className="w-5 h-5 text-on-surface-variant" />
               <p className="text-[11px] text-on-surface-variant">
-                Drop or <span className="text-secondary">browse</span>
+                Drop or <span className="text-primary">browse</span>
               </p>
             </div>
           )}
@@ -268,7 +268,7 @@ function ModelUploadNode({ data }: NodeProps<ModelUploadNodeType>) {
           <button
             onClick={submitUpload}
             disabled={isUploading || !modelFile || !sampleFile}
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-secondary text-[#15171B] text-[12px] font-semibold hover:bg-secondary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-primary text-[#15171B] text-[12px] font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
             {isUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ArrowRight className="w-3.5 h-3.5" />}
             {isUploading ? "Uploading…" : "Upload & Continue"}
@@ -280,7 +280,7 @@ function ModelUploadNode({ data }: NodeProps<ModelUploadNodeType>) {
       <Handle
         type="source"
         position={Position.Right}
-        className="!w-3.5 !h-3.5 !bg-secondary !border-[3px] !border-[#15171B] !-right-[7px] !shadow-[0_0_8px_rgba(100,200,255,0.5)]"
+        className="!w-3.5 !h-3.5 !bg-primary !border-[3px] !border-[#15171B] !-right-[7px] !shadow-[0_0_8px_rgba(208,188,255,0.5)]"
       />
     </div>
   );
