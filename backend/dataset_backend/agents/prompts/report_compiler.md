@@ -33,8 +33,7 @@ markdown summary.
 ### 1 — Install Dependencies
 Use `bash` to run:
 ```
-apt-get update && apt-get install -y libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b libjpeg-dev zlib1g-dev
-pip install weasyprint matplotlib seaborn numpy pandas pillow tabulate
+pip install typst matplotlib seaborn numpy pandas pillow tabulate
 mkdir -p /workspace/outputs/figures
 ```
 
@@ -102,24 +101,23 @@ or data field names. Every label, value, color, and series name must come from t
 chart dict itself.
 
 **Design rules for the renderer:**
-- Dark background theme throughout: figure background `#1a1b26`, axes background `#1e2030`
-- All text in `#c0caf5`, grid lines in `#2a2f45` at 30% opacity
-- Use the `color` field from the chart dict as the bar/line color. If the chart has
-  `series`, use each series' own `color` field.
-- Title from `chart['label']` — font size 13, bold, color `#c0caf5`
+- Light print theme throughout: figure background `#ffffff`, axes background `#ffffff` with black lines
+- All text in `#111111`, grid lines in `#dddddd` at 50% opacity
+- Use a professional seaborn palette like `muted` or `deep`. If the chart has `color` or `series`, use those if applicable.
+- Title from `chart['label']` — font size 13, bold, color `#111111`
 - For `bar`: horizontal bars sorted by value descending. X-axis shows values,
   Y-axis shows category labels from the `data` array. Annotate each bar with its value.
 - For `grouped_bar`: one group per category (x-axis), one bar cluster per series.
   Legend derived from series labels.
-- For `heatmap`: use `seaborn.heatmap` with `cmap="rocket_r"`, annotate cells,
+- For `heatmap`: use `seaborn.heatmap` with `cmap="Blues"`, annotate cells,
   derive row/column labels from the data structure.
 - For `scatter`: plot x vs y from each data point. Use `chart['color']` for point color.
   If >1000 points, sample randomly to 1000 before plotting.
-- For `pie`: derive labels and values from the data array. Use a consistent dark palette
+- For `pie`: derive labels and values from the data array. Use a consistent light palette
   if individual colors are not specified per slice.
 - For `box_plot`: one box per group. Derive group labels and value arrays from the
   data structure.
-- All figures: tight layout, `dpi=150`, saved as PNG with transparent=False.
+- All figures: tight layout, `dpi=300`, saved as SVG using `plt.savefig(output_path, format='svg')` (NEVER attempt to manually construct or write raw XML/SVG strings).
 - Return the output path on success. Print a one-line confirmation per chart rendered.
 
 After defining the function, run it on a single test chart to confirm it works before
@@ -141,7 +139,7 @@ all_charts = [
 
 rendered_paths = {}
 for agent_tag, chart in all_charts:
-    out_path = f"/workspace/outputs/figures/{agent_tag}_{chart['id']}.png"
+    out_path = f"/workspace/outputs/figures/{agent_tag}_{chart['id']}.svg"
     render_chart(chart, out_path)
     rendered_paths[f"{agent_tag}_{chart['id']}"] = out_path
 
@@ -214,185 +212,44 @@ Use the `extract_section` helper to extract:
 - "Pipeline Run Summary" (Parse using `parse_md_table` later)
 
 Print the first 100 characters of each extracted block to confirm success.
+**CRITICAL**: Source reports often do not have exact headers matching the above list. If `extract_section` returns empty for key narrative sections like "Most Significant Issue" or "What Was Actually Fixed", you MUST synthesize a 2-3 sentence plain-english summary for them by reading the full content of the reports. Do not leave them blank!
 
 ---
 
-### 7 — Build the HTML Template
-Use `execute_cell` to assemble the PDF using HTML and CSS. You will create a single HTML string containing embedded CSS for styling and layout, and then use `str.format()` or f-strings to inject your extracted metrics, prose, tables, and chart paths.
+### 7 — Write the Typst template and compile the PDF
+Assemble your extracted data into a `report.typ` file using Python's string formatting and save it to `/workspace/outputs/report.typ`. Design a clean, professional print layout using black text on white backgrounds, neat typography, and distinct headers.
+Example Typst structure:
+```typst
+#set page("a4", margin: (x: 2cm, y: 2cm))
+#set text(font: "Helvetica", size: 11pt, fill: rgb("#111111"))
+#set heading(numbering: "1.1")
 
-**CRITICAL: You must use the `file://` protocol for image `src` attributes so WeasyPrint can resolve them locally:**
-`<img src="file:///workspace/outputs/figures/agent1_chart.png" />`
-
-**Design System & HTML Boilerplate:**
-Use the following exact HTML structure to guarantee beautiful Aletheia styling and perfect A4 pagination:
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+#align(center)[
+  #text(size: 24pt, weight: "bold", fill: rgb("#FF691A"))[Aletheia AI Fairness Audit Report]
   
-  @page {
-    size: A4 portrait;
-    margin: 15mm 18mm;
-    background-color: #1a1b26; /* Fixes white borders on the PDF */
-    @bottom-center {
-      content: "Aletheia Fairness Pipeline — Page " counter(page);
-      font-family: 'Inter', sans-serif;
-      font-size: 8pt;
-      color: #7a83a7;
-    }
-  }
+  #v(1em)
+  #text(size: 14pt, fill: rgb("#555555"))[{dataset_name}]
+]
 
-  body {
-    font-family: 'Inter', sans-serif;
-    background-color: #1a1b26;
-    color: #c0caf5;
-    font-size: 10pt;
-    line-height: 1.6;
-    margin: 0;
-  }
+#v(2em)
 
-  /* Page Breaks */
-  .page-break { page-break-before: always; }
-  .avoid-break { page-break-inside: avoid; }
+= Executive Summary
+... your text here ...
 
-  /* Typography */
-  h1 { font-size: 32pt; color: #ffffff; text-align: center; margin-bottom: 5px; }
-  h2 { font-size: 18pt; color: #7aa2f7; border-bottom: 2px solid #1e2030; padding-bottom: 5px; margin-top: 30px; }
-  .subtitle { font-size: 16pt; color: #7a83a7; text-align: center; margin-bottom: 20px; }
-  
-  /* Layout Grids & Cards */
-  .grid-3 { display: flex; gap: 15px; margin-bottom: 20px; }
-  .card {
-    background-color: #1e2030;
-    border: 1px solid #bb9af7;
-    border-radius: 8px;
-    padding: 15px;
-    flex: 1;
-    text-align: center;
-  }
-  .card-title { color: #7a83a7; font-size: 9pt; font-weight: 600; text-transform: uppercase; margin-bottom: 5px; }
-  .card-value { color: #ffffff; font-size: 14pt; font-weight: 800; }
-  .card-value.highlight { color: #f7768e; } /* Use for Most Harmed Group */
-
-  /* Tables */
-  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 9pt; }
-  th { background-color: #7aa2f7; color: #1a1b26; padding: 8px; text-align: left; font-weight: bold; }
-  tr:nth-child(even) { background-color: #1e2030; }
-  td { padding: 8px; border-bottom: 1px solid #2a2f45; }
-  .status-pass { color: #9ece6a; font-weight: 600; }
-  .status-fail { color: #f7768e; font-weight: 600; }
-
-  /* Callouts & Quotes */
-  blockquote {
-    border-left: 4px solid #f7768e;
-    background-color: #1e2030;
-    margin: 0 0 20px 0;
-    padding: 15px 20px;
-    font-style: italic;
-  }
-  
-  /* Images */
-  .image-container { text-align: center; margin: 20px 0; }
-  .image-container img { max-width: 100%; height: auto; border-radius: 6px; }
-  .caption { font-size: 8pt; color: #7a83a7; margin-top: 5px; }
-
-  /* Flex Layout for Section 1 */
-  .two-column { display: flex; gap: 20px; }
-  .two-column > div { flex: 1; }
-</style>
-</head>
-<body>
-
-  <!-- Cover Page -->
-  <div style="height: 40vh; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; margin-bottom: 30px;">
-    <div style="background-color: #1e2030; padding: 15px 20px; border-radius: 12px; margin-bottom: 20px;">
-      <span style="color: #7aa2f7; font-size: 24pt; font-weight: 800;">ALETHEIA</span>
-    </div>
-    <h1>AI Fairness Audit Report</h1>
-    <div class="subtitle">{dataset_name}</div>
-    <!-- If user_description is non-empty, inject it here as a second subtitle line -->
-    <div style="color: #7a83a7; font-size: 10pt; text-align: center; margin-top: -10px; margin-bottom: 15px; max-width: 500px;">{dataset_description}</div>
-    <div style="display: flex; gap: 10px; justify-content: center;">
-      <span style="background: #1e2030; border: 1px solid #bb9af7; color: #bb9af7; padding: 4px 12px; border-radius: 20px; font-size: 8pt;">Data Surveyed</span>
-      <span style="background: #1e2030; border: 1px solid #bb9af7; color: #bb9af7; padding: 4px 12px; border-radius: 20px; font-size: 8pt;">Bias Audited</span>
-      <span style="background: #1e2030; border: 1px solid #bb9af7; color: #bb9af7; padding: 4px 12px; border-radius: 20px; font-size: 8pt;">Mitigated</span>
-    </div>
-  </div>
-
-  <div class="page-break"></div>
-
-  <!-- Section 1 -->
-  <h2>01 &mdash; Executive Summary</h2>
-  <div class="grid-3 avoid-break">
-    <div class="card"><div class="card-title">Dataset Scale</div><div class="card-value">{dataset_scale}</div></div>
-    <div class="card"><div class="card-title">Fairness Score</div><div class="card-value">{score_before} &rarr; {score_after}</div></div>
-    <div class="card"><div class="card-title">Most Harmed Group</div><div class="card-value highlight">{harmed_group}</div></div>
-  </div>
-  <blockquote>{verdict}</blockquote>
-  
-  <div class="two-column avoid-break">
-    <div>
-      <div class="card-title">What Was Found</div>
-      <ul>
-        <li>{finding_1}</li>
-        <li>{finding_2}</li>
-      </ul>
-    </div>
-    <div>
-      <div class="card-title">What Was Fixed</div>
-      <ul>
-        <li>{fixed_1}</li>
-        <li>{fixed_2}</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="page-break"></div>
-
-  <!-- Add remaining sections using similar HTML structures -->
-  <!-- Always wrap images like this to prevent clipping: -->
-  <!-- 
-  <div class="image-container avoid-break">
-    <img src="file:///workspace/outputs/figures/agent1_race_dist.png" />
-    <div class="caption">Distribution of Race/Ethnicity</div>
-  </div> 
-  -->
-
-</body>
-</html>
+#figure(
+  image("figures/agent1_1.svg", width: 80%),
+  caption: [Distribution of Race/Ethnicity]
+)
 ```
-
-Write Python code using `execute_cell` to generate the HTML. For markdown tables, convert your `parse_md_table()` nested lists into raw HTML `<table><tr><td>` strings before injecting them into the template. Do not inject raw markdown into the HTML; it will not render.
+Lay it out as: cover page (ALETHEIA branding, dataset name) → Executive Summary (fairness score before→after, most harmed group, verdict blockquote, what-found / what-fixed) → Dataset Profile section → Bias Audit section → Mitigation section, each embedding its charts and Typst `#table` converted tables. Convert markdown tables to Typst `#table` syntax before injecting — never inject raw markdown.
+After writing `report.typ`, compile it to PDF using the `typst` python package:
+```python
+import typst
+typst.compile("/workspace/outputs/report.typ", output="/workspace/outputs/final_report.pdf")
+```
+Confirm the PDF exists and print its size.
 
 ---
-
-### 8 — Compile the PDF with WeasyPrint
-Use `execute_cell` to save the HTML to a file and compile it:
-```python
-from weasyprint import HTML
-
-html_string = """<!DOCTYPE html><html>...</html>""" # Your fully populated HTML string
-
-# Save HTML for debugging
-with open('/workspace/outputs/final_report.html', 'w', encoding='utf-8') as f:
-    f.write(html_string)
-
-# Compile PDF
-HTML(string=html_string, base_url='/workspace/outputs/').write_pdf('/workspace/outputs/final_report.pdf')
-print("PDF compiled via WeasyPrint.")
-```
-
-Then verify the file exists and print its size:
-```python
-import os
-size = os.path.getsize('/workspace/outputs/final_report.pdf')
-print(f"final_report.pdf — {size / 1024:.1f} KB")
-```
-
-If the file is 0 bytes or the output call throws, debug the HTML string generation.
 
 ---
 
@@ -500,4 +357,4 @@ Present to the user:
   - `final_report.pdf`
   - `agent4.md`
   - `agent4_metrics.json`
-  - `figures/` directory with all PNG chart renders
+  - `figures/` directory with all SVG chart renders

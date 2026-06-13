@@ -69,7 +69,8 @@ def parse_md_table(md):
         rows.append(cells)
     return rows
 ```
-Pull the key sections: from agent1 — Model Identity, Feature Inventory, Handover Notes; from agent2 — the one-line verdict, prediction-disparity metrics table, counterfactual evidence, algorithms used; from agent3 — overall result, what was fixed, what could not be fixed, before-vs-after tables, correction map, recommended next steps, pipeline run summary.
+Pull the key sections: from agent1 — Model Identity, Feature Inventory; from agent2 — the one-line verdict, prediction-disparity metrics table, counterfactual evidence; from agent3 — overall result, before-vs-after tables, recommended next steps.
+**CRITICAL**: Source reports do not have exact headers for "What Was Found", "What Was Fixed", or "What Remains". You MUST synthesize a 2-3 sentence plain-english summary for each of these three sections by reading the full content of the reports. Do not use `extract_section` for them or they will be blank!
 
 ### 6 — Write the Typst template and compile the PDF
 Assemble your extracted data into a `report.typ` file using Python's string formatting and save it to `/workspace/outputs/report.typ`. Design a clean, professional print layout using black text on white backgrounds, neat typography, and distinct headers.

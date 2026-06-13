@@ -1,30 +1,13 @@
 {
-  "mitigation_algorithm": "causal_fair_inference",
+  "mitigation_algorithm": "equality_of_opportunity",
   "proxy_algorithm": "mutual_info_proxy_scanner",
   "intersectional_algorithm": "intersectional_subgroup_scan",
   "shap_algorithm": "shap_proxy_detection",
   "has_ground_truth": true,
-  "predicted_value_units": "score points",
   "reasoning_log": [
-    {
-      "algorithm_id": "causal_fair_inference",
-      "verdict": "SELECTED_MITIGATION",
-      "reason": "Estimates and mitigates direct causal discrimination pathways"
-    },
-    {
-      "algorithm_id": "mutual_info_proxy_scanner",
-      "verdict": "SELECTED_PROXY",
-      "reason": "Detects and residualizes non-linear proxy discrimination features"
-    },
-    {
-      "algorithm_id": "intersectional_subgroup_scan",
-      "verdict": "SELECTED_INTERSECTIONAL",
-      "reason": "Efficiently identifies and remediates fairness gerrymandering"
-    },
-    {
-      "algorithm_id": "equality_of_opportunity",
-      "verdict": "REJECTED",
-      "reason": "Provides post-processing threshold optimizations to enforce equalized odds (TPR/FPR equalized) which is for classification"
-    }
+    { "algorithm_id": "equality_of_opportunity", "verdict": "SELECTED_MITIGATION", "reason": "suited for Education" },
+    { "algorithm_id": "mutual_info_proxy_scanner", "verdict": "SELECTED_PROXY", "reason": "suited for Education" },
+    { "algorithm_id": "intersectional_subgroup_scan", "verdict": "SELECTED_INTERSECTIONAL", "reason": "suited for Education" },
+    { "algorithm_id": "recidivism_fairness_calibration", "verdict": "REJECTED", "reason": "not suited for Education (interventions alter logic matrices)" }
   ]
 }
