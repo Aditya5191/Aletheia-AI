@@ -32,7 +32,7 @@ export default function DocsModal({ onClose }: DocsModalProps) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar" data-lenis-prevent="true">
           
           {/* Quick Start */}
           <section className="mb-12">

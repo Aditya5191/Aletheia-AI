@@ -141,7 +141,7 @@ export default function TopAppBar() {
                 <div className="px-4 py-2 border-b border-outline-variant mb-1">
                   <span className="font-bold text-white text-sm">Recent Activity</span>
                 </div>
-                <div className="max-h-[280px] overflow-y-auto">
+                <div className="max-h-[280px] overflow-y-auto" data-lenis-prevent="true">
                   <div className="px-4 py-2.5 hover:bg-surface-container transition-colors cursor-pointer group border-l-2 border-transparent hover:border-primary">
                     <p className="text-[13px] text-gray-200 font-medium">Adult_Census_Audit.v1</p>
                     <p className="text-[10px] text-gray-500 mt-0.5">2 hours ago • Fairness Score: 84</p>
