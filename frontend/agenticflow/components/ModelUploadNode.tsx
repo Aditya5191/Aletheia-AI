@@ -23,6 +23,7 @@ import { useViewMode } from "./ViewModeContext";
 export interface ModelUploadNodeData {
   title: string;
   onUploadComplete?: (modelType: string) => void;
+  onTypeChange?: (modelType: string) => void;
   [key: string]: unknown;
 }
 
@@ -152,8 +153,13 @@ function ModelUploadNode({ data }: NodeProps<ModelUploadNodeType>) {
             {(["classification", "regression"] as const).map((type) => (
               <button
                 key={type}
-                onClick={() => { if (!isDoneUploading) setModelType(type); }}
-                disabled={isDoneUploading}
+                onClick={() => { 
+                  setModelType(type);
+                  data.onTypeChange?.(type);
+                  if (isDoneUploading && modelType !== type) {
+                    setIsDoneUploading(false);
+                  }
+                }}
                 className={`flex-1 py-2 text-[11px] font-semibold transition-all cursor-pointer ${
                   modelType === type
                     ? "bg-secondary/20 text-secondary"
@@ -240,11 +246,23 @@ function ModelUploadNode({ data }: NodeProps<ModelUploadNodeType>) {
 
         {/* Status / Submit */}
         {isDoneUploading ? (
-          <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#4edea3]/10 border border-[#4edea3]/30">
-            <Check className="w-3.5 h-3.5 text-[#4edea3]" />
-            <span className="text-[12px] font-semibold text-[#4edea3]">
-              {modelType.charAt(0).toUpperCase() + modelType.slice(1)} model ready
-            </span>
+          <div className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-[#4edea3]/10 border border-[#4edea3]/30">
+            <div className="flex items-center gap-2">
+              <Check className="w-3.5 h-3.5 text-[#4edea3]" />
+              <span className="text-[12px] font-semibold text-[#4edea3]">
+                {modelType.charAt(0).toUpperCase() + modelType.slice(1)} model ready
+              </span>
+            </div>
+            <button 
+              onClick={() => {
+                setIsDoneUploading(false);
+                setModelFile(null);
+                setSampleFile(null);
+              }}
+              className="text-[#4edea3] hover:text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md bg-[#4edea3]/10 hover:bg-[#4edea3]/30 transition-all"
+            >
+              Start Over
+            </button>
           </div>
         ) : (
           <button

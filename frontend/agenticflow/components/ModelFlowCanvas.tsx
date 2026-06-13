@@ -487,7 +487,7 @@ export default function ModelFlowCanvas() {
           return { ...n, data: { ...n.data, onRunComplete: handleRunComplete, onRunStart: handleRunStart } } as AgentNodeType;
         }
         if (n.id === "model-upload" && n.type === "model-upload") {
-          return { ...n, data: { ...n.data, onUploadComplete: handleUploadComplete } } as ModelUploadNodeType;
+          return { ...n, data: { ...n.data, onUploadComplete: handleUploadComplete, onTypeChange: (type: string) => setModelType(type as "classification" | "regression") } } as ModelUploadNodeType;
         }
         return n;
       })
