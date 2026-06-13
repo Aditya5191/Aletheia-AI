@@ -76,7 +76,7 @@ Aletheia is a distributed multi-agent system built on three core layers:
 ├── model_upload/                   # Model-mode input (model.pkl/.joblib + sample.csv)
 ├── outputs/   ·   model_outputs/   # Host-synced charts, JSON, code logs, PDF reports
 ├── main.py                         # CLI entry point
-├── Procfile                        # Railway deployment config
+├── pytest.ini                      # Test configuration
 └── requirements.txt
 ```
 

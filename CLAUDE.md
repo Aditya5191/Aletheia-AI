@@ -90,5 +90,5 @@ The frontend connects to the backend's WebSocket `/stream` endpoint. Agents gene
 
 - **Frontend:** Google Cloud Run (auto-scaling), Docker image from `frontend/agenticflow/Dockerfile`
 - **Backend:** Dedicated Cloud VM, image from `Dockerfile.backend`
-- **Auditor MCP:** Railway.app — `Procfile` runs `python mcps/auditor/server.py`
+- **Auditor MCP:** Local — runs `python mcps/auditor/server.py`
 - **Sandbox:** Spawned ephemerally per audit inside the Cloud VM via Docker socket

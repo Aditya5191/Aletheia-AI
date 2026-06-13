@@ -27,7 +27,7 @@ def get_chart_schemas(reason: str = "") -> str:
 if __name__ == "__main__":
     port = os.environ.get("PORT")
     if port:
-        # Railway / cloud deployment: run SSE transport over HTTP
+        # Cloud deployment: run SSE transport over HTTP
         mcp.run(transport="sse", host="0.0.0.0", port=int(port))
     else:
         # Local: run stdio transport (Claude Desktop, Cursor)
