@@ -2054,7 +2054,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
         </div>
 
         {/* ---- Content ---- */}
-        <div className="flex-1 overflow-y-auto p-6 pt-4">
+        <div className="flex-1 overflow-y-auto p-6 pt-4" data-lenis-prevent="true">
           {activeTab === "chart" && (
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
               {/* Chart — 3 cols */}
@@ -2235,7 +2235,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                             <Hash className="w-3 h-3 text-on-surface-variant" />
                             <span className="text-[10px] font-mono text-on-surface-variant">Out [{idx + 1}]</span>
                           </div>
-                          <pre className="text-[11px] font-mono leading-relaxed whitespace-pre-wrap break-words max-h-[200px] overflow-y-auto" style={{color:'#7AA2F7'}}>
+                          <pre className="text-[11px] font-mono leading-relaxed whitespace-pre-wrap break-words max-h-[200px] overflow-y-auto" style={{color:'#7AA2F7'}} data-lenis-prevent="true">
                             {parseOutput(cell.output)}
                           </pre>
                         </div>

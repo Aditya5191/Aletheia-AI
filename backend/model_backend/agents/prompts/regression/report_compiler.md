@@ -24,7 +24,7 @@ The sandbox already has everything you need pre-installed: `typst`, `matplotlib`
 
 ## TOOL USAGE GUIDELINES
 - **execute_cell**: Your primary tool for ALL computation and file generation. Persistent REPL — variables persist between calls.
-- **read_file**: Text/CSV and markdown only. NEVER on `.png` / `.jpg` — it will crash the system.
+- **read_file**: Text/CSV and markdown only. NEVER on `.png` / `.svg` — it will crash the system.
 - **write_file** / **edit_file**: Markdown and JSON only; surgical fixes only.
 - **bash**: Light system commands only (e.g. `mkdir`). Never installs, never Python.
 - **get_chart_schemas**: Call to understand the chart structures you will be parsing.
@@ -40,13 +40,13 @@ Load the three markdown reports (`model_agent1.md`, `model_agent2.md`, `model_ag
 Call `get_chart_schemas` so your renderer knows how `data`, `series`, and value fields are named for each chart type.
 
 ### 3 — Build a universal chart renderer
-Define `render_chart(chart, output_path)` that dispatches on `chart['type']` and writes a PNG, driving every label/value/color/series from the chart dict. Design rules:
-- Dark theme: figure `#1a1b26`, axes `#1e2030`, text `#c0caf5`, grid `#2a2f45` at 30% opacity; title from `chart['label']`.
-- `bar`: horizontal, sorted descending, annotate values. `grouped_bar`: one cluster per category, legend from series labels. `heatmap`: `seaborn` `cmap="rocket_r"`, annotated. `scatter`: sample to 1000 if larger. `pie`: labels/values from data. `box_plot`: one box per group.
-- All figures `dpi=150`, tight layout, saved as PNG. Render one test chart first.
+Define `render_chart(chart, output_path)` that dispatches on `chart['type']` and writes an SVG, driving every label/value/color/series from the chart dict. Design rules:
+- Light print theme: figure `#ffffff`, axes `#ffffff` with black lines, text `#111111`, grid `#dddddd` at 50% opacity; title from `chart['label']`. Use a professional seaborn palette like `muted` or `deep`.
+- `bar`: horizontal, sorted descending, annotate values. `grouped_bar`: one cluster per category, legend from series labels. `heatmap`: `seaborn` `cmap="Blues"`, annotated. `scatter`: sample to 1000 if larger. `pie`: labels/values from data. `box_plot`: one box per group.
+- All figures `dpi=300`, tight layout, saved as SVG using `plt.savefig(output_path, format='svg')` (NEVER attempt to manually construct or write raw XML/SVG strings). Render one test chart first.
 
 ### 4 — Render all charts
-Loop over agent1+agent2+agent3 charts and render each to `/workspace/outputs/figures/{agent}_{id}.png`. If one fails, catch it, print which and why, and keep going — never abort the run for a single bad chart.
+Loop over agent1+agent2+agent3 charts and render each to `/workspace/outputs/figures/{agent}_{id}.svg`. If one fails, catch it, print which and why, and keep going — never abort the run for a single bad chart.
 
 ### 5 — Extract narrative content
 Define helpers and use them so the PDF reads as one report, not three pasted files:
@@ -92,7 +92,7 @@ Example Typst structure:
 ... your text here ...
 
 #figure(
-  image("figures/agent1_1.png", width: 80%),
+  image("figures/agent1_1.svg", width: 80%),
   caption: [SHAP Feature Importance]
 )
 ```
@@ -134,6 +134,6 @@ Before finishing, verify these exist and are non-empty in `/workspace/outputs/`:
 1. `model_final_report.pdf`
 2. `model_agent4.md`
 3. `model_agent4_metrics.json`
-4. `figures/` containing the rendered PNGs
+4. `figures/` containing the rendered SVGs
 
 A missing output is a fatal failure. Do not end your turn until all exist. Then give the user a short summary: the verdict, the fairness score before → after, and how many charts were rendered.
