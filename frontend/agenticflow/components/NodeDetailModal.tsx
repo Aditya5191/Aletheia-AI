@@ -22,6 +22,7 @@ import {
   Play,
   Hash,
   Download,
+  Info,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -59,6 +60,7 @@ interface ChartDef {
   id?: string;
   label?: string;
   title?: string;
+  explanation?: string;
   type?: "line" | "bar" | "grouped_bar" | "stacked_bar" | "box_plot" | "pie" | "heatmap" | "scatter";
   data: any[]; 
   color?: string;
@@ -93,6 +95,7 @@ const nodeDetails: Record<string, NodeDetailData> = {
       {
         id: "disparity_score",
         label: "Disparity Trend",
+        explanation: "This chart tracks the overall disparity score over time. We can observe a steady decline in bias across recent versions, indicating that our mitigation strategies are taking effect.",
         type: "line",
         color: "#ffea7f", // warning yellow
         data: [
@@ -108,6 +111,7 @@ const nodeDetails: Record<string, NodeDetailData> = {
       {
         id: "feature_variance",
         label: "Feature Imbalance",
+        explanation: "Income shows the highest feature variance at 68%, making it the most significant proxy variable affecting the model's disparate impact.",
         type: "bar",
         color: "#FF691A", // primary purple
         data: [
@@ -1673,7 +1677,7 @@ const iconMap = {
 /*  Chart Section with Tabs                                            */
 /* ------------------------------------------------------------------ */
 
-function ChartSection({ charts }: { charts: ChartDef[] }) {
+function ChartSection({ charts, onActiveChartChange }: { charts: ChartDef[], onActiveChartChange?: (chart: ChartDef | null) => void }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -1691,6 +1695,10 @@ function ChartSection({ charts }: { charts: ChartDef[] }) {
   // Clamp activeIdx if charts array shrinks
   const safeIdx = Math.min(activeIdx, charts.length - 1);
   const activeChart = charts.length > 0 ? charts[safeIdx] : null;
+
+  useEffect(() => {
+    onActiveChartChange?.(activeChart);
+  }, [activeChart, onActiveChartChange]);
 
   if (!activeChart) {
     return (
@@ -1745,9 +1753,12 @@ function ChartSection({ charts }: { charts: ChartDef[] }) {
       </div>
 
       {/* Chart Render */}
-      <div className="flex-1 min-h-[240px]">
-        {/* We use key to force re-render when switching so animations play nicely */}
-        <InteractiveChart key={activeChart.id} chartDef={activeChart} />
+      <div className="flex-1 min-h-[240px] flex flex-col">
+        <div className="flex-1 relative min-h-0">
+          {/* We use key to force re-render when switching so animations play nicely */}
+          <InteractiveChart key={activeChart.id} chartDef={activeChart} />
+        </div>
+        {/* Explanation Box below the chart was moved to parent */}
       </div>
     </div>
   );
@@ -1780,6 +1791,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
   } : undefined);
 
   const [activeTab, setActiveTab] = useState<"chart" | "review" | "code">(isReportNode ? "review" : "chart");
+  const [activeChartData, setActiveChartData] = useState<ChartDef | null>(null);
   const [copied, setCopied] = useState(false);
   const [copiedCellIdx, setCopiedCellIdx] = useState<number | null>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -2066,7 +2078,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                     <p className="text-xs text-on-surface-variant mt-1">Waiting for agent to generate data</p>
                   </div>
                 ) : (
-                  <ChartSection charts={chartsToRender} />
+                  <ChartSection charts={chartsToRender} onActiveChartChange={setActiveChartData} />
                 )}
               </div>
 
@@ -2105,6 +2117,19 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                     </div>
                   ))}
                 </div>
+
+                {/* Explanation Box below metrics */}
+                {activeChartData?.explanation && (
+                  <div className="mt-1 bg-surface-container rounded-xl border border-outline-variant p-4 flex flex-col gap-2 hover:border-primary-container/40 transition-colors">
+                    <h5 className="text-xs text-primary uppercase tracking-widest font-bold flex items-center gap-1.5">
+                      <Info className="w-4 h-4" />
+                      Explanation
+                    </h5>
+                    <p className="text-sm text-on-surface leading-relaxed tracking-wide">
+                      {activeChartData.explanation}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}

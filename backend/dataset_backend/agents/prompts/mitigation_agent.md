@@ -163,7 +163,8 @@ You will pair each of Agent 2's charts with a new "After" series using your comp
 ---
 
 ### 6 — Fetch Visualization Schemas
-Call the `get_chart_schemas` tool to retrieve ALL supported chart types and their exact required data structures. Study every schema before writing any JSON in Step 7.
+Call the `get_chart_schemas` tool to retrieve ALL supported chart types and their exact required data structures. 
+CRITICAL: When generating your `_charts.json`, you MUST include an `explanation` field for EVERY chart. This should be a short, 1-2 sentence plain-English explanation of what the chart shows and why it matters. Study every schema before writing any JSON in Step 7.
 
 ---
 

@@ -60,6 +60,8 @@ Compute the after-state and the deltas: PPR/FPR/TPR per group, DIR, SPD, FPRD, E
 Save `fixed_predictions.csv` to `/workspace/outputs/` with original prediction, calibrated prediction, predicted probability, and the protected-group columns.
 
 ### 6 — Fetch schemas and save UI charts JSON
+
+CRITICAL: When generating your `_charts.json`, you MUST include an `explanation` field for EVERY chart. This should be a short, 1-2 sentence plain-English explanation of what the chart shows and why it matters.
 Call `get_chart_schemas`, then `write_file` → `/workspace/outputs/model_agent3_charts.json`. Minimum 5 charts, before-vs-after where possible, real values only: PPR before/after by group (grouped bar); FPR before/after by group (grouped bar, or score distribution if no ground truth); fairness metrics before/after; compliance status after; calibrated thresholds by group.
 
 ### 7 — Save UI metrics JSON

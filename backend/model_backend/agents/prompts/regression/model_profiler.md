@@ -54,7 +54,8 @@ Compute mean absolute SHAP values on up to 500 rows and rank them. If `shap.Expl
 Save the dataframe (with `predicted_value`) to `/workspace/outputs/predictions.csv`.
 
 ### 6 — Fetch visualization schemas
-Call `get_chart_schemas` before writing any chart JSON.
+Call `get_chart_schemas` before writing any chart JSON. 
+CRITICAL: When generating your `_charts.json`, you MUST include an `explanation` field for EVERY chart. This should be a short, 1-2 sentence plain-English explanation of what the chart shows and why it matters.
 
 ### 7 — Write the model profile
 `write_file` → `/workspace/outputs/model_agent1.md`, proper markdown, with sections:

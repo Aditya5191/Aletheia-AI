@@ -92,12 +92,16 @@ Example Typst structure:
 = Executive Summary
 ... your text here ...
 
+// Loop through your all_charts array dynamically here! Do not hardcode a single image.
 #figure(
   image("figures/agent1_1.svg", width: 80%),
   caption: [SHAP Feature Importance]
 )
+#text(size: 9pt, style: "italic")[ #explanation_from_chart_json ]
 ```
-Lay it out as: cover page (ALETHEIA branding, model name) → Executive Summary (model type, fairness score before→after, most harmed group, verdict blockquote, what-found / what-fixed columns) → Model Profile section → Disparity Audit section → Recalibration section, each embedding its charts and Typst `#table` converted tables. Convert markdown tables to Typst `#table` syntax before injecting — never inject raw markdown.
+Lay it out as: cover page (ALETHEIA branding, model name) → Executive Summary (model type, fairness score before→after, most harmed group, verdict blockquote, what-found / what-fixed columns) → Model Profile section → Disparity Audit section → Recalibration section. 
+**CRITICAL**: You MUST iterate through your `all_charts` array, and for EVERY single chart, generate a `#figure` block embedding its generated SVG file (`figures/agent{num}_{idx}.svg`), and you MUST include the `explanation` field from the chart JSON as a small italicized `#text` block directly below the figure!
+Convert markdown tables to Typst `#table` syntax before injecting — never inject raw markdown.
 After writing `report.typ`, compile it to PDF using the `typst` python package:
 ```python
 import typst

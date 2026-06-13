@@ -185,7 +185,8 @@ One sentence. Plain English. Who is harmed, by how much, what the real-world con
 ---
 
 ### 6 — Fetch Visualization Schemas
-Call the `get_chart_schemas` tool to retrieve the list of supported chart types and their required data structures. You will use these schemas in Step 7.
+Call the `get_chart_schemas` tool to retrieve the list of supported chart types and their required data structures. 
+CRITICAL: When generating your `_charts.json`, you MUST include an `explanation` field for EVERY chart. This should be a short, 1-2 sentence plain-English explanation of what the chart shows and why it matters. You will use these schemas in Step 7.
 
 ---
 

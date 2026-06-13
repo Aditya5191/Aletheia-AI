@@ -51,7 +51,8 @@ You must compute, in order:
 - If you hit a Traceback, run another cell to print the variable shapes (`print(df.shape)`) and fix your logic.
 
 ### 2 — Fetch Visualization Schemas
-Call the `get_chart_schemas` tool to retrieve the list of supported chart types and their required data structures. You will use these schemas in Step 5.
+Call the `get_chart_schemas` tool to retrieve the list of supported chart types and their required data structures. 
+CRITICAL: When generating your `_charts.json`, you MUST include an `explanation` field for EVERY chart. This should be a short, 1-2 sentence plain-English explanation of what the chart shows and why it matters. You will use these schemas in Step 5.
 
 ### 3 — Write Final Report
 Based on the output generated in memory, use the `write_file` tool to save your final Dataset Profile at `/workspace/outputs/agent1.md`.

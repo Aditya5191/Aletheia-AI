@@ -9,6 +9,7 @@ Best for: Single metric comparisons across groups (e.g., False Positive Rate per
 {
   "type": "bar",
   "title": "Disparate Impact by Group",
+  "explanation": "A short, 1-2 sentence plain English explanation of what this chart shows and why it matters.",
   "color": "#9ECE6A",
   "data": [
     { "label": "Caucasian", "value": 0.85 },
@@ -25,6 +26,7 @@ Best for: Comparing two different metrics across the same groups (e.g., Before v
 {
   "type": "grouped_bar",
   "title": "Error Rates: Before vs After Mitigation",
+  "explanation": "A short, 1-2 sentence plain English explanation of what this chart shows and why it matters.",
   "series": [
     { "name": "Before", "color": "#F7768E" },
     { "name": "After", "color": "#9ECE6A" }
@@ -43,6 +45,7 @@ Best for: Showing composition of a whole (e.g., Total bias broken down by featur
 {
   "type": "stacked_bar",
   "title": "Bias Contribution by Feature",
+  "explanation": "A short, 1-2 sentence plain English explanation of what this chart shows and why it matters.",
   "series": [
     { "name": "Direct Effect", "color": "#E3B341" },
     { "name": "Indirect Effect", "color": "#7AA2F7" },
@@ -62,6 +65,7 @@ Best for: Tracking metrics over time or across continuous thresholds.
 {
   "type": "line",
   "title": "Fairness-Accuracy Tradeoff Curve",
+  "explanation": "A short, 1-2 sentence plain English explanation of what this chart shows and why it matters.",
   "xAxisLabel": "Classification Threshold",
   "yAxisLabel": "Score",
   "series": [
@@ -84,6 +88,7 @@ Best for: Showing correlation between two continuous variables (e.g., Risk Score
 {
   "type": "scatter",
   "title": "Risk Score Calibration",
+  "explanation": "A short, 1-2 sentence plain English explanation of what this chart shows and why it matters.",
   "xAxisLabel": "Predicted Risk Score",
   "yAxisLabel": "Actual Default Rate",
   "series": [
@@ -105,6 +110,7 @@ Best for: Showing statistical distribution, variance, and outliers within groups
 {
   "type": "box_plot",
   "title": "Prediction Variance by Demographic",
+  "explanation": "A short, 1-2 sentence plain English explanation of what this chart shows and why it matters.",
   "color": "#BB9AF7",
   "data": [
     { 
@@ -135,6 +141,7 @@ Best for: Identifying proxies by showing correlations between all features.
 {
   "type": "heatmap",
   "title": "Feature Correlation Matrix",
+  "explanation": "A short, 1-2 sentence plain English explanation of what this chart shows and why it matters.",
   "colorScale": ["#15171B", "#7AA2F7", "#F7768E"], // Zero, Positive, Negative
   "xLabels": ["Age", "Income", "Zip Code", "Race"],
   "yLabels": ["Age", "Income", "Zip Code", "Race"],
@@ -153,6 +160,7 @@ Best for: Showing step-by-step reduction of bias through mitigation stages.
 {
   "type": "waterfall",
   "title": "Disparate Impact Mitigation Journey",
+  "explanation": "A short, 1-2 sentence plain English explanation of what this chart shows and why it matters.",
   "yAxisLabel": "Disparity Score",
   "data": [
     { "label": "Baseline", "value": 0.45, "type": "total", "color": "#F7768E" },

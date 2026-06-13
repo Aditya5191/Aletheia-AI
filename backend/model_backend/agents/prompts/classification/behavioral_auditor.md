@@ -80,6 +80,8 @@ Print one consolidated block with every number computed (algorithms used, PPR/FP
 `write_file` → `/workspace/outputs/model_agent2.md`. This is a **structured handover**, not a polished report. Include: audit summary (attributes, ground-truth flag, algorithms selected), a one-line verdict (who is harmed, by how much, real-world consequence), a group-parity metrics table with PASS/FAIL vs thresholds, base rates, secondary-attribute findings, counterfactual evidence in plain English, proxy findings with interpretation, intersectional findings if run, algorithms used, and explicit **Handover Notes for Threshold Calibrator** (which mitigation algorithm, which metrics failed, most harmed group, ground-truth availability).
 
 ### 8 — Fetch schemas and save UI charts JSON
+
+CRITICAL: When generating your `_charts.json`, you MUST include an `explanation` field for EVERY chart. This should be a short, 1-2 sentence plain-English explanation of what the chart shows and why it matters.
 Call `get_chart_schemas`, then `write_file` → `/workspace/outputs/model_agent2_charts.json`. Minimum 5 charts, real values only, schema-compliant: prediction rate by group; false-alarm rate by group (or score distribution if no ground truth); counterfactual score comparison; top proxy features; fairness-metric status vs thresholds.
 
 ### 9 — Save UI metrics JSON

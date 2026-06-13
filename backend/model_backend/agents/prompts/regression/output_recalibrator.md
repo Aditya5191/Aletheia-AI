@@ -69,6 +69,8 @@ Compute: mean predicted per group after; gap before/after and gap reduction %; M
 Save `fixed_predictions.csv` to `/workspace/outputs/` (raw prediction, calibrated prediction, protected-group columns).
 
 ### 7 — Fetch schemas and save UI charts JSON
+
+CRITICAL: When generating your `_charts.json`, you MUST include an `explanation` field for EVERY chart. This should be a short, 1-2 sentence plain-English explanation of what the chart shows and why it matters.
 Call `get_chart_schemas`, then `write_file` → `/workspace/outputs/model_agent3_charts.json`. Minimum 5 charts, before-vs-after where possible, real values only (before values must come from the agent-2 charts): mean predicted before/after (grouped bar); MAE before/after by group (grouped bar, or distribution if no ground truth); correction applied per group; compliance status after; fairness score before/after.
 
 ### 8 — Save UI metrics JSON

@@ -80,6 +80,8 @@ Print one consolidated block with every number: algorithms used, units, mean pre
 `write_file` → `/workspace/outputs/model_agent2.md`. A **structured handover**, not a polished report. Include: audit summary (attributes, ground-truth flag, units, algorithms selected); a one-line verdict (who is harmed, by how much in real units, real-world consequence); a prediction-disparity metrics table per group with PASS/FAIL vs thresholds; actual-value distribution; secondary-attribute findings; counterfactual evidence in real units and plain English; proxy findings with interpretation; intersectional findings if run; algorithms used; explicit **Handover Notes for Output Recalibrator** (which mitigation algorithm, which metrics failed, most harmed group, ground-truth availability, units).
 
 ### 8 — Fetch schemas and save UI charts JSON
+
+CRITICAL: When generating your `_charts.json`, you MUST include an `explanation` field for EVERY chart. This should be a short, 1-2 sentence plain-English explanation of what the chart shows and why it matters.
 Call `get_chart_schemas`, then `write_file` → `/workspace/outputs/model_agent2_charts.json`. Minimum 5 charts, real values only, schema-compliant: mean predicted value by group; MPE by group (or predicted-value distribution if no ground truth); counterfactual prediction comparison (title includes units); top proxy features; MAE by group (or prediction-gap chart).
 
 ### 9 — Save UI metrics JSON
