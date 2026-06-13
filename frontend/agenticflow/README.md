@@ -18,8 +18,9 @@ AgenticFlow is a high-fidelity, professional AI observability and orchestration 
 - **Disparity Visualization:** Intelligent path highlighting that turns nodes and edges **Red** when the Fairness Adjudicator detects bias in the data.
 
 ### 3. Deep-Dive Observability Modal
-- **Analytics Tab:** High-performance SVG charts (Line, Pie, Scatter, and fully-responsive Interactive Bar Charts).
+- **Analytics Tab:** High-performance SVG charts (Line, Pie, Scatter, and fully-responsive Interactive Bar Charts) with embedded context-aware explanations.
 - **Interactive Heatmaps:** Specialized correlation matrix visualizer with **Dynamic Contrast Normalization** and a live color legend bar.
+- **Scalable Tool Logs:** A scrollable, non-squishing tool-call trace viewer capable of rendering large agent conversational histories without breaking layout.
 - **Code Tab:** Real-time execution notebook. Captured AI-generated Python logic (pandas, sklearn) as it runs in the Docker Sandbox, with status tracking and 1-click copy functionality.
 - **Review Tab:** Comprehensive markdown-based reports providing qualitative insights into agent verdicts.
 - **Report Compiler:** Dedicated final node that aggregates all previous agent outputs, generates a stylized HTML/CSS template, and compiles a publication-quality **PDF** via WeasyPrint directly from the frontend.

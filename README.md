@@ -256,6 +256,8 @@ The frontend is a live forensic observability dashboard built in Next.js with re
 - Drag-and-drop CSV upload with instant dataset preview
 - Interactive agent node graph — click any agent to inspect its live output, charts, and code (works identically for dataset and model agents)
 - Deep-dive modal per agent showing Analytics, Review, and Code tabs
+- **Embedded Graph Explanations** — dynamic contextual explanations beautifully integrated below charts to enhance metric readability without obstructing visuals
+- **Scalable Tool Tracing** — a scrollable, robust tool-call log viewer within agent nodes that scales gracefully for long-running pipelines
 - Dynamic chart rendering from agent-generated JSON using the chart schema system
 - Plain-English findings panel with colour-coded severity (error/warning/success)
 - One-click download for the PDF report, fixed CSV / fixed predictions, and the drop-in threshold or correction map
