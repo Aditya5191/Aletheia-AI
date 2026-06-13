@@ -1,11 +1,57 @@
+# ── Python ──
 .venv/
-outputs/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# ── Secrets & environment ──
+.env
+.env.*
+!.env.example
 .secrets/
 secrets/
-__pycache__/
-*.pyc
-.env
-.agents
-test_for_model_audit/
+*credentials*.json
+
+# ── Node / Next.js (frontend) ──
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── Runtime / generated artifacts ──
+outputs/
 model_outputs/
 model_upload/
+test_for_model_audit/
+*.log
+logs/
+
+# ── Local tooling / AI assistant config ──
+.claude/
+.gemini/
+.agents
+skills-lock.json
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE / editors ──
+.vscode/
+.idea/
+*.swp
+*.swo
