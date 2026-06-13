@@ -165,6 +165,8 @@ export default function FlowCanvas() {
   const [isLocked, setIsLocked] = useState(false);
   const [discoveredAttributes, setDiscoveredAttributes] = useState<string[]>([]);
 
+
+
   const nodeTypes = useMemo(() => ({ 
     agent: AgentNode, 
     attribute: AttributeNode, 
@@ -183,15 +185,18 @@ export default function FlowCanvas() {
   }, [setNodes]);
 
   const handleUploadComplete = useCallback((fileName: string) => {
-    setEdges((eds) =>
-      eds.map((e) => {
-        if (e.id === "e-upload-docker") {
-          return { ...e, animated: true, style: { stroke: "#4edea3", strokeWidth: 2 } };
-        }
-        return e;
-      })
-    );
-  }, [setEdges]);
+
+    
+    setNodes(initialNodes);
+    setDiscoveredAttributes([]);
+
+    setEdges(initialEdges.map((e) => {
+      if (e.id === "e-upload-docker") {
+        return { ...e, animated: true, style: { stroke: "#4edea3", strokeWidth: 2 } };
+      }
+      return e;
+    }));
+  }, [setNodes, setEdges]);
 
   // Horizontal gap between agent nodes (must account for agent card width ~280px + attribute column)
   const AGENT_GAP_X = 600;
@@ -210,8 +215,11 @@ export default function FlowCanvas() {
           : discoveredAttributes;
 
         setNodes((nds) => {
+          const updatedNodes = nds.map((n) =>
+            n.id === nodeId ? ({ ...n, data: { ...n.data, hasRunButton: false } } as typeof n) : n
+          );
           // Find the source node's current position
-          const sourceNode = nds.find(n => n.id === "data-inspector");
+          const sourceNode = updatedNodes.find(n => n.id === "data-inspector");
           const sourceX = sourceNode?.position?.x ?? 800;
           const sourceY = sourceNode?.position?.y ?? 170;
 
@@ -238,10 +246,10 @@ export default function FlowCanvas() {
             data: { ...agentDefinitions["fairness-adjudicator"].data, onRunComplete: handleRunComplete, toolCalls: [], isAgentRunning: true }
           };
 
-          const existingIds = new Set(nds.map(n => n.id));
+          const existingIds = new Set(updatedNodes.map(n => n.id));
           const newAttrFiltered = newAttrNodes.filter(n => !existingIds.has(n.id));
           const allNew = existingIds.has(agent2.id) ? newAttrFiltered : [...newAttrFiltered, agent2];
-          return [...nds, ...allNew];
+          return [...updatedNodes, ...allNew];
         });
 
         // Build edges
@@ -288,10 +296,11 @@ export default function FlowCanvas() {
         setNodes((nds) => {
           // Color disparity nodes
           const updated = nds.map((n) => {
-            if (disparityNodes.includes(n.id)) {
-              return { ...n, data: { ...n.data, color: "#ff5252" } } as typeof n;
+            const nextN = n.id === nodeId ? ({ ...n, data: { ...n.data, hasRunButton: false } } as typeof n) : n;
+            if (disparityNodes.includes(nextN.id)) {
+              return { ...nextN, data: { ...nextN.data, color: "#ff5252" } } as typeof nextN;
             }
-            return n;
+            return nextN;
           });
 
           // Find Agent 2's current position to place Agent 3 relative to it
@@ -326,10 +335,11 @@ export default function FlowCanvas() {
         setNodes((nds) => {
           // Color fixed nodes
           const updated = nds.map((n) => {
-            if (fixedNodes.includes(n.id)) {
-              return { ...n, data: { ...n.data, color: "#d0bcff" } } as typeof n;
+            const nextN = n.id === nodeId ? ({ ...n, data: { ...n.data, hasRunButton: false } } as typeof n) : n;
+            if (fixedNodes.includes(nextN.id)) {
+              return { ...nextN, data: { ...nextN.data, color: "#d0bcff" } } as typeof nextN;
             }
-            return n;
+            return nextN;
           });
 
           // Find Agent 3's current position to place Agent 4 relative to it
@@ -360,6 +370,7 @@ export default function FlowCanvas() {
 
       } else if (nodeId === "report-writer") {
         console.log("Final Report Generated");
+        setNodes((nds) => nds.map((n) => n.id === nodeId ? ({ ...n, data: { ...n.data, hasRunButton: false } } as typeof n) : n));
       }
     },
     [setNodes, setEdges, discoveredAttributes]

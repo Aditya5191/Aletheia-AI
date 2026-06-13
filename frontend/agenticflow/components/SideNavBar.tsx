@@ -7,6 +7,7 @@ import {
   Zap,
   Fingerprint,
   Compass,
+  Library,
 } from "lucide-react";
 
 import { useViewMode } from "./ViewModeContext";
@@ -58,21 +59,34 @@ export default function SideNavBar() {
           <Fingerprint className={`w-5 h-5 ${currentView === "model" ? "text-secondary" : "text-gray-500"}`} />
           <span className="font-bold tracking-tight">Model Auditor</span>
         </button>
+
+        <button
+          onClick={() => setCurrentView("library")}
+          className={`w-full flex items-center gap-3 px-4 py-3 transition-all duration-200 cursor-pointer ${
+            currentView === "library"
+              ? "bg-emerald-500/10 text-emerald-400 border-r-4 border-emerald-500 shadow-[inset_1px_0_0_0_rgba(16,185,129,0.3)]"
+              : "text-gray-500 hover:text-gray-200 hover:bg-surface-container"
+          }`}
+        >
+          <Library className={`w-5 h-5 ${currentView === "library" ? "text-emerald-400" : "text-gray-500"}`} />
+          <span className="font-bold tracking-tight">Algorithm Library</span>
+        </button>
       </div>
 
       {/* Bottom Section */}
       <div className="px-6 mt-auto whitespace-nowrap">
         <div className="flex flex-col gap-2 pt-4 border-t border-outline-variant">
+
           <button
             onClick={() => setShowTour(true)}
-            className="flex items-center gap-3 text-gray-500 hover:text-gray-300 transition-colors text-xs cursor-pointer w-full"
+            className="flex items-center gap-3 px-2 py-2 rounded-md text-gray-400 hover:text-gray-200 hover:bg-surface-container transition-colors text-xs font-semibold cursor-pointer w-full"
           >
             <Compass className="w-4 h-4" />
             Tour
           </button>
           <a
             href="#"
-            className="flex items-center gap-3 text-gray-500 hover:text-gray-300 transition-colors text-xs"
+            className="flex items-center gap-3 px-2 py-2 rounded-md text-gray-400 hover:text-gray-200 hover:bg-surface-container transition-colors text-xs font-semibold"
           >
             <HelpCircle className="w-4 h-4" />
             Support

@@ -138,6 +138,8 @@ export default function ModelFlowCanvas() {
   const [modelType, setModelType] = useState<"classification" | "regression">("classification");
   const [discoveredAttributes, setDiscoveredAttributes] = useState<string[]>([]);
 
+
+
   const nodeTypes = useMemo(() => ({
     agent: AgentNode,
     attribute: AttributeNode,
@@ -158,17 +160,19 @@ export default function ModelFlowCanvas() {
   }, [setNodes]);
 
   const handleUploadComplete = useCallback((uploadedModelType: string) => {
-    if (uploadedModelType === "regression") setModelType("regression");
-    else setModelType("classification");
 
-    setEdges((eds) =>
-      eds.map((e) =>
-        e.id === "e-upload-docker"
-          ? { ...e, animated: true, style: { stroke: "#64c8ff", strokeWidth: 2 } }
-          : e
-      )
-    );
-  }, [setEdges]);
+
+    setNodes(makeInitialNodes());
+    setDiscoveredAttributes([]);
+    const newModelType = uploadedModelType === "regression" ? "regression" : "classification";
+    setModelType(newModelType);
+
+    setEdges(initialEdges.map((e) =>
+      e.id === "e-upload-docker"
+        ? { ...e, animated: true, style: { stroke: "#64c8ff", strokeWidth: 2 } }
+        : e
+    ));
+  }, [setNodes, setEdges]);
 
   // Update agent1 title when modelType changes
   useEffect(() => {
@@ -193,7 +197,8 @@ export default function ModelFlowCanvas() {
         const attrs = (dynamicAttrs && dynamicAttrs.length > 0) ? dynamicAttrs : discoveredAttributes;
 
         setNodes((nds) => {
-          const src = nds.find((n) => n.id === "model-inspector");
+          const updatedNodes = nds.map((n) => n.id === nodeId ? ({ ...n, data: { ...n.data, hasRunButton: false } } as typeof n) : n);
+          const src = updatedNodes.find((n) => n.id === "model-inspector");
           const srcX = src?.position?.x ?? 820;
           const srcY = src?.position?.y ?? 170;
 
@@ -226,10 +231,10 @@ export default function ModelFlowCanvas() {
             },
           };
 
-          const existingIds = new Set(nds.map((n) => n.id));
+          const existingIds = new Set(updatedNodes.map((n) => n.id));
           const newAttr = attrNodes.filter((n) => !existingIds.has(n.id));
           const newNodes = existingIds.has("behavioral-auditor") ? newAttr : [...newAttr, agent2];
-          return [...nds, ...newNodes];
+          return [...updatedNodes, ...newNodes];
         });
 
         // Edges: inspector → attrs → auditor (or direct)
@@ -252,9 +257,10 @@ export default function ModelFlowCanvas() {
       } else if (nodeId === "behavioral-auditor") {
         setNodes((nds) => {
           // Mark disparity attributes red
-          const updated = nds.map((n) =>
-            n.id.startsWith("attr-") ? { ...n, data: { ...n.data, color: "#ff5252" } } as AttributeNodeType : n
-          );
+          const updated = nds.map((n) => {
+            const nextN = n.id === nodeId ? ({ ...n, data: { ...n.data, hasRunButton: false } } as typeof n) : n;
+            return nextN.id.startsWith("attr-") ? { ...nextN, data: { ...nextN.data, color: "#ff5252" } } as AttributeNodeType : nextN;
+          });
           const src = updated.find((n) => n.id === "behavioral-auditor");
           const srcX = src?.position?.x ?? 1420;
           const srcY = src?.position?.y ?? 170;
@@ -287,9 +293,10 @@ export default function ModelFlowCanvas() {
       } else if (nodeId === "threshold-calibrator") {
         setNodes((nds) => {
           // Mark attrs purple (mitigated)
-          const updated = nds.map((n) =>
-            n.id.startsWith("attr-") ? { ...n, data: { ...n.data, color: "#d0bcff" } } as AttributeNodeType : n
-          );
+          const updated = nds.map((n) => {
+            const nextN = n.id === nodeId ? ({ ...n, data: { ...n.data, hasRunButton: false } } as typeof n) : n;
+            return nextN.id.startsWith("attr-") ? { ...nextN, data: { ...nextN.data, color: "#d0bcff" } } as AttributeNodeType : nextN;
+          });
           const src = updated.find((n) => n.id === "threshold-calibrator");
           const srcX = src?.position?.x ?? 1820;
           const srcY = src?.position?.y ?? 170;
@@ -324,6 +331,7 @@ export default function ModelFlowCanvas() {
 
       } else if (nodeId === "report-compiler") {
         console.log("[ModelFlowCanvas] Audit complete.");
+        setNodes((nds) => nds.map((n) => n.id === nodeId ? ({ ...n, data: { ...n.data, hasRunButton: false } } as typeof n) : n));
       }
     },
     [setNodes, setEdges, modelType, discoveredAttributes]

@@ -109,15 +109,6 @@ export default function TopAppBar() {
           />
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-1 border-l border-outline-variant pl-6">
-          <button className="px-3 py-1.5 text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">
-            Execute
-          </button>
-          <button className="px-4 py-1.5 text-sm font-semibold bg-primary hover:bg-primary text-white rounded-md transition-colors shadow-lg shadow-primary/20 cursor-pointer">
-            Deploy
-          </button>
-        </div>
 
         {/* Icon Buttons */}
         <div className="flex items-center gap-1 border-l border-outline-variant pl-6">
@@ -237,8 +228,8 @@ export default function TopAppBar() {
             {showProfile && (
               <div className="absolute right-0 mt-3 w-56 bg-surface border border-outline-variant rounded-xl shadow-2xl shadow-black/80 py-2 z-[110] animate-in fade-in zoom-in duration-200">
                 <div className="px-4 py-3 border-b border-outline-variant mb-1">
-                  <p className="text-sm font-bold text-white">Rushil</p>
-                  <p className="text-xs text-gray-500 truncate">rushil@agenticflow.ai</p>
+                  <p className="text-sm font-bold text-white">Techno Path</p>
+                  <p className="text-xs text-gray-500 truncate">technopath@agenticflow.ai</p>
                 </div>
                 <div className="px-2">
                   <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-primary/10 transition-all text-sm group">
