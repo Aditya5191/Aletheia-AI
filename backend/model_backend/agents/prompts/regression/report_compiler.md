@@ -108,7 +108,24 @@ Confirm the PDF exists and print its size.
 `write_file` → `/workspace/outputs/model_agent4.md`: pipeline verdict (verbatim one-liner), fairness score before/after/improvement, What Was Found, What Was Fixed, What Remains, a metrics summary table, a short "how to use the correction map" snippet, and an Output Files table listing `model_final_report.pdf`, `model_agent1.md`, `model_agent2.md`, `model_agent3.md`, `fixed_predictions.csv`, `correction_map.json`.
 
 ### 8 — Save the final UI metrics JSON
-`write_file` → `/workspace/outputs/model_agent4_metrics.json` using the `metrics` + `findings` (`text` key) contract — the 4 numbers that best summarize the whole pipeline, plus success/warning/error/success findings drawn from real outputs.
+`write_file` → `/workspace/outputs/model_agent4_metrics.json`. Use this EXACT shape — a `metrics` array and a `findings` array where findings use the `text` key. Populate from real values; do NOT copy the wording, and do NOT turn `metrics` into an object:
+```json
+{
+  "metrics": [
+    { "label": "Fairness Score", "value": "38 → 84 / 100" },
+    { "label": "Most Harmed Group", "value": "Female" },
+    { "label": "Gap Reduction", "value": "88%" },
+    { "label": "Report", "value": "PDF ready" }
+  ],
+  "findings": [
+    { "severity": "success", "text": "..." },
+    { "severity": "warning", "text": "..." },
+    { "severity": "error",   "text": "..." },
+    { "severity": "success", "text": "..." }
+  ]
+}
+```
+The 4 metrics should summarize the whole pipeline. No placeholders in the final file.
 
 ---
 

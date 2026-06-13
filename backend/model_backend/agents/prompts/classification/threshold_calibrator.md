@@ -63,7 +63,23 @@ Save `fixed_predictions.csv` to `/workspace/outputs/` with original prediction, 
 Call `get_chart_schemas`, then `write_file` → `/workspace/outputs/model_agent3_charts.json`. Minimum 5 charts, before-vs-after where possible, real values only: PPR before/after by group (grouped bar); FPR before/after by group (grouped bar, or score distribution if no ground truth); fairness metrics before/after; compliance status after; calibrated thresholds by group.
 
 ### 7 — Save UI metrics JSON
-`write_file` → `/workspace/outputs/model_agent3_metrics.json`, using the `metrics` + `findings` (`text` key) contract. Lead with the headline: gap reduction, most-harmed-group before→after, accuracy trade-off, algorithm applied.
+`write_file` → `/workspace/outputs/model_agent3_metrics.json`. Use this EXACT shape — a `metrics` array and a `findings` array where findings use the `text` key. Populate from real values; do NOT copy the wording, and do NOT turn `metrics` into an object:
+```json
+{
+  "metrics": [
+    { "label": "Gap Reduction", "value": "83%" },
+    { "label": "Most Harmed Group", "value": "Female: 29% → 46%" },
+    { "label": "Accuracy Trade-Off", "value": "-1.7%" },
+    { "label": "Algorithm Applied", "value": "equality_of_opportunity" }
+  ],
+  "findings": [
+    { "severity": "success", "text": "..." },
+    { "severity": "warning", "text": "..." },
+    { "severity": "success", "text": "..." }
+  ]
+}
+```
+Lead with the headline: gap reduction, most-harmed-group before→after, accuracy trade-off. No placeholders in the final file.
 
 ### 8 — Write the mitigation report
 `write_file` → `/workspace/outputs/model_agent3.md` with sections: Overall Result (score before → after); What Was Actually Fixed; Accuracy Trade-off; What Could Not Be Fully Fixed; Threshold Map (with a short how-to-use snippet); Before-vs-After comparison tables; Fairness Metrics; Compliance Status; Recommended Next Steps; Pipeline Run Summary. Use real calibration numbers throughout.

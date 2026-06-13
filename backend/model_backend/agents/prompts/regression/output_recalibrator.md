@@ -72,7 +72,24 @@ Save `fixed_predictions.csv` to `/workspace/outputs/` (raw prediction, calibrate
 Call `get_chart_schemas`, then `write_file` → `/workspace/outputs/model_agent3_charts.json`. Minimum 5 charts, before-vs-after where possible, real values only (before values must come from the agent-2 charts): mean predicted before/after (grouped bar); MAE before/after by group (grouped bar, or distribution if no ground truth); correction applied per group; compliance status after; fairness score before/after.
 
 ### 8 — Save UI metrics JSON
-`write_file` → `/workspace/outputs/model_agent3_metrics.json`, using the `metrics` + `findings` (`text` key) contract. Lead with prediction-gap reduction, most-harmed-group before→after in units, MAE change, algorithm applied.
+`write_file` → `/workspace/outputs/model_agent3_metrics.json`. Use this EXACT shape — a `metrics` array and a `findings` array where findings use the `text` key. Populate from real values; do NOT copy the wording, and do NOT turn `metrics` into an object:
+```json
+{
+  "metrics": [
+    { "label": "Prediction Gap Reduced", "value": "88%" },
+    { "label": "Most Harmed Group", "value": "Female: $63,800 → $71,900" },
+    { "label": "MAE Change", "value": "+$120 (negligible)" },
+    { "label": "Algorithm Applied", "value": "causal_fair_inference" }
+  ],
+  "findings": [
+    { "severity": "success", "text": "..." },
+    { "severity": "warning", "text": "..." },
+    { "severity": "error",   "text": "..." },
+    { "severity": "success", "text": "..." }
+  ]
+}
+```
+Lead with prediction-gap reduction, most-harmed-group before→after in units, MAE change. No placeholders in the final file.
 
 ### 9 — Write the recalibration report
 `write_file` → `/workspace/outputs/model_agent3.md` with sections: Overall Result (score before → after); What Was Actually Fixed; Accuracy Trade-off (state the MAE delta and why it should be small); What Could Not Be Fully Fixed (proxy features in weights, root cause unaddressed); Correction Map (table + a short how-to-use snippet); Before-vs-After comparison tables; Disparity Metrics; Compliance Status; Recommended Next Steps; Pipeline Run Summary. Use real numbers and units throughout.

@@ -83,7 +83,23 @@ Print one consolidated block with every number computed (algorithms used, PPR/FP
 Call `get_chart_schemas`, then `write_file` → `/workspace/outputs/model_agent2_charts.json`. Minimum 5 charts, real values only, schema-compliant: prediction rate by group; false-alarm rate by group (or score distribution if no ground truth); counterfactual score comparison; top proxy features; fairness-metric status vs thresholds.
 
 ### 9 — Save UI metrics JSON
-`write_file` → `/workspace/outputs/model_agent2_metrics.json`, using the `metrics` + `findings` (with `text` key) contract. Lead findings with the human consequence — most harmed group and its number, the gap, the counterfactual delta, the algorithm selected.
+`write_file` → `/workspace/outputs/model_agent2_metrics.json`. Use this EXACT shape — a `metrics` array and a `findings` array where findings use the `text` key. Populate from real values; do NOT copy the wording, and do NOT turn `metrics` into an object:
+```json
+{
+  "metrics": [
+    { "label": "Most Harmed Group", "value": "Female — 29% approved" },
+    { "label": "Approval Gap (Gender)", "value": "61% vs 29%" },
+    { "label": "Direct Discrimination Signal", "value": "0.18 score delta from gender alone" },
+    { "label": "Algorithm Selected", "value": "equality_of_opportunity" }
+  ],
+  "findings": [
+    { "severity": "error",   "text": "..." },
+    { "severity": "error",   "text": "..." },
+    { "severity": "warning", "text": "..." }
+  ]
+}
+```
+Lead findings with the human consequence — most harmed group and its number, the gap, the counterfactual delta. No placeholders in the final file.
 
 ---
 

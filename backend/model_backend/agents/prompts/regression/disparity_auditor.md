@@ -83,7 +83,23 @@ Print one consolidated block with every number: algorithms used, units, mean pre
 Call `get_chart_schemas`, then `write_file` → `/workspace/outputs/model_agent2_charts.json`. Minimum 5 charts, real values only, schema-compliant: mean predicted value by group; MPE by group (or predicted-value distribution if no ground truth); counterfactual prediction comparison (title includes units); top proxy features; MAE by group (or prediction-gap chart).
 
 ### 9 — Save UI metrics JSON
-`write_file` → `/workspace/outputs/model_agent2_metrics.json`, using the `metrics` + `findings` (`text` key) contract. Lead findings with the human consequence — most harmed group, prediction gap in units, counterfactual delta, algorithm selected.
+`write_file` → `/workspace/outputs/model_agent2_metrics.json`. Use this EXACT shape — a `metrics` array and a `findings` array where findings use the `text` key. Populate from real values; do NOT copy the wording, and do NOT turn `metrics` into an object:
+```json
+{
+  "metrics": [
+    { "label": "Most Harmed Group", "value": "Female — avg $63,800 predicted" },
+    { "label": "Prediction Gap", "value": "$17,400 between groups" },
+    { "label": "Direct Discrimination Signal", "value": "$8,000 delta from gender alone" },
+    { "label": "Algorithm Selected", "value": "causal_fair_inference" }
+  ],
+  "findings": [
+    { "severity": "error",   "text": "..." },
+    { "severity": "error",   "text": "..." },
+    { "severity": "warning", "text": "..." }
+  ]
+}
+```
+Lead findings with the human consequence — most harmed group, prediction gap in units, counterfactual delta. No placeholders in the final file.
 
 ---
 

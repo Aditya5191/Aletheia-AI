@@ -71,7 +71,23 @@ Call `get_chart_schemas` before writing any chart JSON.
 `write_file` → `/workspace/outputs/model_agent1_charts.json`. Minimum 4 charts, real values only, schema-compliant: SHAP feature importance; mean predicted value by group; predicted-value distribution by group (box plot); proxy feature correlation.
 
 ### 9 — Save UI metrics JSON
-`write_file` → `/workspace/outputs/model_agent1_metrics.json`, using the `metrics` + `findings` (`text` key) contract — e.g. model type, average predicted value, prediction gap between groups, top proxy risk; findings leading with the human consequence.
+`write_file` → `/workspace/outputs/model_agent1_metrics.json`. Use this EXACT shape — a `metrics` array and a `findings` array where findings use the `text` key. Populate from real values; do NOT copy the wording, and do NOT turn `metrics` into an object:
+```json
+{
+  "metrics": [
+    { "label": "Model Type", "value": "GradientBoostingRegressor — Salary Predictor" },
+    { "label": "Average Predicted Value", "value": "$72,400" },
+    { "label": "Prediction Gap (Gender)", "value": "$81,200 vs $63,800" },
+    { "label": "Top Proxy Risk", "value": "job_title (r=0.51 with gender)" }
+  ],
+  "findings": [
+    { "severity": "error",   "text": "..." },
+    { "severity": "warning", "text": "..." },
+    { "severity": "success", "text": "..." }
+  ]
+}
+```
+Findings should lead with the human consequence. No placeholders in the final file.
 
 ### 10 — Save structured attributes JSON
 `write_file` → `/workspace/outputs/model_attributes.json` — powers the downstream agents and the UI. Follow this structure with real values:
