@@ -9,3 +9,6 @@ __pycache__/
 test_for_model_audit/
 model_outputs/
 model_upload/
+./model_outputs
+./model_upload
+./test_for_model_audit
