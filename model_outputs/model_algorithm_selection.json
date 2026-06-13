@@ -5,25 +5,9 @@
   "shap_algorithm": "shap_proxy_detection",
   "has_ground_truth": true,
   "reasoning_log": [
-    {
-      "algorithm_id": "equality_of_opportunity",
-      "verdict": "SELECTED_MITIGATION",
-      "reason": "Best suited for Education and we have usable ground truth to equalize TPR/FPR."
-    },
-    {
-      "algorithm_id": "mutual_info_proxy_scanner",
-      "verdict": "SELECTED_PROXY",
-      "reason": "Best suited for Education to detect non-linear proxy discrimination."
-    },
-    {
-      "algorithm_id": "intersectional_subgroup_scan",
-      "verdict": "SELECTED_INTERSECTIONAL",
-      "reason": "Best suited for Education to identify fairness gerrymandering across gender and race."
-    },
-    {
-      "algorithm_id": "dro_fairness_no_demographics",
-      "verdict": "REJECTED",
-      "reason": "We have explicit demographic labels, so an approach designed for 'Without Demographics' is unnecessary."
-    }
+    { "algorithm_id": "equality_of_opportunity", "verdict": "SELECTED_MITIGATION", "reason": "Best suited for Education and post-processing" },
+    { "algorithm_id": "mutual_info_proxy_scanner", "verdict": "SELECTED_PROXY", "reason": "Best suited for Education" },
+    { "algorithm_id": "intersectional_subgroup_scan", "verdict": "SELECTED_INTERSECTIONAL", "reason": "Best suited for Education" },
+    { "algorithm_id": "recidivism_fairness_calibration", "verdict": "REJECTED", "reason": "Not suited for Education (interventions alter logic matrices)" }
   ]
 }

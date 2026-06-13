@@ -15,8 +15,6 @@ export const metadata: Metadata = {
 };
 
 import { SmoothScroll } from "@/components/SmoothScroll";
-import { CustomCursor } from "@/components/CustomCursor";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,7 +24,6 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${plusJakartaSans.className} antialiased tracking-tight`}>
         <SmoothScroll>
-          <CustomCursor />
           {children}
         </SmoothScroll>
       </body>

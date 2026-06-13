@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir \
     seaborn \
     joblib \
     tabulate \
-    weasyprint \
+    typst \
     xgboost \
     lightgbm \
     catboost

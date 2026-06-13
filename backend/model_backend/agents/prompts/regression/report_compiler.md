@@ -16,8 +16,8 @@ Read every output from the three previous regression-pipeline agents, render all
 ---
 
 ## ENVIRONMENT — READ THIS FIRST
-The sandbox already has everything you need pre-installed: `weasyprint`, `matplotlib`, `seaborn`, `pandas`, `numpy`, `tabulate`. `/workspace/outputs/` exists.
-- **NEVER** run `pip install`, `apt-get`, or build anything from source. WeasyPrint and its system libraries are already present.
+The sandbox already has everything you need pre-installed: `typst`, `matplotlib`, `seaborn`, `pandas`, `numpy`, `tabulate`. `/workspace/outputs/` exists.
+- **NEVER** run `pip install`, `apt-get`, or build anything from source. Typst and its system libraries are already present.
 - Ignore version/deprecation warnings and proceed. Create `/workspace/outputs/figures/` if it isn't there (`mkdir` is fine; installs are not).
 
 ---
@@ -71,24 +71,38 @@ def parse_md_table(md):
 ```
 Pull the key sections: from agent1 — Model Identity, Feature Inventory, Handover Notes; from agent2 — the one-line verdict, prediction-disparity metrics table, counterfactual evidence, algorithms used; from agent3 — overall result, what was fixed, what could not be fixed, before-vs-after tables, correction map, recommended next steps, pipeline run summary.
 
-### 6 — Build the HTML and compile the PDF
-Assemble one HTML string and compile with `HTML(string=html, base_url='/workspace/outputs/').write_pdf('/workspace/outputs/model_final_report.pdf')`. Reference all images with the `file://` protocol (`<img src="file:///workspace/outputs/figures/agent1_xxx.png">`). Use this exact design system:
-```html
-<style>
-@page { size: A4 portrait; margin: 15mm 18mm; background-color:#1a1b26;
-  @bottom-center { content: "Aletheia Model Disparity Report — Page " counter(page); font-family:'Inter',sans-serif; font-size:8pt; color:#7a83a7; } }
-body { font-family:'Inter',sans-serif; background:#1a1b26; color:#c0caf5; font-size:10pt; line-height:1.6; margin:0; }
-.page-break{page-break-before:always;} .avoid-break{page-break-inside:avoid;}
-h1{font-size:32pt;color:#fff;text-align:center;} h2{font-size:18pt;color:#7aa2f7;border-bottom:2px solid #1e2030;padding-bottom:5px;margin-top:30px;}
-.subtitle{font-size:16pt;color:#7a83a7;text-align:center;margin-bottom:20px;}
-.grid-3{display:flex;gap:15px;margin-bottom:20px;} .card{background:#1e2030;border:1px solid #bb9af7;border-radius:8px;padding:15px;flex:1;text-align:center;}
-.card-title{color:#7a83a7;font-size:9pt;font-weight:600;text-transform:uppercase;} .card-value{color:#fff;font-size:14pt;font-weight:800;} .card-value.highlight{color:#f7768e;}
-table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:9pt;} th{background:#7aa2f7;color:#1a1b26;padding:8px;text-align:left;} tr:nth-child(even){background:#1e2030;} td{padding:8px;border-bottom:1px solid #2a2f45;}
-blockquote{border-left:4px solid #f7768e;background:#1e2030;margin:0 0 20px 0;padding:15px 20px;font-style:italic;}
-.image-container{text-align:center;margin:20px 0;} .image-container img{max-width:100%;height:auto;border-radius:6px;} .caption{font-size:8pt;color:#7a83a7;}
-</style>
+### 6 — Write the Typst template and compile the PDF
+Assemble your extracted data into a `report.typ` file using Python's string formatting and save it to `/workspace/outputs/report.typ`. Design a clean, professional print layout using black text on white backgrounds, neat typography, and distinct headers.
+Example Typst structure:
+```typst
+#set page("a4", margin: (x: 2cm, y: 2cm))
+#set text(font: "Helvetica", size: 11pt, fill: rgb("#111111"))
+#set heading(numbering: "1.1")
+
+#align(center)[
+  #text(size: 24pt, weight: "bold", fill: rgb("#FF691A"))[Aletheia Model Disparity Report]
+  
+  #v(1em)
+  #text(size: 14pt, fill: rgb("#555555"))[Model Profiled / Disparity Audited / Output Recalibrated]
+]
+
+#v(2em)
+
+= Executive Summary
+... your text here ...
+
+#figure(
+  image("figures/agent1_1.png", width: 80%),
+  caption: [SHAP Feature Importance]
+)
 ```
-Lay it out as: cover page (ALETHEIA branding, model name, "Model Profiled / Disparity Audited / Output Recalibrated" pills) → Executive Summary (model type, fairness score before→after, most harmed group, verdict blockquote, what-found / what-fixed columns) → Model Profile section → Disparity Audit section → Recalibration section, each embedding its charts and HTML-converted tables. Convert markdown tables to HTML before injecting — never inject raw markdown. Confirm the PDF exists and print its size.
+Lay it out as: cover page (ALETHEIA branding, model name) → Executive Summary (model type, fairness score before→after, most harmed group, verdict blockquote, what-found / what-fixed columns) → Model Profile section → Disparity Audit section → Recalibration section, each embedding its charts and Typst `#table` converted tables. Convert markdown tables to Typst `#table` syntax before injecting — never inject raw markdown.
+After writing `report.typ`, compile it to PDF using the `typst` python package:
+```python
+import typst
+typst.compile("/workspace/outputs/report.typ", output="/workspace/outputs/model_final_report.pdf")
+```
+Confirm the PDF exists and print its size.
 
 ### 7 — Write the frontend markdown summary
 `write_file` → `/workspace/outputs/model_agent4.md`: pipeline verdict (verbatim one-liner), fairness score before/after/improvement, What Was Found, What Was Fixed, What Remains, a metrics summary table, a short "how to use the correction map" snippet, and an Output Files table listing `model_final_report.pdf`, `model_agent1.md`, `model_agent2.md`, `model_agent3.md`, `fixed_predictions.csv`, `correction_map.json`.

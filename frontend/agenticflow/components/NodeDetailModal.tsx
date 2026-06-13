@@ -2074,13 +2074,13 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
               <div className="lg:col-span-2 flex flex-col gap-4">
                 {/* Metric cards */}
                 <div className="grid grid-cols-2 gap-3">
-                  {metricsToRender.map((m) => (
+                  {metricsToRender.map((m, idx) => (
                     <div
-                      key={m.label}
+                      key={`${m.label || m.name || m.title || "Metric"}-${idx}`}
                       className="bg-surface-container rounded-xl border border-outline-variant p-4 flex flex-col gap-1 hover:border-primary-container/40 transition-colors overflow-hidden"
                     >
-                      <span className="text-[11px] text-on-surface-variant uppercase tracking-wider truncate" title={m.label}>
-                        {m.label}
+                      <span className="text-[11px] text-on-surface-variant uppercase tracking-wider truncate" title={m.label || m.name || m.title || "Metric"}>
+                        {m.label || m.name || m.title || "Metric"}
                       </span>
                       <span
                         className={`font-bold text-on-surface truncate ${
@@ -2126,13 +2126,13 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
 
               {/* Metrics summary in review tab */}
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mt-6">
-                {metricsToRender.map((m) => (
+                {metricsToRender.map((m, idx) => (
                   <div
-                    key={m.label}
+                    key={`${m.label || m.name || m.title || "Metric"}-${idx}`}
                     className="bg-surface-container rounded-xl border border-outline-variant p-4 text-center overflow-hidden"
                   >
-                    <span className="text-[10px] text-on-surface-variant uppercase tracking-wider block truncate" title={m.label}>
-                      {m.label}
+                    <span className="text-[10px] text-on-surface-variant uppercase tracking-wider block truncate" title={m.label || m.name || m.title || "Metric"}>
+                      {m.label || m.name || m.title || "Metric"}
                     </span>
                     <span
                       className={`font-bold text-on-surface mt-1 block truncate ${

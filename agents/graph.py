@@ -13,7 +13,7 @@ from mcp.client.sse import sse_client
 from langchain_mcp_adapters.tools import load_mcp_tools
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]

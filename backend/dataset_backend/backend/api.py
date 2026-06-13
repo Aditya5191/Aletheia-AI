@@ -13,7 +13,7 @@ from typing import Dict, Optional
 from websockets.exceptions import ConnectionClosedOK, ConnectionClosedError
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 # Import the agent graph logic
 import sys

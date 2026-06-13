@@ -1,7 +1,10 @@
 {
   "protected_attribute": "gender",
-  "thresholds": { "female": 0.717, "male": 0.232 },
+  "thresholds": {
+    "male": 0.2828,
+    "female": 0.7374
+  },
   "fairness_metric_equalized": "Equalized Odds (TPR and FPR)",
-  "accuracy_tradeoff": "+7.3%",
+  "accuracy_tradeoff": "+6.67%",
   "how_to_use": "Apply the group threshold instead of a fixed 0.50 cutoff."
 }

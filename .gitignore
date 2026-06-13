@@ -6,3 +6,6 @@ __pycache__/
 *.pyc
 .env
 .agents
+test_for_model_audit/
+model_outputs/
+model_upload/

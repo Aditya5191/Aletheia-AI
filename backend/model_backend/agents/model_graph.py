@@ -18,7 +18,7 @@ from langchain_mcp_adapters.tools import load_mcp_tools
 from langchain_core.tools import StructuredTool
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 
 # ─────────────────────────────────────────────────────────────────
