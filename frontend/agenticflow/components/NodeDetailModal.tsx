@@ -2091,12 +2091,12 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                       key={`${m.label || m.name || m.title || "Metric"}-${idx}`}
                       className="bg-surface-container rounded-xl border border-outline-variant p-4 flex flex-col gap-1 hover:border-primary-container/40 transition-colors overflow-hidden"
                     >
-                      <span className="text-[11px] text-on-surface-variant uppercase tracking-wider truncate" title={m.label || m.name || m.title || "Metric"}>
+                      <span className="text-[11px] text-on-surface-variant uppercase tracking-wider break-words" title={m.label || m.name || m.title || "Metric"}>
                         {m.label || m.name || m.title || "Metric"}
                       </span>
                       <span
-                        className={`font-bold text-on-surface truncate ${
-                          String(m.value).length > 12 ? 'text-sm' : String(m.value).length > 8 ? 'text-base' : 'text-xl'
+                        className={`font-bold text-on-surface break-words leading-snug ${
+                          String(m.value).length > 24 ? 'text-xs' : String(m.value).length > 14 ? 'text-sm' : String(m.value).length > 8 ? 'text-base' : 'text-xl'
                         }`}
                         title={String(m.value)}
                       >
