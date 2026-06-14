@@ -66,7 +66,7 @@ app.mount("/model_outputs", StaticFiles(directory="model_outputs"), name="model_
 
 
 def start_docker_sandbox():
-    image          = "sandbox-python:latest"
+    image          = "us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/sandbox-python:latest"
     container_name = f"aletheia-model-{uuid.uuid4().hex[:8]}"
     os.makedirs("model_upload", exist_ok=True)
     os.makedirs("model_outputs", exist_ok=True)
@@ -406,14 +406,34 @@ async def model_audit_websocket(websocket: WebSocket):
 
         current_sender = None
 
-        async for event in run_model_pipeline(
-            container_id,
-            model_type=model_type,
-            sandbox_url="http://localhost:8000/sse",
-            aletheia_url="http://localhost:8001/sse",
-            miscellaneous_url="http://localhost:8002/sse"
-        ):
+        # Fix anyio GeneratorExit bug: Run the pipeline in a separate Task and communicate via Queue
+        queue = asyncio.Queue()
+
+        async def pipeline_task():
             try:
+                async for event in run_model_pipeline(
+                    container_id,
+                    model_type=model_type,
+                    sandbox_url="http://localhost:8000/sse",
+                    aletheia_url="http://localhost:8001/sse",
+                    miscellaneous_url="http://localhost:8002/sse"
+                ):
+                    await queue.put(event)
+                await queue.put({"__done__": True})
+            except asyncio.CancelledError:
+                pass
+            except Exception as e:
+                await queue.put({"type": "error", "message": f"Pipeline error: {e}"})
+                await queue.put({"__done__": True})
+
+        task = asyncio.create_task(pipeline_task())
+
+        try:
+            while True:
+                event = await queue.get()
+                if "__done__" in event:
+                    break
+
                 await websocket.send_json(event)
 
                 if event.get("sender") and event["sender"] in sender_to_agent:
@@ -481,9 +501,9 @@ async def model_audit_websocket(websocket: WebSocket):
                     except Exception:
                         pass
 
-            except (WebSocketDisconnect, ConnectionClosedOK, ConnectionClosedError):
-                print("[WS] Client disconnected during event stream.")
-                break
+        except (WebSocketDisconnect, ConnectionClosedOK, ConnectionClosedError):
+            print("[WS] Client disconnected during event stream.")
+            task.cancel()
 
         for agent_num in [1, 2, 3, 4]:
             if code_cells[agent_num]:

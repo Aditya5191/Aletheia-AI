@@ -54,7 +54,7 @@ AgenticFlow is a high-fidelity, professional AI observability and orchestration 
 
 ### Prerequisites
 - Node.js 18+
-- The Aletheia Backend must be running (see the root README)
+- Both the **Dataset Auditor Backend** (Port 8005) and **Model Auditor Backend** (Port 8006) must be running (see the root README)
 
 ### Installation
 1. Navigate to the frontend directory:
@@ -65,18 +65,32 @@ AgenticFlow is a high-fidelity, professional AI observability and orchestration 
    ```bash
    npm install
    ```
-3. Run the development server:
+3. Create a `.env.local` file to point to both backends (if running locally):
+   ```bash
+   NEXT_PUBLIC_API_URL=http://localhost:8005
+   NEXT_PUBLIC_WS_URL=ws://localhost:8005
+   NEXT_PUBLIC_MODEL_API_URL=http://localhost:8006
+   NEXT_PUBLIC_MODEL_WS_URL=ws://localhost:8006
+   ```
+4. Run the development server:
    ```bash
    npm run dev
    ```
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Workflow Guide
+Aletheia now supports two distinct auditing modes, accessible via the sidebar menu:
+
+### Mode 1: Dataset Auditor
 1. **Upload Dataset:** Drag and drop your target CSV onto the Upload Data node.
-2. **Initiate Execution:** Click **RUN** on the "Data Inspector" node to trigger the WebSocket execution.
-3. **Watch the Sandbox:** The Docker Sandbox node will spin up, indicating the secure environment is live.
-4. **Live Execution:** Watch the attribute nodes branch out and observe the multi-agent orchestration dynamically lighting up the graph.
-5. **Inspect Results:** Click on any agent node to open the forensic detail modal, view executed code, read bias reports, and interact with the dynamically-scaled negative-value charts.
+2. **Initiate Execution:** Click **RUN** on the "Data Surveyor" node to trigger the WebSocket execution to the Dataset Backend.
+3. **Live Execution:** Watch the attribute nodes branch out and observe the multi-agent orchestration dynamically lighting up the graph as it detects proxies and applies dataset mitigation.
+
+### Mode 2: Model Auditor
+1. **Switch Workspaces:** Select the "Model Auditor" tab in the sidebar.
+2. **Upload Model & Sample:** Drag and drop your trained `.pkl` / `.joblib` model and a representative sample CSV. Select Classification or Regression.
+3. **Initiate Execution:** Click **RUN** on the "Model Profiler" node to trigger the Model Backend.
+4. **Inspect Results:** Click on any agent node to open the forensic detail modal, view SHAP feature attributions, counterfactual scoring, and download the drop-in inference correction maps.
 
 ---
 Built with 🧡 for advanced AI Observability.

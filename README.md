@@ -350,14 +350,47 @@ npm run dev
 
 ![Cloud Architecture](./diagram/cloudArtichure.png)
 
-Aletheia runs as a distributed production application on Google Cloud — Cloud Run for the auto-scaling frontend, a dedicated VM for the backend and Docker sandbox.
+Aletheia runs as a distributed production application on Google Cloud, utilizing Cloud Run for the auto-scaling frontend and two dedicated VMs for the distinct auditing backends to ensure deep isolation and performance.
 
-### Deploy Frontend
+### 1. Deploy Dataset Auditor Backend
+The Dataset Auditor runs on its own VM (`aletheia-dataset-vm`) and serves traffic on port 8005.
+
+```bash
+docker build -f Dockerfile.dataset -t us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend-dataset:latest .
+docker push us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend-dataset:latest
+
+gcloud compute ssh aletheia-dataset-vm --zone=us-central1-a --command="\
+  sudo docker pull us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend-dataset:latest && \
+  sudo docker rm -f dataset-backend-api && \
+  sudo docker run -d --name dataset-backend-api --restart=always -p 8005:8005 \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend-dataset:latest"
+```
+
+### 2. Deploy Model Auditor Backend
+The Model Auditor runs on a separate VM (`aletheia-model-vm`) and serves traffic on port 8006.
+
+```bash
+docker build -f Dockerfile.model -t us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend-model:latest .
+docker push us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend-model:latest
+
+gcloud compute ssh aletheia-model-vm --zone=us-central1-a --command="\
+  sudo docker pull us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend-model:latest && \
+  sudo docker rm -f model-backend-api && \
+  sudo docker run -d --name model-backend-api --restart=always -p 8006:8006 \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend-model:latest"
+```
+
+### 3. Deploy Frontend (Cloud Run)
+The frontend connects to both backends via `sslip.io` DNS mapping to bypass mixed-content and CORS restrictions.
 
 ```bash
 docker build -t us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/frontend:latest \
-  --build-arg NEXT_PUBLIC_API_URL=https://34-46-180-121.sslip.io \
-  --build-arg NEXT_PUBLIC_WS_URL=wss://34-46-180-121.sslip.io \
+  --build-arg NEXT_PUBLIC_API_URL=https://136-116-198-116.sslip.io \
+  --build-arg NEXT_PUBLIC_WS_URL=wss://136-116-198-116.sslip.io \
+  --build-arg NEXT_PUBLIC_MODEL_API_URL=https://34-136-249-125.sslip.io \
+  --build-arg NEXT_PUBLIC_MODEL_WS_URL=wss://34-136-249-125.sslip.io \
   ./frontend/agenticflow
 
 docker push us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/frontend:latest
@@ -368,34 +401,16 @@ gcloud run deploy aletheia-frontend \
   --project project-f97facc4-90fc-43df-91f
 ```
 
-### Deploy Backend
-
-```bash
-docker build -t us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend:latest \
-  -f Dockerfile.backend .
-
-docker push us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend:latest
-
-gcloud compute ssh aletheia-backend --zone=us-central1-a --command="\
-  sudo docker pull us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend:latest && \
-  sudo docker rm -f aletheia-backend && \
-  sudo docker run -d --name aletheia-backend --restart=always -p 8005:8005 \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend:latest"
-```
-
 ### Useful VM Commands
 
 ```bash
 # Stream backend logs
-gcloud compute ssh aletheia-backend --zone=us-central1-a \
-  --command="sudo docker logs aletheia-backend -f"
+gcloud compute ssh aletheia-dataset-vm --zone=us-central1-a --command="sudo docker logs dataset-backend-api -f"
+gcloud compute ssh aletheia-model-vm --zone=us-central1-a --command="sudo docker logs model-backend-api -f"
 
 # Check running sandbox containers
-gcloud compute ssh aletheia-backend --zone=us-central1-a \
-  --command="sudo docker ps"
+gcloud compute ssh aletheia-model-vm --zone=us-central1-a --command="sudo docker ps"
 ```
-
 ---
 
 ## Claude Desktop Integration

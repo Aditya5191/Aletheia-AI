@@ -96,7 +96,7 @@ def cleanup_stale_resources():
 cleanup_stale_resources()
 
 def start_docker_sandbox():
-    image = "sandbox-python:latest"
+    image = "us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/sandbox-python:latest"
     container_name = f"aletheia-api-{uuid.uuid4().hex[:8]}"
     os.makedirs("dataset", exist_ok=True)
     os.makedirs("outputs", exist_ok=True)

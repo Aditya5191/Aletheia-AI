@@ -11,8 +11,10 @@ COPY . .
 # Bake in the backend API URL at build time
 ARG NEXT_PUBLIC_API_URL=http://localhost:8005
 ARG NEXT_PUBLIC_WS_URL=ws://localhost:8005
+ARG NEXT_PUBLIC_MODEL_API_URL=http://localhost:8006
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
+ENV NEXT_PUBLIC_MODEL_API_URL=$NEXT_PUBLIC_MODEL_API_URL
 
 # Build the app
 RUN npm run build
@@ -28,8 +30,8 @@ ENV PORT=3000
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Create public dir (may not exist in source)
-RUN mkdir -p public
+# Copy public folder
+COPY --from=builder /app/public ./public
 
 EXPOSE 3000
 

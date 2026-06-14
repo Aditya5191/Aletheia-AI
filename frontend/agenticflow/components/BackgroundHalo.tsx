@@ -116,7 +116,7 @@ export const BackgroundHalo: React.FC = () => {
       />
 
       {/* Static texture overlay */}
-      <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+      <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('/noise.svg')]" />
     </div>
   );
 };

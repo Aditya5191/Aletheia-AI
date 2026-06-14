@@ -410,7 +410,7 @@ def format_and_dispatch(analyzed_data: Dict[str, Any], endpoint: str):
 function InteractiveLineChart({ chartDef }: { chartDef: ChartDef }) {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const data = chartDef.data;
-  const chartColor = chartDef.color;
+  const chartColor = (!chartDef.color || chartDef.color === "#000000") ? "#F97316" : chartDef.color;
 
   const W = 560;
   const H = 280; // Increased for rotated labels
