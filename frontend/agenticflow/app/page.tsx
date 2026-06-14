@@ -2,7 +2,12 @@
 
 import React, { useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Shield, Cpu, Activity, BarChart3, Database, Lock, FileSearch, Telescope, Waypoints, Network, Fingerprint } from 'lucide-react';
+import { 
+  ArrowRight, Shield, Cpu, Activity, BarChart3, Database, Lock, 
+  FileSearch, Telescope, Waypoints, Network, Fingerprint, 
+  CheckCircle2, AlertTriangle, Users, Scale, FileText, Terminal, 
+  Search, Layers, Zap, Info
+} from 'lucide-react';
 import dynamic from 'next/dynamic';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -19,7 +24,7 @@ export default function Landing() {
   const container = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
-    // 1. Hero Animation Timeline (Split-text style reveal)
+    // 1. Hero Animation Timeline
     const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
     tl.from('.hero-badge', { y: 30, opacity: 0, duration: 1, delay: 0.2 })
       .from('.hero-text-inner', { yPercent: 120, rotationZ: 2, duration: 1.2, stagger: 0.15 }, '-=0.8')
@@ -36,17 +41,6 @@ export default function Landing() {
         start: 'top top',
         end: 'bottom bottom',
         scrub: 1
-      }
-    });
-
-    gsap.to('.floating-shape-2', {
-      y: -200,
-      rotation: -15,
-      scrollTrigger: {
-        trigger: container.current,
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 1.5
       }
     });
 
@@ -76,75 +70,47 @@ export default function Landing() {
       ease: 'back.out(1.2)'
     });
 
-    // 4. How it Works Pipeline Draw Effect
-    gsap.fromTo('.pipeline-fill-line', 
-      { height: '0%' },
-      {
-        height: '100%',
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '.pipeline-container',
-          start: 'top 50%',
-          end: 'bottom 50%',
-          scrub: true,
-        }
-      }
-    );
-
-    const pipelineItems = gsap.utils.toArray('.pipeline-item');
-    pipelineItems.forEach((item: any, i) => {
-      // Slide content in
-      gsap.from(item, {
-        scrollTrigger: {
-          trigger: item,
-          start: 'top 85%',
-        },
-        x: i % 2 === 0 ? -80 : 80,
-        opacity: 0,
-        duration: 1.2,
-        ease: 'power3.out'
-      });
-
-      // Icon glow trigger when the line hits it
-      const icon = item.querySelector('.pipeline-icon');
-      if (icon) {
-        gsap.to(icon, {
-          scrollTrigger: {
-            trigger: item,
-            start: 'center 50%',
-            toggleActions: 'play reverse play reverse'
-          },
-          backgroundColor: 'rgba(80,220,192,0.15)',
-          borderColor: 'rgba(80,220,192,0.8)',
-          boxShadow: '0 0 50px rgba(80,220,192,0.4)',
-          scale: 1.15,
-          color: '#ffffff',
-          duration: 0.4
-        });
-      }
+    // 4. Pipeline Cards Reveal
+    gsap.from('.pipeline-card', {
+      scrollTrigger: {
+        trigger: '.pipelines-section',
+        start: 'top 70%',
+      },
+      x: (i) => i === 0 ? -100 : 100,
+      opacity: 0,
+      duration: 1.5,
+      ease: 'power4.out',
+      stagger: 0.2
     });
 
-    // 5. CTA Section
-    gsap.from('.cta-content', {
+    // 5. Audience Cards Stagger
+    gsap.from('.audience-card', {
       scrollTrigger: {
-        trigger: '.cta-section',
+        trigger: '.audience-section',
         start: 'top 80%',
       },
-      scale: 0.85,
       y: 50,
       opacity: 0,
-      duration: 1.2,
-      ease: 'back.out(1.5)'
+      duration: 1,
+      stagger: 0.1,
+      ease: 'power2.out'
     });
 
   }, { scope: container });
 
+  const navItems = [
+    { label: 'Science', path: '/science' },
+    { label: 'Claude Skill', path: '/claude-skill' },
+    { label: 'Privacy', path: '/privacy' },
+    { label: 'About and FAQ', path: '/about' },
+  ];
+
   return (
-    <div ref={container} className="flex-1 min-h-screen flex flex-col bg-background overflow-x-hidden relative">
+    <div ref={container} className="flex-1 min-h-screen flex flex-col bg-background overflow-x-hidden relative text-on-surface">
       <BackgroundHalo />
       
       {/* Background Terminal Effect */}
-      <div className="fixed inset-0 z-0 opacity-[0.15] pointer-events-none">
+      <div className="fixed inset-0 z-0 opacity-[0.12] pointer-events-none">
         <FaultyTerminal
           scale={1}
           digitSize={1.5}
@@ -152,32 +118,33 @@ export default function Landing() {
           glitchAmount={1}
           flickerAmount={1}
           noiseAmp={1}
-          chromaticAberration={0}
-          dither={0}
           curvature={0.2}
-          tint="#42b3ad"
+          tint="#FF691A"
           mouseReact
-          mouseStrength={0.2}
+          mouseStrength={0.15}
           brightness={1}
           dpr={1}
         />
       </div>
 
-      {/* Floating Parallax Shapes */}
-      <div className="floating-shape-1 absolute top-[20%] right-[10%] w-64 h-64 border border-primary/10 rounded-full opacity-30 blur-[2px] pointer-events-none"></div>
-      <div className="floating-shape-2 absolute top-[60%] left-[5%] w-96 h-96 border border-white/5 rounded-3xl rotate-12 opacity-20 blur-[4px] pointer-events-none"></div>
-
       {/* Navigation Header */}
       <header className="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[1200px] z-50 px-8 py-4 flex items-center justify-between glass border border-white/5 rounded-full shadow-2xl">
         <div className="flex items-center gap-12">
-          <h1 className="text-xl font-display font-bold text-primary uppercase tracking-[0.3em] flex items-center gap-3">
+          <h1 
+            onClick={() => router.push('/')}
+            className="text-xl font-display font-bold text-primary uppercase tracking-[0.3em] flex items-center gap-3 cursor-pointer"
+          >
              <Shield size={20} />
              Aletheia
           </h1>
           <nav className="hidden md:flex gap-8">
-            {['Platform', 'Solutions', 'Scientific Basis', 'Compliance'].map((item) => (
-              <button key={item} className="text-[11px] uppercase font-bold tracking-[0.2em] text-on-surface-variant hover:text-white transition-colors relative group">
-                {item}
+            {navItems.map((item) => (
+              <button 
+                key={item.label} 
+                onClick={() => router.push(item.path)}
+                className="text-[11px] uppercase font-bold tracking-[0.2em] text-on-surface-variant hover:text-white transition-colors relative group"
+              >
+                {item.label}
                 <span className="absolute -bottom-2 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
               </button>
             ))}
@@ -195,132 +162,169 @@ export default function Landing() {
       <main className="flex-1 flex flex-col pt-32 relative z-10">
         
         {/* Hero Section */}
-        <section className="px-8 lg:px-20 py-24 flex flex-col items-center text-center justify-center min-h-[85vh] relative">
+        <section className="px-8 lg:px-20 py-24 flex flex-col items-center text-center justify-center min-h-[90vh] relative">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
           
-          <div className="flex flex-col items-center gap-10 z-10 max-w-[900px]">
-            <div className="flex flex-col items-center gap-4">
-              <span className="hero-badge text-[10px] text-primary uppercase tracking-[0.5em] font-label font-bold bg-background/40 backdrop-blur-sm px-6 py-2 rounded-full border border-primary/10 shadow-[0_0_20px_rgba(80,220,192,0.1)]">
-                Scientific Bias Auditing Protocol
+          <div className="flex flex-col items-center gap-10 z-10 max-w-[1100px]">
+            <div className="flex flex-col items-center gap-6">
+              <span className="hero-badge text-[10px] text-primary uppercase tracking-[0.5em] font-label font-bold bg-background/40 backdrop-blur-sm px-8 py-2.5 rounded-full border border-primary/20 shadow-[0_0_30px_rgba(255,105,26,0.15)]">
+                Autonomous Algorithmic Fairness Protocol
               </span>
-              <h2 className="text-6xl md:text-8xl lg:text-[7.5rem] font-display font-black text-on-surface uppercase tracking-tighter leading-[0.85] drop-shadow-2xl">
-                <div className="hero-title-line overflow-hidden"><div className="hero-text-inner">Forensic</div></div> 
-                <div className="hero-title-line overflow-hidden pb-2">
-                  <div className="hero-text-inner text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary to-[#9b51e0]">Objectivity</div>
+              <h2 className="text-5xl md:text-7xl lg:text-[6.5rem] font-display font-black text-on-surface uppercase tracking-tighter leading-[0.9] drop-shadow-2xl">
+                <div className="hero-title-line overflow-hidden"><div className="hero-text-inner">Your AI model is making</div></div> 
+                <div className="hero-title-line overflow-hidden pb-4">
+                  <div className="hero-text-inner text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary to-[#9b51e0]">Biased Decisions.</div>
                 </div>
-                <div className="hero-title-line overflow-hidden"><div className="hero-text-inner">For AI.</div></div>
+                <div className="hero-title-line overflow-hidden"><div className="hero-text-inner text-3xl md:text-5xl lg:text-6xl text-on-surface-variant font-extrabold">We prove it, measure it, and fix it — autonomously.</div></div>
               </h2>
             </div>
             
-            <p className="hero-desc text-lg text-on-surface-variant leading-relaxed max-w-[600px] font-sans opacity-90">
-              Aletheia provides an immutable ledger of algorithmic fairness. Deploying 13 scientific-grade detection algorithms to map, audit, and remediate bias in datasets and model outputs with clinical precision.
+            <p className="hero-desc text-xl text-on-surface-variant leading-relaxed max-w-[700px] font-sans opacity-90 border-l-2 border-primary/30 pl-8 text-left">
+              Aletheia deployes 13 scientific-grade detection algorithms to map, audit, and remediate bias in datasets and model outputs. Supporting both <span className="text-white font-bold">Dataset Audit</span> for pre-processing and <span className="text-white font-bold">Model Audit</span> for post-inference calibration.
             </p>
 
             <div className="hero-buttons flex flex-col sm:flex-row gap-5 mt-4">
               <button 
                 onClick={() => router.push('/dashboard')}
-                className="btn-primary group flex items-center justify-center gap-4 px-10 py-5 text-sm shadow-[0_0_50px_rgba(80,220,192,0.25)] rounded-full transition-all duration-200 ease-out hover:scale-105 active:scale-95"
+                className="btn-primary group flex items-center justify-center gap-4 px-12 py-6 text-sm shadow-[0_0_50px_rgba(255,105,26,0.25)] rounded-full transition-all duration-300 ease-out hover:scale-105 active:scale-95 bg-primary"
               >
-                BEGIN FORENSIC AUDIT
-                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                START THE PIPELINE
+                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </button>
-              <button className="flex items-center justify-center gap-3 text-[10px] uppercase font-bold tracking-[0.3em] text-on-surface-variant hover:text-on-surface px-10 border border-outline-variant/20 rounded-full py-5 bg-background/40 backdrop-blur-md hover:bg-background/80 hover:scale-105 transition-all duration-200 ease-out active:scale-95">
-                READ THE WHITE PAPER
+              <button 
+                onClick={() => router.push('/science')}
+                className="flex items-center justify-center gap-3 text-[10px] uppercase font-bold tracking-[0.3em] text-on-surface-variant hover:text-on-surface px-12 border border-outline-variant/30 rounded-full py-6 bg-white/5 backdrop-blur-md hover:bg-white/10 hover:scale-105 transition-all duration-300 ease-out active:scale-95"
+              >
+                EXPLORE THE SCIENCE
               </button>
             </div>
 
-            <div className="hero-stats flex items-center gap-12 mt-16 opacity-70 grayscale brightness-125 border-t border-outline-variant/10 pt-10 w-full justify-center">
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[8px] uppercase tracking-widest font-mono">Status: NOMINAL</span>
-                <div className="h-0.5 w-12 bg-primary mx-auto"></div>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[8px] uppercase tracking-widest font-mono">Latency: 24ms</span>
-                <div className="h-0.5 w-12 bg-on-surface-variant mx-auto"></div>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[8px] uppercase tracking-widest font-mono">Uptime: 99.98%</span>
-                <div className="h-0.5 w-12 bg-on-surface-variant mx-auto"></div>
-              </div>
+            <div className="hero-stats flex flex-wrap items-center gap-x-16 gap-y-8 mt-20 grayscale-0 brightness-100 border-t border-white/10 pt-12 w-full justify-center">
+              {[
+                { val: "13", label: "Algorithms" },
+                { val: "02", label: "Audit Modes" },
+                { val: "05", label: "Bias Layers" },
+                { val: "04", label: "Frameworks" }
+              ].map((stat, i) => (
+                <div key={i} className="flex flex-col items-center gap-2 group">
+                  <span className="text-4xl md:text-6xl font-display font-black text-primary drop-shadow-[0_0_15px_rgba(255,105,26,0.2)] group-hover:scale-105 transition-transform duration-300">{stat.val}</span>
+                  <span className="text-[10px] md:text-xs uppercase tracking-[0.3em] font-mono text-on-surface-variant font-bold group-hover:text-primary transition-colors">{stat.label}</span>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
         {/* Infinite Marquee */}
-        <InfiniteMarquee text="DETERMINISTIC // IMMUTABLE // FORENSIC // TRANSPARENT" />
+        <InfiniteMarquee text="AUTONOMOUS BIAS DETECTION • MULTI-AGENT FAIRNESS AUDITING • CLINICAL DATA PROFILING • REGULATORY COMPLIANCE VERIFIED • PATH-SPECIFIC CAUSAL ANALYSIS" />
 
-        {/* Metrics Banner */}
-        <section className="metrics-section px-8 lg:px-20 py-24 relative z-10 border-b border-outline-variant/5 bg-transparent">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent pointer-events-none"></div>
-          <div className="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 divide-y md:divide-y-0 md:divide-x divide-outline-variant/10 relative z-10">
-            <div className="metric-card flex flex-col items-center text-center gap-2 px-8 py-4">
-               <span className="text-7xl font-display font-black text-transparent bg-clip-text bg-gradient-to-b from-primary to-primary-dim drop-shadow-[0_0_20px_rgba(80,220,192,0.4)]">13</span>
-               <span className="text-[11px] uppercase tracking-[0.3em] text-on-surface-variant font-bold mt-4">Detection Algorithms</span>
+        {/* Pipelines Side by Side */}
+        <section className="pipelines-section px-8 lg:px-20 py-40 bg-[#050608] relative">
+          <div className="max-w-[1200px] mx-auto flex flex-col gap-24">
+            <div className="flex flex-col gap-6 text-center items-center">
+              <div className="flex items-center gap-4">
+                <div className="h-[1px] w-16 bg-primary/30"></div>
+                <span className="text-[10px] text-primary uppercase tracking-[0.5em] font-label font-bold">The Two Modes</span>
+                <div className="h-[1px] w-16 bg-primary/30"></div>
+              </div>
+              <h3 className="text-5xl lg:text-7xl font-display font-bold text-on-surface uppercase tracking-tight">
+                How it Works
+              </h3>
             </div>
-            <div className="metric-card flex flex-col items-center text-center gap-2 px-8 py-4">
-               <span className="text-7xl font-display font-black text-transparent bg-clip-text bg-gradient-to-b from-[#9b51e0] to-[#6b21a8] drop-shadow-[0_0_20px_rgba(155,81,224,0.4)]">100%</span>
-               <span className="text-[11px] uppercase tracking-[0.3em] text-on-surface-variant font-bold mt-4">Deterministic Audits</span>
-            </div>
-            <div className="metric-card flex flex-col items-center text-center gap-2 px-8 py-4">
-               <span className="text-7xl font-display font-black text-transparent bg-clip-text bg-gradient-to-b from-primary to-primary-dim drop-shadow-[0_0_20px_rgba(80,220,192,0.4)]">&lt;1s</span>
-               <span className="text-[11px] uppercase tracking-[0.3em] text-on-surface-variant font-bold mt-4">Execution Latency</span>
+
+            <div className="grid lg:grid-cols-2 gap-12">
+              {/* Dataset Pipeline */}
+              <div className="pipeline-card p-10 bg-[#0d0f14] border border-white/5 rounded-3xl relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-2 h-full bg-primary/50"></div>
+                <div className="flex flex-col gap-8">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-3xl font-display font-black uppercase text-white">Dataset Pipeline</h4>
+                    <Database className="text-primary" size={32} />
+                  </div>
+                  <div className="flex flex-col gap-6 relative">
+                    {[
+                      { icon: <Search size={18} />, label: "Upload CSV", desc: "Ingest tabular data" },
+                      { icon: <Telescope size={18} />, label: "Data Surveyor", desc: "Autonomous EDA & Profiling" },
+                      { icon: <Scale size={18} />, label: "Fairness Adjudicator", desc: "Statistical Bias Detection" },
+                      { icon: <Zap size={18} />, label: "Bias Mitigator", desc: "Pre-processing Correction" },
+                      { icon: <CheckCircle2 size={18} />, label: "PDF Report + Fixed CSV", desc: "Compliant Output" },
+                    ].map((step, i) => (
+                      <div key={i} className="flex items-start gap-5 group/step">
+                        <div className="w-10 h-10 shrink-0 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-primary group-hover/step:bg-primary group-hover/step:text-black transition-all duration-300">
+                          {step.icon}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm font-bold uppercase tracking-widest text-white">{step.label}</span>
+                          <span className="text-xs text-on-surface-variant">{step.desc}</span>
+                        </div>
+                        {i < 4 && <div className="absolute left-5 top-10 w-[1px] h-6 bg-white/10"></div>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Model Pipeline */}
+              <div className="pipeline-card p-10 bg-[#0d0f14] border border-white/5 rounded-3xl relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-2 h-full bg-[#9b51e0]/50"></div>
+                <div className="flex flex-col gap-8">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-3xl font-display font-black uppercase text-white">Model Pipeline</h4>
+                    <Cpu className="text-[#9b51e0]" size={32} />
+                  </div>
+                  <div className="flex flex-col gap-6 relative">
+                    {[
+                      { icon: <Layers size={18} />, label: "Upload PKL + Sample", desc: "Binary Classifier or Regressor" },
+                      { icon: <Search size={18} />, label: "Model Inspector", desc: "Feature Importance & SHAP" },
+                      { icon: <Activity size={18} />, label: "Behavioral Auditor", desc: "Subgroup Error Analysis" },
+                      { icon: <Waypoints size={18} />, label: "Recalibrator", desc: "Threshold & Output Correction" },
+                      { icon: <FileText size={18} />, label: "PDF Report + Map", desc: "Drop-in Correction Map" },
+                    ].map((step, i) => (
+                      <div key={i} className="flex items-start gap-5 group/step">
+                        <div className="w-10 h-10 shrink-0 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#9b51e0] group-hover/step:bg-[#9b51e0] group-hover/step:text-white transition-all duration-300">
+                          {step.icon}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm font-bold uppercase tracking-widest text-white">{step.label}</span>
+                          <span className="text-xs text-on-surface-variant">{step.desc}</span>
+                        </div>
+                        {i < 4 && <div className="absolute left-5 top-10 w-[1px] h-6 bg-white/10"></div>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Core Capabilities */}
-        <section className="capabilities-section px-8 lg:px-20 py-40 border-t border-white/[0.03] bg-gradient-to-b from-surface-lowest/60 to-background relative z-10">
-          <div className="flex flex-col gap-24 max-w-[1200px] mx-auto">
-            <div className="capability-card flex flex-col gap-5 text-center items-center">
+        {/* What We Actually Detect */}
+        <section className="px-8 lg:px-20 py-40 border-t border-white/[0.03] bg-background relative overflow-hidden">
+          <div className="max-w-[1200px] mx-auto flex flex-col gap-24">
+            <div className="flex flex-col gap-6 text-center items-center">
               <div className="flex items-center gap-4">
                 <div className="h-[1px] w-16 bg-primary/30"></div>
-                <span className="text-[10px] text-primary uppercase tracking-[0.5em] font-label font-bold">Platform Capabilities</span>
+                <span className="text-[10px] text-primary uppercase tracking-[0.5em] font-label font-bold">Detection Layers</span>
                 <div className="h-[1px] w-16 bg-primary/30"></div>
               </div>
               <h3 className="text-5xl lg:text-7xl font-display font-bold text-on-surface uppercase tracking-tight leading-none">
-                The Anatomy of <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-on-surface-variant">Algorithmic Justice</span>
+                What We Actually Detect
               </h3>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-4">
               {[
-                { 
-                  icon: <Database size={24} />, 
-                  title: 'Forensic Ingestion', 
-                  desc: 'High-fidelity data profiling and automated feature-to-demographic mapping.' 
-                },
-                { 
-                  icon: <Cpu size={24} />, 
-                  title: 'Multi-Agent Auditing', 
-                  desc: 'Orchestrated Surveyor and Adjudicator agents working in an isolated forensic sandbox.' 
-                },
-                { 
-                  icon: <BarChart3 size={24} />, 
-                  title: 'Bias Vector Mapping', 
-                  desc: 'Mathematical decomposition of bias into direct, indirect, and spurious effects.' 
-                },
-                { 
-                  icon: <Shield size={24} />, 
-                  title: 'Immutability', 
-                  desc: 'Exportable forensic certificates for regulatory compliance and stakeholder review.' 
-                }
-              ].map((cap, i) => (
-                <div key={i} className="capability-card relative group h-full">
-                  <div className="absolute inset-0 bg-gradient-to-b from-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-2xl blur-[12px] -z-10"></div>
-                  
-                  <div className="relative h-full p-8 bg-[#111317]/80 backdrop-blur-xl rounded-2xl border border-white/[0.05] group-hover:border-primary/40 transition-all duration-500 flex flex-col gap-6 overflow-hidden">
-                    <div className="absolute -top-16 -right-16 w-40 h-40 bg-primary/10 rounded-full blur-[50px] group-hover:bg-primary/30 transition-all duration-700"></div>
-
-                    <div className="w-14 h-14 rounded-xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center text-on-surface-variant group-hover:text-background group-hover:bg-primary group-hover:border-primary/50 transition-all duration-500 relative z-10 shadow-lg group-hover:shadow-[0_0_30px_rgba(80,220,192,0.4)]">
-                      {cap.icon}
-                    </div>
-                    <div className="flex flex-col gap-3 relative z-10">
-                      <h4 className="text-xl font-display font-bold uppercase tracking-tight text-white group-hover:text-primary transition-colors">{cap.title}</h4>
-                      <p className="text-sm text-on-surface-variant leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity font-sans">
-                        {cap.desc}
-                      </p>
-                    </div>
+                { title: "Direct Discrimination", desc: "Identified via counterfactual probing — would the decision change if only the protected attribute changed?", icon: <Search /> },
+                { title: "Proxy Discrimination", desc: "Detecting covert proxies using SHAP attribution + Pearson r correlation analysis.", icon: <Network /> },
+                { title: "Disparate Impact", desc: "Measuring selection rate gaps via DIR (Disparate Impact Ratio) and SPD.", icon: <Scale /> },
+                { title: "Unequal Error Rates", desc: "Exposing bias in FPR (False Positives) and EOD (Equalized Odds Difference).", icon: <AlertTriangle /> },
+                { title: "Intersectional Bias", desc: "Combinatorial scanning for gerrymandering across Race × Gender × Age intersections.", icon: <Layers /> },
+              ].map((card, i) => (
+                <div key={i} className="capability-card p-8 bg-[#0d0f14] border border-white/5 rounded-2xl flex flex-col gap-6 hover:border-primary/40 transition-colors">
+                  <div className="text-primary">{card.icon}</div>
+                  <div className="flex flex-col gap-3">
+                    <h5 className="text-sm font-black uppercase tracking-widest text-white leading-tight">{card.title}</h5>
+                    <p className="text-[11px] text-on-surface-variant leading-relaxed font-sans">{card.desc}</p>
                   </div>
                 </div>
               ))}
@@ -328,65 +332,142 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* How it Works Pipeline */}
-        <section className="px-8 lg:px-20 py-40 relative z-10 border-t border-outline-variant/5 bg-[#08090b] overflow-hidden">
-          <div className="absolute top-40 right-20 w-96 h-96 bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
-          <div className="absolute bottom-40 left-20 w-96 h-96 bg-[#9b51e0]/5 rounded-full blur-[120px] pointer-events-none"></div>
-
-          <div className="max-w-[1000px] mx-auto flex flex-col gap-32 relative z-10">
-            <div className="text-center flex flex-col items-center gap-5">
-              <div className="flex items-center gap-4">
-                <div className="h-[1px] w-16 bg-primary/30"></div>
-                <span className="text-[10px] text-primary uppercase tracking-[0.5em] font-label font-bold">Architecture</span>
-                <div className="h-[1px] w-16 bg-primary/30"></div>
+        {/* What You Get */}
+        <section className="px-8 lg:px-20 py-40 bg-surface-lowest relative">
+          <div className="max-w-[1200px] mx-auto grid lg:grid-cols-2 gap-20 items-center">
+            <div className="flex flex-col gap-10">
+              <div className="flex flex-col gap-6">
+                <span className="text-[10px] text-primary uppercase tracking-[0.5em] font-label font-bold">The Deliverables</span>
+                <h3 className="text-5xl lg:text-7xl font-display font-bold text-on-surface uppercase tracking-tight leading-none">
+                  Publication Ready <br /><span className="text-on-surface-variant">Audit Artifacts</span>
+                </h3>
+                </div>
+                <p className="text-lg text-on-surface-variant font-sans leading-relaxed">
+                Aletheia doesn&apos;t just show you charts. It produces the forensic evidence and drop-in fixes required for legal and engineering compliance.
+                </p>
+              <div className="grid sm:grid-cols-2 gap-8">
+                {[
+                  "Publication-ready PDF report",
+                  "Compliance Verdict (EEOC/EU AI Act)",
+                  "Post-Inference Correction Map",
+                  "Fixed Dataset (Pre-processing)",
+                  "Plain English Findings",
+                  "Traceable Reasoning Logs"
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <CheckCircle2 size={16} className="text-primary shrink-0" />
+                    <span className="text-xs font-bold uppercase tracking-widest text-white/80">{item}</span>
+                  </div>
+                ))}
               </div>
-              <h3 className="text-5xl lg:text-6xl font-display font-bold text-on-surface uppercase tracking-tight">
-                The Auditing Pipeline
-              </h3>
+            </div>
+            <div className="relative group">
+              <div className="absolute inset-0 bg-primary/20 blur-[100px] group-hover:bg-primary/30 transition-all duration-700"></div>
+              <div className="relative aspect-[3/4] bg-[#1a1b26] border border-white/10 rounded-2xl p-8 shadow-2xl transform rotate-2 group-hover:rotate-0 transition-transform duration-500 overflow-hidden">
+                <div className="w-full h-8 bg-white/5 rounded mb-10 flex items-center px-4 justify-between">
+                  <div className="flex gap-2">
+                    <div className="w-2 h-2 rounded-full bg-red-500/50"></div>
+                    <div className="w-2 h-2 rounded-full bg-yellow-500/50"></div>
+                    <div className="w-2 h-2 rounded-full bg-green-500/50"></div>
+                  </div>
+                  <span className="text-[8px] font-mono text-white/20">ALETHEIA_AUDIT_V4.PDF</span>
+                </div>
+                <div className="flex flex-col gap-6">
+                   <div className="flex flex-col gap-2">
+                      <span className="text-[10px] font-mono text-primary font-bold uppercase tracking-widest">Section 01: Summary</span>
+                      <div className="h-8 w-3/4 bg-primary/10 rounded border-l-2 border-primary"></div>
+                   </div>
+                   
+                   <div className="space-y-3">
+                      <div className="h-3 w-full bg-white/5 rounded"></div>
+                      <div className="h-3 w-full bg-white/5 rounded"></div>
+                      <div className="h-3 w-2/3 bg-white/5 rounded"></div>
+                   </div>
+
+                   <div className="mt-4 p-4 bg-white/[0.02] border border-white/5 rounded-xl space-y-4">
+                      <div className="flex justify-between items-center">
+                         <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Fairness Metric</span>
+                         <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Status</span>
+                      </div>
+                      <div className="flex justify-between items-center border-t border-white/5 pt-2">
+                         <span className="text-[10px] font-bold text-white/80">Disparate Impact</span>
+                         <span className="text-[10px] font-bold text-red-400">FAIL</span>
+                      </div>
+                      <div className="flex justify-between items-center border-t border-white/5 pt-2">
+                         <span className="text-[10px] font-bold text-white/80">Equal Opportunity</span>
+                         <span className="text-[10px] font-bold text-green-400">PASS</span>
+                      </div>
+                   </div>
+
+                   <div className="grid grid-cols-2 gap-4 mt-4">
+                     <div className="aspect-video bg-primary/5 rounded border border-primary/10 flex items-center justify-center relative overflow-hidden">
+                        <BarChart3 size={24} className="text-primary/20" />
+                        <div className="absolute bottom-2 left-2 right-2 h-1 bg-white/5 rounded-full overflow-hidden">
+                           <div className="h-full w-2/3 bg-primary"></div>
+                        </div>
+                     </div>
+                     <div className="aspect-video bg-white/5 rounded border border-white/5 flex items-center justify-center">
+                        <Telescope size={24} className="text-white/10" />
+                     </div>
+                   </div>
+                </div>
+                <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-[#1a1b26] to-transparent pt-20">
+                  <div className="p-4 bg-primary rounded font-display font-black text-black text-center text-xs tracking-widest">
+                    VERIFIED COMPLIANT
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Who it is for */}
+        <section className="audience-section px-8 lg:px-20 py-40 bg-background relative">
+          <div className="max-w-[1200px] mx-auto flex flex-col gap-24">
+            <div className="flex flex-col gap-6 text-center items-center">
+              <span className="text-[10px] text-primary uppercase tracking-[0.5em] font-label font-bold">User Personas</span>
+              <h3 className="text-5xl lg:text-7xl font-display font-bold text-on-surface uppercase tracking-tight">Who it is For</h3>
             </div>
 
-            <div className="flex flex-col gap-16 md:gap-24 relative pipeline-container">
-              {/* Connecting vertical line track */}
-              <div className="hidden md:block absolute left-1/2 top-8 bottom-8 w-[2px] bg-white/[0.03] -translate-x-1/2 rounded-full z-0"></div>
-              {/* The animating fill line */}
-              <div className="pipeline-fill-line hidden md:block absolute left-1/2 top-8 w-[2px] bg-gradient-to-b from-primary via-[#9b51e0] to-primary -translate-x-1/2 origin-top rounded-full shadow-[0_0_15px_rgba(80,220,192,0.5)] z-0"></div>
-              
+            <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-6">
               {[
-                { step: "01", title: "Data Surveyor", desc: "Agents autonomously profile your dataset, identifying protected attributes, proxy variables, and class imbalances.", icon: <Telescope size={32} /> },
-                { step: "02", title: "Adjudicator Selection", desc: "Based on the dataset topology, the system mathematically selects the optimal algorithmic fairness definitions to apply.", icon: <Waypoints size={32} /> },
-                { step: "03", title: "Forensic Analysis", desc: "A strict deterministic execution environment maps bias vectors and computes exact disparity metrics.", icon: <Network size={32} /> },
-                { step: "04", title: "Immutable Certification", desc: "Results are locked into a cryptographic ledger, providing irrefutable proof of compliance for stakeholders.", icon: <Fingerprint size={32} /> }
-              ].map((item, i) => (
-                <div key={i} className={`pipeline-item flex flex-col md:flex-row items-center gap-6 md:gap-24 ${i % 2 !== 0 ? 'md:flex-row-reverse' : ''}`}>
-                  <div className={`flex-1 w-full flex flex-col gap-4 text-center ${i % 2 !== 0 ? 'md:text-left' : 'md:text-right'} relative z-20`}>
-                    <h4 className="text-3xl font-display font-bold text-on-surface">{item.title}</h4>
-                    <p className={`text-base text-on-surface-variant font-sans opacity-80 leading-relaxed max-w-[400px] mx-auto ${i % 2 !== 0 ? 'md:ml-0 md:mr-auto' : 'md:ml-auto md:mr-0'}`}>
-                      {item.desc}
-                    </p>
+                { title: "Enterprises", desc: "Using AI for hiring, lending, or healthcare diagnostics.", icon: <Network /> },
+                { title: "Compliance", desc: "Legal teams ensuring adherence to EEOC and EU AI Act.", icon: <Shield /> },
+                { title: "ML Engineers", desc: "Teams needing drop-in bias fixes without retraining.", icon: <Cpu /> },
+                { title: "Regulators", desc: "Government bodies auditing automated decision systems.", icon: <Scale /> },
+                { title: "Startups", desc: "Fast-moving teams without in-house fairness expertise.", icon: <Zap /> },
+              ].map((audience, i) => (
+                <div key={i} className="audience-card p-8 bg-[#0d0f14] border border-white/5 rounded-3xl flex flex-col gap-6 group hover:bg-white/[0.02] transition-colors text-center items-center">
+                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors">
+                    {audience.icon}
                   </div>
-                  
-                  <div className="w-28 h-28 shrink-0 relative z-20 rounded-full bg-[#08090b]">
-                    <div className="pipeline-icon absolute inset-0 rounded-full border border-white/10 flex items-center justify-center shadow-xl text-on-surface-variant transition-colors duration-500 bg-transparent">
-                      <span className="absolute -top-3 bg-background border border-primary/30 text-primary text-[10px] font-bold px-4 py-1 rounded-full tracking-widest">{item.step}</span>
-                      {item.icon}
-                    </div>
+                  <div className="flex flex-col gap-3">
+                    <h5 className="text-sm font-black uppercase tracking-widest text-white">{audience.title}</h5>
+                    <p className="text-[11px] text-on-surface-variant leading-relaxed font-sans">{audience.desc}</p>
                   </div>
-                  
-                  <div className="flex-1 w-full hidden md:block"></div>
                 </div>
               ))}
             </div>
           </div>
         </section>
+
+        {/* Honest Limitations Strip */}
+        <div className="bg-red-500/10 border-y border-red-500/20 py-6 relative z-10">
+          <div className="max-w-[1200px] mx-auto px-8 flex flex-col md:flex-row items-center justify-center gap-4 text-center">
+            <AlertTriangle size={18} className="text-red-500 shrink-0" />
+            <p className="text-[11px] md:text-xs uppercase font-bold tracking-[0.2em] text-red-500/80 leading-relaxed">
+              Platform Limitations: Supports sklearn-compatible binary classifiers & regressors only. Requires representative sample data. Cannot audit NLP, Vision, or Multimodal models.
+            </p>
+          </div>
+        </div>
 
         {/* Bottom CTA */}
         <section className="cta-section px-8 lg:px-20 py-40 flex flex-col items-center text-center gap-12 relative overflow-hidden bg-background">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[150px] pointer-events-none"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-[#9b51e0]/10 rounded-full blur-[100px] pointer-events-none"></div>
           
           <div className="cta-content flex flex-col items-center gap-12 relative z-10">
             <div className="flex flex-col gap-6">
-              <span className="text-[12px] text-primary uppercase tracking-[1em] font-label font-bold">Compliance Ready</span>
+              <span className="text-[12px] text-primary uppercase tracking-[1em] font-label font-bold">Initialize Audit</span>
               <h3 className="text-7xl lg:text-8xl font-display font-black text-on-surface uppercase tracking-tighter leading-none">
                 Audit Now. <br />
                 Trust Forever.
@@ -394,7 +475,7 @@ export default function Landing() {
             </div>
             <button 
               onClick={() => router.push('/dashboard')}
-              className="btn-primary group flex items-center gap-6 px-16 py-6 text-lg rounded-full shadow-[0_0_60px_rgba(80,220,192,0.3)] hover:scale-105 transition-all duration-200 ease-out active:scale-95"
+              className="btn-primary group flex items-center gap-6 px-16 py-8 text-lg rounded-full shadow-[0_0_60px_rgba(255,105,26,0.3)] hover:scale-105 transition-all duration-300 ease-out active:scale-95 bg-primary"
             >
               INITIALIZE YOUR FIRST AUDIT
               <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
@@ -403,20 +484,24 @@ export default function Landing() {
         </section>
       </main>
 
-      <footer className="px-8 py-20 border-t border-outline-variant/5 bg-[#050608] relative z-10">
+      <footer className="px-8 py-20 border-t border-white/5 bg-[#050608] relative z-10">
         <div className="flex flex-col md:flex-row items-center justify-between gap-12 max-w-[1200px] mx-auto">
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 items-center md:items-start">
             <div className="flex items-center gap-3 text-primary mb-2">
               <Shield size={16} />
               <span className="font-display font-bold uppercase tracking-widest text-sm">Aletheia</span>
             </div>
             <span className="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">© 2026 Aletheia Forensic AI Systems</span>
-            <span className="text-[8px] text-on-surface-variant/40 uppercase tracking-[0.4em]">Protocol Version 4.0.2-Clinical</span>
+            <span className="text-[8px] text-on-surface-variant/40 uppercase tracking-[0.4em]">Google Solution Challenge — Team Technopaths</span>
           </div>
-          <div className="flex flex-wrap justify-center md:justify-end gap-x-16 gap-y-6">
-            {['Privacy', 'Standard Protocol v4', 'API Documentation', 'System Status'].map((item) => (
-              <button key={item} className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-white transition-colors font-bold">
-                {item}
+          <div className="flex flex-wrap justify-center md:justify-end gap-x-12 gap-y-6">
+            {navItems.map((item) => (
+              <button 
+                key={item.label} 
+                onClick={() => router.push(item.path)}
+                className="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-white transition-colors font-bold"
+              >
+                {item.label}
               </button>
             ))}
           </div>
