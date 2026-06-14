@@ -60,14 +60,23 @@ def clean_text(t):
 def extract_section(text, header):
     m = re.search(rf"##?\s+(?:\d+\.\s+)?{header}\s*\n(.*?)(?=\n##?\s+|$)", text, re.DOTALL|re.IGNORECASE)
     return clean_text(m.group(1)) if m else ""
-def parse_md_table(md):
-    rows=[]
-    for line in (md or "").strip().split('\n'):
+def parse_md_table(md_text):
+    if not md_text: return []
+    # Handle both escaped and literal newlines
+    lines = md_text.replace('\\n', '\n').strip().split('\n')
+    table = []
+    for line in lines:
         if '|' not in line: continue
-        cells=[clean_text(c.strip()) for c in line.split('|')[1:-1]]
-        if all(set(c)<=set('-: ') or not c for c in cells): continue
-        rows.append(cells)
-    return rows
+        # Clean and extract cells, ignoring empty leading/trailing pipes
+        row = [clean_text(cell.strip()) for cell in line.split('|')]
+        if line.strip().startswith('|'): row = row[1:]
+        if line.strip().endswith('|'): row = row[:-1]
+        
+        # Skip markdown separator rows (e.g. |---|---|)
+        if all(re.match(r'^[:\-\s]+$', cell) for cell in row) and len(row) > 0:
+            continue
+        if row: table.append(row)
+    return table
 ```
 Pull the key sections: from agent1 — Model Identity, Feature Inventory; from agent2 — the one-line verdict, fairness metrics table, algorithm used, counterfactual evidence; from agent3 — overall result, before-vs-after tables, recommended next steps.
 **CRITICAL**: Source reports do not have exact headers for "What Was Found", "What Was Fixed", or "What Remains". You MUST synthesize a 2-3 sentence plain-english summary for each of these three sections by reading the full content of the reports. Do not use `extract_section` for them or they will be blank!
@@ -111,6 +120,13 @@ Confirm the PDF exists and print its size.
 
 ### 7 — Write the frontend markdown summary
 `write_file` → `/workspace/outputs/model_agent4.md`: pipeline verdict (verbatim one-liner), fairness score before/after/improvement, What Was Found, What Was Fixed, What Remains, a metrics summary table, and an Output Files table listing `model_final_report.pdf`, `model_agent1.md`, `model_agent2.md`, `model_agent3.md`, `fixed_predictions.csv`, `threshold_map.json`.
+
+**STRICT MARKDOWN TABLE RULES:**
+- **Double Newlines**: Always place a blank line BEFORE and AFTER every table.
+- **Header & Separator**: Every table MUST have a header row and a separator row (e.g., `| Header | Header |` followed by `|---|---|`).
+- **Gfm Compliance**: Ensure every row starts and ends with a pipe `|`.
+- **Bold Headers**: Always bold the text in the header row using `**`.
+- **Consistency**: Ensure the number of columns in the header, separator, and data rows is identical.
 
 ### 8 — Save the final UI metrics JSON
 `write_file` → `/workspace/outputs/model_agent4_metrics.json`. Use this EXACT shape — a `metrics` array and a `findings` array where findings use the `text` key. Populate from real values; do NOT copy the wording, and do NOT turn `metrics` into an object:

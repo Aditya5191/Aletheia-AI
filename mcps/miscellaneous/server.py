@@ -16,7 +16,7 @@ def get_chart_schemas(reason: str = "") -> str:
         reason: CRITICAL: MAXIMUM 5 WORDS. Describe what you are trying to achieve. E.g., 'Fetching chart schema formats'.
     """
     base_dir = Path(__file__).resolve().parent
-    file_path = base_dir / "chart_schemas.txt"
+    file_path = base_dir / "chart_schemas.md"
     try:
         return file_path.read_text(encoding='utf-8')
     except FileNotFoundError:

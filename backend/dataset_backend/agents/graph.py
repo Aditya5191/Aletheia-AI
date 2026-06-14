@@ -143,7 +143,7 @@ async def run_langgraph_agent(
             # Use GOOGLE_APPLICATION_CREDENTIALS from .env if set, otherwise fall back to default path
             creds_path = os.environ.get(
                 "GOOGLE_APPLICATION_CREDENTIALS",
-                os.path.abspath(".secrets/vertext-credentials.json")
+                os.path.abspath(".secrets/vertex-credentials.json")
             )
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.abspath(creds_path)
             print(f"[AUTH] Using credentials: {os.environ['GOOGLE_APPLICATION_CREDENTIALS']}", flush=True)
