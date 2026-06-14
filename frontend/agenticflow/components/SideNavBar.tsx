@@ -38,7 +38,7 @@ export default function SideNavBar() {
       <div className="flex-1 flex flex-col gap-1 px-2 whitespace-nowrap">
         <button
           onClick={() => setCurrentView("dataset")}
-          className={`w-full flex items-center gap-3 px-4 py-3 transition-all duration-200 cursor-pointer ${
+          className={`w-full flex items-center gap-3 px-4 py-3 transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] cursor-pointer ${
             currentView === "dataset"
               ? "bg-primary/10 text-primary border-r-4 border-primary shadow-[inset_1px_0_0_0_rgba(139,92,246,0.5)]"
               : "text-gray-500 hover:text-gray-200 hover:bg-surface-container"
@@ -50,7 +50,7 @@ export default function SideNavBar() {
 
         <button
           onClick={() => setCurrentView("model")}
-          className={`w-full flex items-center gap-3 px-4 py-3 transition-all duration-200 cursor-pointer ${
+          className={`w-full flex items-center gap-3 px-4 py-3 transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] cursor-pointer ${
             currentView === "model"
               ? "bg-secondary/10 text-secondary border-r-4 border-secondary shadow-[inset_1px_0_0_0_rgba(100,200,255,0.3)]"
               : "text-gray-500 hover:text-gray-200 hover:bg-surface-container"
@@ -62,7 +62,7 @@ export default function SideNavBar() {
 
         <button
           onClick={() => setCurrentView("library")}
-          className={`w-full flex items-center gap-3 px-4 py-3 transition-all duration-200 cursor-pointer ${
+          className={`w-full flex items-center gap-3 px-4 py-3 transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] cursor-pointer ${
             currentView === "library"
               ? "bg-emerald-500/10 text-emerald-400 border-r-4 border-emerald-500 shadow-[inset_1px_0_0_0_rgba(16,185,129,0.3)]"
               : "text-gray-500 hover:text-gray-200 hover:bg-surface-container"
@@ -79,14 +79,14 @@ export default function SideNavBar() {
 
           <button
             onClick={() => setShowTour(true)}
-            className="flex items-center gap-3 px-2 py-2 rounded-md text-gray-400 hover:text-gray-200 hover:bg-surface-container transition-colors text-xs font-semibold cursor-pointer w-full"
+            className="flex items-center gap-3 px-2 py-2 rounded-md text-gray-400 hover:text-gray-200 hover:bg-surface-container transition-all duration-150 ease-out active:scale-[0.98] text-xs font-semibold cursor-pointer w-full"
           >
             <Compass className="w-4 h-4" />
             Tour
           </button>
           <a
             href="#"
-            className="flex items-center gap-3 px-2 py-2 rounded-md text-gray-400 hover:text-gray-200 hover:bg-surface-container transition-colors text-xs font-semibold"
+            className="flex items-center gap-3 px-2 py-2 rounded-md text-gray-400 hover:text-gray-200 hover:bg-surface-container transition-all duration-150 ease-out active:scale-[0.98] text-xs font-semibold"
           >
             <HelpCircle className="w-4 h-4" />
             Support

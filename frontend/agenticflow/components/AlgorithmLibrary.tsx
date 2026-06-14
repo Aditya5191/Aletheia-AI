@@ -147,7 +147,7 @@ export default function AlgorithmLibrary() {
   });
 
   return (
-    <div className={`mt-[64px] min-h-[calc(100vh-64px)] bg-background text-on-surface pb-12 transition-all duration-300 ease-in-out ${
+    <div className={`mt-[64px] min-h-[calc(100vh-64px)] bg-background text-on-surface pb-12 transition-[margin] duration-300 ease-out ${
       isSidebarCollapsed ? "ml-0" : "ml-[260px]"
     }`}>
       {/* Hero Section */}
@@ -157,24 +157,24 @@ export default function AlgorithmLibrary() {
         </div>
         <div className="max-w-6xl mx-auto relative z-10 flex flex-col gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center shadow-[inset_0_0_12px_rgba(16,185,129,0.3)]">
-              <Library className="w-5 h-5 text-emerald-400" />
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shadow-inner shadow-primary/30">
+              <Library className="w-5 h-5 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-white">Algorithm Library</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-on-surface">Algorithm Library</h1>
           </div>
-          <p className="text-gray-400 max-w-2xl text-sm leading-relaxed">
+          <p className="text-on-surface-variant max-w-2xl text-sm leading-relaxed">
             Aletheia's Model Context Protocol (MCP) provides AI agents with deep statistical and causal bias detection knowledge. The registry uses a Dual-Knowledge Delivery Model, categorizing algorithms as either <strong>PURE</strong> (single mathematical formula) or <strong>FRAMEWORK</strong> (multi-step orchestrated pipelines).
           </p>
 
           <div className="flex flex-col gap-4 mt-6">
             <div className="relative w-full max-w-md">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-gray-500" />
+                <Search className="h-4 w-4 text-on-surface-variant" />
               </div>
               <input
                 type="text"
                 placeholder="Search algorithms, techniques, metrics..."
-                className="block w-full min-w-[300px] sm:min-w-[400px] pl-10 pr-3 py-2 border border-outline-variant rounded-lg bg-surface-container text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-colors"
+                className="block w-full min-w-[300px] sm:min-w-[400px] pl-10 pr-3 py-2 border border-outline-variant rounded-lg bg-surface-container text-on-surface placeholder-on-surface-variant focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-colors"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -183,19 +183,19 @@ export default function AlgorithmLibrary() {
             <div className="flex p-1 bg-surface-container rounded-lg border border-outline-variant w-fit">
               <button 
                 onClick={() => setFilterType("ALL")}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${filterType === "ALL" ? "bg-outline-variant text-white shadow" : "text-gray-400 hover:text-gray-200"}`}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors duration-150 ease-out active:scale-95 ${filterType === "ALL" ? "bg-outline-variant text-on-surface shadow" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 All
               </button>
               <button 
                 onClick={() => setFilterType("PURE")}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${filterType === "PURE" ? "bg-primary/20 text-primary border border-primary/30 shadow" : "text-gray-400 hover:text-gray-200"}`}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors duration-150 ease-out active:scale-95 ${filterType === "PURE" ? "bg-primary/20 text-primary border border-primary/30 shadow" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 PURE
               </button>
               <button 
                 onClick={() => setFilterType("FRAMEWORK")}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${filterType === "FRAMEWORK" ? "bg-secondary/20 text-secondary border border-secondary/30 shadow" : "text-gray-400 hover:text-gray-200"}`}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors duration-150 ease-out active:scale-95 ${filterType === "FRAMEWORK" ? "bg-secondary/20 text-secondary border border-secondary/30 shadow" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 FRAMEWORK
               </button>
@@ -209,8 +209,8 @@ export default function AlgorithmLibrary() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredAlgorithms.map((algo) => (
             <div 
-              key={algo.id}
-              className="bg-surface border border-outline-variant rounded-xl overflow-hidden shadow-lg hover:shadow-xl hover:border-outline transition-all duration-300 flex flex-col group relative"
+              key={algo.id} 
+              className="bg-surface-container border border-outline-variant rounded-xl overflow-hidden shadow-lg hover:shadow-xl hover:border-outline transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-1 flex flex-col group relative"
             >
               {/* Type Badge */}
               <div className="absolute top-4 right-4">
@@ -228,8 +228,8 @@ export default function AlgorithmLibrary() {
                 <div className="w-8 h-8 rounded-lg bg-surface-container border border-outline flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                   {algo.type === "PURE" ? <LineChart className="w-4 h-4 text-primary" /> : <Cpu className="w-4 h-4 text-secondary" />}
                 </div>
-                <h3 className="text-lg font-bold text-white mb-1 pr-16">{algo.name}</h3>
-                <code className="text-[10px] text-gray-500 font-mono bg-surface-container px-1.5 py-0.5 rounded">
+                <h3 className="text-lg font-bold text-on-surface mb-1 pr-16">{algo.name}</h3>
+                <code className="text-[10px] text-on-surface-variant font-mono bg-surface px-1.5 py-0.5 rounded">
                   {algo.id}
                 </code>
               </div>
@@ -237,16 +237,16 @@ export default function AlgorithmLibrary() {
               {/* Card Body */}
               <div className="p-5 flex-1 flex flex-col gap-4">
                 <div>
-                  <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-1 flex items-center gap-1.5">
+                  <h4 className="text-xs uppercase tracking-wider text-on-surface-variant mb-1 flex items-center gap-1.5">
                     <Search className="w-3 h-3" /> Detection Method
                   </h4>
-                  <p className="text-sm text-gray-300 leading-snug">{algo.detection}</p>
+                  <p className="text-sm text-on-surface leading-snug">{algo.detection}</p>
                 </div>
                 <div>
-                  <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-1 flex items-center gap-1.5">
+                  <h4 className="text-xs uppercase tracking-wider text-on-surface-variant mb-1 flex items-center gap-1.5">
                     <Shield className="w-3 h-3" /> Mitigation Technique
                   </h4>
-                  <p className="text-sm text-gray-300 leading-snug">{algo.mitigation}</p>
+                  <p className="text-sm text-on-surface leading-snug">{algo.mitigation}</p>
                 </div>
               </div>
 
@@ -255,7 +255,7 @@ export default function AlgorithmLibrary() {
                 {algo.sectors.map(sector => (
                   <span 
                     key={sector} 
-                    className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-medium bg-surface border border-outline-variant text-gray-400 group-hover:border-gray-600 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-medium bg-surface border border-outline-variant text-on-surface-variant group-hover:border-outline group-hover:text-on-surface transition-colors"
                   >
                     <SectorIcon sector={sector} />
                     {sector}
@@ -266,12 +266,12 @@ export default function AlgorithmLibrary() {
           ))}
 
           {filteredAlgorithms.length === 0 && (
-            <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-500">
+            <div className="col-span-full py-20 flex flex-col items-center justify-center text-on-surface-variant">
               <Search className="w-12 h-12 mb-4 text-outline" />
               <p className="text-lg">No algorithms match your criteria.</p>
               <button 
                 onClick={() => { setSearchTerm(""); setFilterType("ALL"); }}
-                className="mt-4 text-emerald-400 hover:text-emerald-300 text-sm font-medium"
+                className="mt-4 text-primary hover:text-primary/80 text-sm font-medium transition-colors cursor-pointer active:scale-95"
               >
                 Clear filters
               </button>

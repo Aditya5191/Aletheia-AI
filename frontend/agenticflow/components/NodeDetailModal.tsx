@@ -90,14 +90,15 @@ const nodeDetails: Record<string, NodeDetailData> = {
     title: "Data Inspector",
     iconType: "database",
     statusLabel: "Idle",
-    statusColor: "#958ea0",
+    statusColor: "var(--color-text-muted)",
     charts: [
       {
         id: "disparity_score",
         label: "Disparity Trend",
         explanation: "This chart tracks the overall disparity score over time. We can observe a steady decline in bias across recent versions, indicating that our mitigation strategies are taking effect.",
         type: "line",
-        color: "#ffea7f", // warning yellow
+        color: "var(--color-secondary)", // warning yellow
+
         data: [
           { label: "v1.0", value: 0.42 },
           { label: "v1.1", value: 0.38 },
@@ -113,7 +114,7 @@ const nodeDetails: Record<string, NodeDetailData> = {
         label: "Feature Imbalance",
         explanation: "Income shows the highest feature variance at 68%, making it the most significant proxy variable affecting the model's disparate impact.",
         type: "bar",
-        color: "#FF691A", // primary purple
+        color: "var(--color-primary)", // primary purple
         data: [
           { label: "Income", value: 68 },
           { label: "Age", value: 45 },
@@ -126,7 +127,7 @@ const nodeDetails: Record<string, NodeDetailData> = {
         id: "gender_representation",
         label: "Demographics",
         type: "pie",
-        color: "#00d6ff", // tertiary blue
+        color: "var(--color-outline)", // tertiary blue
         data: [
           { label: "Male", value: 65200 },
           { label: "Female", value: 31400 },
@@ -195,13 +196,13 @@ def analyze_disparity(df: pd.DataFrame) -> Dict[str, Any]:
     title: "Agent Auditor",
     iconType: "brain",
     statusLabel: "Completed",
-    statusColor: "#ff5252",
+    statusColor: "var(--color-error)",
     charts: [
       {
         id: "dir_chart",
         label: "Approval Rates by Group",
         type: "bar",
-        color: "#ff5252",
+        color: "var(--color-error)",
         data: [
           { label: "Privileged", value: 85 },
           { label: "Unprivileged", value: 45 },
@@ -261,13 +262,13 @@ print("Audit complete. Plots generated and saved to /workspace/outputs/agent2.md
     title: "Mitigation Expert",
     iconType: "code",
     statusLabel: "Running",
-    statusColor: "#FF691A",
+    statusColor: "var(--color-primary)",
     charts: [
       {
         id: "mitigation_results",
         label: "Fairness Improvement (DIR)",
         type: "bar",
-        color: "#FF691A",
+        color: "var(--color-primary)",
         data: [
           { label: "Before Mitigation", value: 81 },
           { label: "After Reweighing", value: 98 },
@@ -309,7 +310,7 @@ print("Mitigation complete. New sample weights calculated.")`,
     title: "Report Writer",
     iconType: "code",
     statusLabel: "Completed",
-    statusColor: "#4edea3",
+    statusColor: "var(--color-primary)",
     charts: [],
     metrics: [],
     findings: [],
@@ -322,13 +323,13 @@ print("Mitigation complete. New sample weights calculated.")`,
     title: "Output Formatter",
     iconType: "code",
     statusLabel: "Idle",
-    statusColor: "#958ea0",
+    statusColor: "var(--color-text-muted)",
     charts: [
       {
         id: "payload_size",
         label: "Avg Payload Size (KB)",
         type: "line",
-        color: "#00d6ff", // tertiary blue
+        color: "var(--color-outline)", // tertiary blue
         data: [
           { label: "Run 1", value: 28 },
           { label: "Run 2", value: 45 },
@@ -343,7 +344,7 @@ print("Mitigation complete. New sample weights calculated.")`,
         id: "status_codes",
         label: "Response Status Codes",
         type: "pie",
-        color: "#4edea3",
+        color: "var(--color-text-muted)",
         data: [
           { label: "200 OK", value: 8441 },
           { label: "400 Bad Req", value: 12 },
@@ -488,7 +489,7 @@ function InteractiveLineChart({ chartDef }: { chartDef: ChartDef }) {
         <path
           d={areaPath}
           fill={`url(#areaGrad-${chartDef.id})`}
-          className="transition-all duration-500 ease-out"
+          className="transition duration-200 ease-out"
           style={{ animation: "drawLineX 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards" }}
         />
 
@@ -501,7 +502,7 @@ function InteractiveLineChart({ chartDef }: { chartDef: ChartDef }) {
           strokeLinecap="round"
           strokeLinejoin="round"
           filter={`url(#chartGlow-${chartDef.id})`}
-          className="transition-all duration-500 ease-out"
+          className="transition duration-200 ease-out"
           style={{ animation: "drawLineX 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards" }}
         />
 
@@ -515,7 +516,7 @@ function InteractiveLineChart({ chartDef }: { chartDef: ChartDef }) {
               width={chartW / data.length}
               height={chartH}
               fill="transparent"
-              className="cursor-pointer"
+              className="cursor-pointer active:scale-95"
             />
 
             {/* Vertical guide line */}
@@ -538,7 +539,7 @@ function InteractiveLineChart({ chartDef }: { chartDef: ChartDef }) {
               fill={hoveredIdx === i ? "#fff" : chartColor}
               stroke="var(--color-surface-lowest)"
               strokeWidth="2"
-              className="transition-all duration-300 ease-out pointer-events-none"
+              className="transition duration-300 ease-out pointer-events-none"
               style={{
                 opacity: 0,
                 animation: `fadeIn 0.4s ease-out forwards ${0.6 + i * 0.05}s`
@@ -555,7 +556,7 @@ function InteractiveLineChart({ chartDef }: { chartDef: ChartDef }) {
                   height={24}
                   rx={6}
                   fill="var(--color-outline)"
-                  stroke="#494454"
+                  stroke="var(--color-outline-variant)"
                   strokeWidth="1"
                 />
                 <text
@@ -664,7 +665,7 @@ function InteractiveBarChart({ chartDef }: { chartDef: ChartDef }) {
                 width={chartW / data.length}
                 height={chartH}
                 fill="transparent"
-                className="cursor-pointer"
+                className="cursor-pointer active:scale-95"
               />
 
               <rect
@@ -675,7 +676,7 @@ function InteractiveBarChart({ chartDef }: { chartDef: ChartDef }) {
                 rx={4}
                 fill={hoveredIdx === i ? "#fff" : chartColor}
                 opacity={hoveredIdx === null || hoveredIdx === i ? 1 : 0.5}
-                className="transition-all duration-300 ease-out pointer-events-none"
+                className="transition duration-200 ease-out pointer-events-none"
                 style={{
                   transformOrigin: isNegative ? "top" : "bottom",
                   transformBox: "fill-box",
@@ -697,7 +698,7 @@ function InteractiveBarChart({ chartDef }: { chartDef: ChartDef }) {
                       height={24}
                       rx={6}
                       fill="var(--color-outline)"
-                      stroke="#494454"
+                      stroke="var(--color-outline-variant)"
                       strokeWidth="1"
                     />
                     <text
@@ -791,7 +792,7 @@ function InteractiveGroupedBarChart({ chartDef }: { chartDef: ChartDef }) {
               const x = PAD_X + gIdx * groupWidth + (groupWidth * 0.1) + sIdx * (barWidth + barSpacing);
               const y = PAD_TOP + chartH - h;
               const isHovered = hovered?.group === gIdx && hovered?.series === sIdx;
-              const color = series[sIdx]?.color || "#7AA2F7";
+              const color = series[sIdx]?.color || "var(--color-primary)";
 
               return (
                 <g key={sIdx} onMouseEnter={() => setHovered({group: gIdx, series: sIdx})}>
@@ -803,11 +804,11 @@ function InteractiveGroupedBarChart({ chartDef }: { chartDef: ChartDef }) {
                     fill={isHovered ? "#fff" : color}
                     rx={2}
                     opacity={hovered === null || isHovered ? 1 : 0.4}
-                    className="transition-all duration-300"
+                    className="transition duration-300"
                   />
                   {isHovered && (
                     <g>
-                      <rect x={x + barWidth/2 - 30} y={y - 25} width={60} height={20} rx={4} fill="#1a1b2e" stroke={color} strokeWidth="1" />
+                      <rect x={x + barWidth/2 - 30} y={y - 25} width={60} height={20} rx={4} fill="var(--color-dark)" stroke={color} strokeWidth="1" />
                       <text x={x + barWidth/2} y={y - 11} textAnchor="middle" className="text-[10px] font-bold fill-white">{fmtVal(val)}</text>
                     </g>
                   )}
@@ -894,7 +895,7 @@ function InteractiveStackedBarChart({ chartDef }: { chartDef: ChartDef }) {
                 const y = currentY - h; // The top of this bar segment
                 
                 const isHovered = hovered?.group === gIdx && hovered?.series === sIdx;
-                const color = series[sIdx]?.color || "#7AA2F7";
+                const color = series[sIdx]?.color || "var(--color-primary)";
 
                 const rect = (
                   <g key={sIdx} onMouseEnter={() => setHovered({group: gIdx, series: sIdx})}>
@@ -905,11 +906,11 @@ function InteractiveStackedBarChart({ chartDef }: { chartDef: ChartDef }) {
                       height={h}
                       fill={isHovered ? "#fff" : color}
                       opacity={hovered === null || isHovered ? 1 : 0.4}
-                      className="transition-all duration-300"
+                      className="transition duration-300"
                     />
                     {isHovered && (
                       <g>
-                        <rect x={x + barWidth/2 - 30} y={y - 25} width={60} height={20} rx={4} fill="#1a1b2e" stroke={color} strokeWidth="1" />
+                        <rect x={x + barWidth/2 - 30} y={y - 25} width={60} height={20} rx={4} fill="var(--color-dark)" stroke={color} strokeWidth="1" />
                         <text x={x + barWidth/2} y={y - 11} textAnchor="middle" className="text-[10px] font-bold fill-white">{fmtVal(val)}</text>
                       </g>
                     )}
@@ -960,7 +961,7 @@ function InteractiveBoxPlot({ chartDef }: { chartDef: ChartDef }) {
 
   const itemW = chartW / data.length;
   const boxW = Math.min(30, itemW * 0.6);
-  const chartColor = chartDef.color || "#BB9AF7";
+  const chartColor = chartDef.color || "var(--color-secondary)";
 
   const getY = (v: number) => PAD_TOP + chartH - ((v - minVal) / totalRange) * chartH;
 
@@ -1004,14 +1005,14 @@ function InteractiveBoxPlot({ chartDef }: { chartDef: ChartDef }) {
                 height={Math.abs(yQ1 - yQ3)}
                 fill={isHovered ? "#fff" : chartColor}
                 opacity={0.8}
-                stroke="#1a1b2e"
+                stroke="var(--color-dark)"
                 strokeWidth="1"
                 rx={2}
-                className="transition-all duration-300"
+                className="transition duration-300"
               />
 
               {/* Median Line */}
-              <line x1={cx - boxW/2} y1={yMed} x2={cx + boxW/2} y2={yMed} stroke="#1a1b2e" strokeWidth="2" />
+              <line x1={cx - boxW/2} y1={yMed} x2={cx + boxW/2} y2={yMed} stroke="var(--color-dark)" strokeWidth="2" />
 
               {/* X Label */}
               <text
@@ -1027,7 +1028,7 @@ function InteractiveBoxPlot({ chartDef }: { chartDef: ChartDef }) {
               {/* Tooltip */}
               {isHovered && (
                 <g>
-                  <rect x={cx + boxW/2 + 5} y={yMed - 30} width={90} height={60} rx={4} fill="#1a1b2e" stroke={chartColor} strokeWidth="1" />
+                  <rect x={cx + boxW/2 + 5} y={yMed - 30} width={90} height={60} rx={4} fill="var(--color-dark)" stroke={chartColor} strokeWidth="1" />
                   <text x={cx + boxW/2 + 10} y={yMed - 18} className="text-[9px] fill-on-surface-variant">Max: {fmtVal(d.max)}</text>
                   <text x={cx + boxW/2 + 10} y={yMed - 8} className="text-[9px] fill-white font-bold">Med: {fmtVal(d.median)}</text>
                   <text x={cx + boxW/2 + 10} y={yMed + 2} className="text-[9px] fill-on-surface-variant">Min: {fmtVal(d.min)}</text>
@@ -1125,7 +1126,7 @@ function InteractivePieChart({ chartDef }: { chartDef: ChartDef }) {
                 fill={colors[i % colors.length]}
                 stroke="var(--color-surface)"
                 strokeWidth={2}
-                className="transition-all duration-300 ease-out cursor-pointer"
+                className="transition duration-300 ease-out cursor-pointer active:scale-95"
                 opacity={hoveredIdx === null || hoveredIdx === i ? 1 : 0.5}
               />
               
@@ -1136,7 +1137,7 @@ function InteractivePieChart({ chartDef }: { chartDef: ChartDef }) {
                   y={textY}
                   textAnchor={Math.cos(midAngle) > 0 ? "start" : "end"}
                   alignmentBaseline="middle"
-                  className="text-[11px] font-medium transition-all duration-300 pointer-events-none"
+                  className="text-[11px] font-medium transition duration-300 pointer-events-none"
                   style={{ fill: hoveredIdx === i ? "#fff" : colors[i % colors.length] }}
                 >
                   {d.label} ({percent}%)
@@ -1209,7 +1210,7 @@ function InteractiveScatterChart({ chartDef }: { chartDef: ChartDef }) {
   const getX = (x: number) => PAD_X + ((x - minX) / rangeX) * chartW;
   const getY = (y: number) => PAD_TOP + chartH - ((y - minY) / rangeY) * chartH;
 
-  const defaultColor = chartDef.color || "#7AA2F7";
+  const defaultColor = chartDef.color || "var(--color-primary)";
 
   return (
     <div className="flex items-center justify-center h-full relative">
@@ -1301,7 +1302,7 @@ function InteractiveScatterChart({ chartDef }: { chartDef: ChartDef }) {
           return (
             <g key={`pt-${i}`} onMouseEnter={() => setHoveredIdx(i)}>
               {/* Invisible larger circle for easier hovering */}
-              <circle cx={cx} cy={cy} r={12} fill="transparent" className="cursor-pointer" />
+              <circle cx={cx} cy={cy} r={12} fill="transparent" className="cursor-pointer active:scale-95" />
               
               <circle
                 cx={cx}
@@ -1309,7 +1310,7 @@ function InteractiveScatterChart({ chartDef }: { chartDef: ChartDef }) {
                 r={isHovered ? 6 : 4}
                 fill={color}
                 opacity={hoveredIdx === null || isHovered ? 1 : 0.4}
-                className="transition-all duration-300 ease-out pointer-events-none"
+                className="transition duration-200 ease-out pointer-events-none"
                 style={{
                   transformOrigin: `${cx}px ${cy}px`,
                   animation: `popIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards ${i * 0.02}s`,
@@ -1327,7 +1328,7 @@ function InteractiveScatterChart({ chartDef }: { chartDef: ChartDef }) {
                     height={24}
                     rx={6}
                     fill="var(--color-outline)"
-                    stroke="#494454"
+                    stroke="var(--color-outline-variant)"
                   />
                   <text
                     x={cx}
@@ -1383,9 +1384,9 @@ function InteractiveHeatmap({ chartDef }: { chartDef: ChartDef }) {
   };
 
   // 3-stop color gradient: low → mid → high
-  const lowColor  = hexToRgb(colorScale[0] || "#1a1b2e");  // dark navy
-  const midColor  = hexToRgb(colorScale[1] || "#7AA2F7");  // blue
-  const highColor = hexToRgb(colorScale[2] || "#F7768E");  // hot pink/red
+  const lowColor  = hexToRgb(colorScale[0] || "var(--color-dark)");  // dark navy
+  const midColor  = hexToRgb(colorScale[1] || "var(--color-primary)");  // blue
+  const highColor = hexToRgb(colorScale[2] || "var(--color-error)");  // hot pink/red
 
   // Interpolate between two RGB colors
   const lerpColor = (a: typeof lowColor, b: typeof lowColor, t: number) => {
@@ -1451,7 +1452,7 @@ function InteractiveHeatmap({ chartDef }: { chartDef: ChartDef }) {
                   opacity={isHovered ? 1 : 0.85}
                   stroke={isHovered ? "#fff" : "transparent"}
                   strokeWidth={isHovered ? 2 : 0}
-                  className="transition-all duration-300 cursor-pointer"
+                  className="transition duration-300 cursor-pointer active:scale-95"
                   style={{ animation: `fadeIn 0.5s ease forwards ${(i+j)*0.05}s` }}
                 />
                 
@@ -1465,7 +1466,7 @@ function InteractiveHeatmap({ chartDef }: { chartDef: ChartDef }) {
                       height={20}
                       rx={4}
                       fill="var(--color-outline)"
-                      stroke="#494454"
+                      stroke="var(--color-outline-variant)"
                     />
                     <text
                       x={PAD_LEFT + j * cellW + cellW/2}
@@ -1616,7 +1617,7 @@ function highlightPython(line: string): string {
       while (j < line.length && /[a-zA-Z0-9_]/.test(line[j])) j++;
       const word = line.slice(i, j);
       if (PY_KEYWORDS.has(word)) {
-        segments.push({ text: word, color: '#BB9AF7' });
+        segments.push({ text: word, color: 'var(--color-secondary)' });
       } else {
         segments.push({ text: word });
       }
@@ -1722,7 +1723,7 @@ function ChartSection({ charts, onActiveChartChange }: { charts: ChartDef[], onA
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center justify-between gap-3 bg-surface-lowest border border-outline-variant text-on-surface-variant text-[11px] font-medium rounded-full px-4 py-1.5 hover:border-outline hover:text-on-surface focus:outline-none focus:border-primary transition-colors cursor-pointer min-w-[160px]"
+              className="flex items-center justify-between gap-3 bg-surface-lowest border border-outline-variant text-on-surface-variant text-[11px] font-medium rounded-full px-4 py-1.5 hover:border-outline hover:text-on-surface focus:outline-none focus:border-primary transition-colors cursor-pointer active:scale-95 min-w-[160px]"
             >
               <span className="truncate">{activeChart.title || activeChart.label || `Chart ${activeIdx + 1}`}</span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 text-on-surface-variant ${isDropdownOpen ? "rotate-180" : ""}`} />
@@ -1737,7 +1738,7 @@ function ChartSection({ charts, onActiveChartChange }: { charts: ChartDef[], onA
                       setActiveIdx(idx);
                       setIsDropdownOpen(false);
                     }}
-                    className={`w-full text-left px-4 py-2.5 text-[11px] font-medium transition-colors cursor-pointer ${
+                    className={`w-full text-left px-4 py-2.5 text-[11px] font-medium transition-colors cursor-pointer active:scale-95 ${
                       activeIdx === idx
                         ? "bg-surface-container-high text-primary"
                         : "text-on-surface-variant hover:bg-[#1a1c20] hover:text-on-surface"
@@ -1953,7 +1954,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
       onClick={handleBackdropClick}
       className="fixed inset-0 z-[200] flex items-center justify-center p-8 bg-black/60 backdrop-blur-sm animate-[fadeIn_200ms_ease-out]"
     >
-      <div className="w-full max-w-[1100px] max-h-[calc(100vh-64px)] bg-surface border border-outline-variant rounded-2xl shadow-[0_32px_80px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden animate-[slideUp_250ms_ease-out]">
+      <div className="w-full max-w-[1100px] max-h-[calc(100vh-64px)] bg-surface-container border border-outline-variant rounded-2xl shadow-[0_32px_80px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden animate-[slideUp_250ms_ease-out]">
         {/* ---- Header ---- */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant bg-surface-lowest">
           <div className="flex items-center gap-3">
@@ -1980,7 +1981,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer active:scale-95"
           >
             <X className="w-5 h-5" />
           </button>
@@ -1992,7 +1993,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
             {!isReportNode && (
               <button
                 onClick={() => setActiveTab("chart")}
-                className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
+                className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer active:scale-95 ${
                   activeTab === "chart"
                     ? "bg-surface-container text-primary border border-b-0 border-outline-variant"
                     : "text-on-surface-variant hover:text-on-surface-variant"
@@ -2006,7 +2007,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
             )}
             <button
               onClick={() => setActiveTab("review")}
-              className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
+              className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer active:scale-95 ${
                 activeTab === "review"
                   ? "bg-surface-container text-primary border border-b-0 border-outline-variant"
                   : "text-on-surface-variant hover:text-on-surface-variant"
@@ -2020,7 +2021,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
             {!isReportNode && (
               <button
                 onClick={() => setActiveTab("code")}
-                className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer ${
+                className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer active:scale-95 ${
                   activeTab === "code"
                     ? "bg-surface-container text-primary border border-b-0 border-outline-variant"
                     : "text-on-surface-variant hover:text-on-surface-variant"
@@ -2044,7 +2045,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                 download={isModel ? "Aletheia_Fixed_Predictions.csv" : "Aletheia_Fixed_Dataset.csv"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-[#7AA2F7] text-[#7AA2F7] hover:bg-[#7AA2F7]/10 transition-all cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-primary text-primary hover:bg-primary/10 transition cursor-pointer active:scale-95"
               >
                 <Download className="w-4 h-4" />
                 {isModel ? "Fixed Predictions" : "Fixed Data"}
@@ -2056,7 +2057,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                 download={isModel ? "Aletheia_Model_Audit_Report.pdf" : "Aletheia_Fairness_Report.pdf"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-[#7AA2F7] to-[#BB9AF7] text-[#1a1b26] hover:shadow-[0_0_20px_rgba(122,162,247,0.4)] transition-all cursor-pointer"
+                className="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-primary to-secondary text-white hover:shadow-lg transition cursor-pointer active:scale-95"
               >
                 <Download className="w-4 h-4" />
                 PDF Report
@@ -2186,7 +2187,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                 </div>
                 <button
                   onClick={handleCopy}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all cursor-pointer border border-outline-variant"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition cursor-pointer active:scale-95 border border-outline-variant"
                 >
                   {copied ? (
                     <>
@@ -2225,7 +2226,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                             setCopiedCellIdx(idx);
                             setTimeout(() => setCopiedCellIdx(null), 1500);
                           }}
-                          className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium text-on-surface-variant hover:text-on-surface hover:bg-[var(--color-outline)] transition-all cursor-pointer"
+                          className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium text-on-surface-variant hover:text-on-surface hover:bg-[var(--color-outline)] transition cursor-pointer active:scale-95"
                         >
                           {copiedCellIdx === idx ? (
                             <>
@@ -2260,7 +2261,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
                             <Hash className="w-3 h-3 text-on-surface-variant" />
                             <span className="text-[10px] font-mono text-on-surface-variant">Out [{idx + 1}]</span>
                           </div>
-                          <pre className="text-[11px] font-mono leading-relaxed whitespace-pre-wrap break-words max-h-[200px] overflow-y-auto" style={{color:'#7AA2F7'}} data-lenis-prevent="true">
+                          <pre className="text-[11px] font-mono leading-relaxed whitespace-pre-wrap break-words max-h-[200px] overflow-y-auto" style={{color:'var(--color-primary)'}} data-lenis-prevent="true">
                             {parseOutput(cell.output)}
                           </pre>
                         </div>

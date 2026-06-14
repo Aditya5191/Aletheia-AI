@@ -95,7 +95,7 @@ function DockerNode({ data }: NodeProps<DockerNodeType>) {
     <div className="relative w-[180px]">
       {/* Card */}
       <div
-        className="rounded-2xl border overflow-hidden transition-all duration-500"
+        className="rounded-2xl border overflow-hidden transition-[box-shadow,border-color,transform] duration-150 ease-out"
         style={{
           backgroundColor: "var(--color-surface)",
           borderColor: isAnimating || isRunning ? cfg.color + "40" : "var(--color-outline-variant)",
@@ -119,7 +119,7 @@ function DockerNode({ data }: NodeProps<DockerNodeType>) {
             )}
             {/* Ring */}
             <div
-              className={`absolute inset-0 rounded-full border-2 transition-all duration-500 ${
+              className={`absolute inset-0 rounded-full border-2 transition-[box-shadow,border-color,transform] duration-150 ease-out ${
                 isAnimating ? "animate-spin" : ""
               }`}
               style={{
@@ -130,7 +130,7 @@ function DockerNode({ data }: NodeProps<DockerNodeType>) {
             />
             {/* Inner circle */}
             <div
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-[box-shadow,border-color,transform] duration-150 ease-out"
               style={{ backgroundColor: cfg.bgRing }}
             >
               {renderCenterIcon(status, cfg.color, isDimmed)}
@@ -144,7 +144,7 @@ function DockerNode({ data }: NodeProps<DockerNodeType>) {
 
           {/* Status badge */}
           <div
-            className="mt-2 px-3 py-1 rounded-full flex items-center gap-1.5 transition-all duration-300"
+            className="mt-2 px-3 py-1 rounded-full flex items-center gap-1.5 transition-[box-shadow,border-color,transform] duration-150 ease-out"
             style={{ backgroundColor: cfg.color + "15" }}
           >
             <div

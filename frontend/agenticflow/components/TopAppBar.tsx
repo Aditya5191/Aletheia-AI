@@ -66,7 +66,7 @@ export default function TopAppBar() {
         <div className="flex items-center bg-surface border border-outline-variant rounded-full p-1 shadow-inner">
           <button
             onClick={() => setViewMode("developer")}
-            className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold transition-all duration-300 ${
+            className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold transition-[color,background-color,transform] duration-150 ease-out active:scale-95 ${
               viewMode === "developer"
                 ? "bg-primary text-white shadow-lg shadow-primary/40"
                 : "text-gray-500 hover:text-gray-300"
@@ -77,7 +77,7 @@ export default function TopAppBar() {
           </button>
           <button
             onClick={() => setViewMode("test-developer")}
-            className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold transition-all duration-300 ${
+            className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold transition-[color,background-color,transform] duration-150 ease-out active:scale-95 ${
               viewMode === "test-developer"
                 ? "bg-amber-500 text-white shadow-lg shadow-amber-900/40"
                 : "text-gray-500 hover:text-gray-300"
@@ -88,7 +88,7 @@ export default function TopAppBar() {
           </button>
           <button
             onClick={() => setViewMode("user")}
-            className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold transition-all duration-300 ${
+            className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold transition-[color,background-color,transform] duration-150 ease-out active:scale-95 ${
               viewMode === "user"
                 ? "bg-primary text-white shadow-lg shadow-primary/40"
                 : "text-gray-500 hover:text-gray-300"
@@ -128,7 +128,7 @@ export default function TopAppBar() {
             </button>
             
             {showHistory && (
-              <div className="absolute right-0 mt-3 w-72 bg-surface border border-outline-variant rounded-xl shadow-2xl shadow-black/80 py-2 z-[110] animate-in fade-in zoom-in duration-200">
+              <div className="absolute right-0 mt-3 w-72 bg-surface border border-outline-variant rounded-xl shadow-2xl shadow-black/80 py-2 z-[110] animate-in fade-in zoom-in duration-200 ease-out origin-top-right">
                 <div className="px-4 py-2 border-b border-outline-variant mb-1">
                   <span className="font-bold text-white text-sm">Recent Activity</span>
                 </div>
@@ -172,7 +172,7 @@ export default function TopAppBar() {
             </button>
             
             {showNotifications && (
-              <div className="absolute right-0 mt-3 w-80 bg-surface border border-outline-variant rounded-xl shadow-2xl shadow-black/80 py-2 z-[110] animate-in fade-in zoom-in duration-200">
+              <div className="absolute right-0 mt-3 w-80 bg-surface border border-outline-variant rounded-xl shadow-2xl shadow-black/80 py-2 z-[110] animate-in fade-in zoom-in duration-200 ease-out origin-top-right">
                 <div className="px-4 py-2 border-b border-outline-variant flex justify-between items-center mb-1">
                   <span className="font-bold text-white">Notifications</span>
                   <span className="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-widest font-black">2 New</span>
@@ -226,7 +226,7 @@ export default function TopAppBar() {
             </button>
 
             {showProfile && (
-              <div className="absolute right-0 mt-3 w-56 bg-surface border border-outline-variant rounded-xl shadow-2xl shadow-black/80 py-2 z-[110] animate-in fade-in zoom-in duration-200">
+              <div className="absolute right-0 mt-3 w-56 bg-surface border border-outline-variant rounded-xl shadow-2xl shadow-black/80 py-2 z-[110] animate-in fade-in zoom-in duration-200 ease-out origin-top-right">
                 <div className="px-4 py-3 border-b border-outline-variant mb-1">
                   <p className="text-sm font-bold text-white">Techno Path</p>
                   <p className="text-xs text-gray-500 truncate">technopath@agenticflow.ai</p>

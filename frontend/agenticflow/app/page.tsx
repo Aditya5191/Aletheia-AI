@@ -219,12 +219,12 @@ export default function Landing() {
             <div className="hero-buttons flex flex-col sm:flex-row gap-5 mt-4">
               <button 
                 onClick={() => router.push('/dashboard')}
-                className="btn-primary group flex items-center justify-center gap-4 px-10 py-5 text-sm shadow-[0_0_50px_rgba(80,220,192,0.25)] rounded-full hover:scale-105 transition-transform duration-300"
+                className="btn-primary group flex items-center justify-center gap-4 px-10 py-5 text-sm shadow-[0_0_50px_rgba(80,220,192,0.25)] rounded-full transition-all duration-200 ease-out hover:scale-105 active:scale-95"
               >
                 BEGIN FORENSIC AUDIT
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </button>
-              <button className="flex items-center justify-center gap-3 text-[10px] uppercase font-bold tracking-[0.3em] text-on-surface-variant hover:text-on-surface transition-all px-10 border border-outline-variant/20 rounded-full py-5 bg-background/40 backdrop-blur-md hover:bg-background/80 hover:scale-105 duration-300">
+              <button className="flex items-center justify-center gap-3 text-[10px] uppercase font-bold tracking-[0.3em] text-on-surface-variant hover:text-on-surface px-10 border border-outline-variant/20 rounded-full py-5 bg-background/40 backdrop-blur-md hover:bg-background/80 hover:scale-105 transition-all duration-200 ease-out active:scale-95">
                 READ THE WHITE PAPER
               </button>
             </div>
@@ -394,7 +394,7 @@ export default function Landing() {
             </div>
             <button 
               onClick={() => router.push('/dashboard')}
-              className="btn-primary group flex items-center gap-6 px-16 py-6 text-lg rounded-full shadow-[0_0_60px_rgba(80,220,192,0.3)] hover:scale-105 transition-transform duration-300"
+              className="btn-primary group flex items-center gap-6 px-16 py-6 text-lg rounded-full shadow-[0_0_60px_rgba(80,220,192,0.3)] hover:scale-105 transition-all duration-200 ease-out active:scale-95"
             >
               INITIALIZE YOUR FIRST AUDIT
               <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />

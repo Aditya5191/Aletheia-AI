@@ -137,7 +137,7 @@ function AgentNode({ id, data, selected }: NodeProps<AgentNodeType>) {
           <button 
             onClick={handleRun}
             disabled={isAgentRunning}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest transition-all cursor-pointer shadow-sm uppercase ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest transition-[transform,background-color,color] duration-150 ease-out active:scale-[0.98] cursor-pointer shadow-sm uppercase ${
               isAgentRunning 
                 ? "bg-secondary-container/20 text-primary border border-secondary/20 cursor-default" 
                 : "bg-primary text-on-primary hover:bg-primary-container hover:text-on-primary-container shadow-[0_0_12px_rgba(208,188,255,0.2)] hover:shadow-[0_0_16px_rgba(208,188,255,0.4)]"
@@ -192,7 +192,7 @@ function AgentNode({ id, data, selected }: NodeProps<AgentNodeType>) {
             </div>
             <div className="h-1 w-full bg-surface-container-highest rounded-full overflow-hidden">
               <div
-                className="h-full bg-primary transition-all duration-700"
+                className="h-full bg-primary transition-[width] duration-300 ease-out"
                 style={{ width: `${data.confidenceScore}%` }}
               />
             </div>
