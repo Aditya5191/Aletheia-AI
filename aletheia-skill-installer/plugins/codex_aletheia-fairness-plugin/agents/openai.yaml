@@ -1,0 +1,3 @@
+display_name: Aletheia Auditor
+short_description: Run statistical and causal fairness audits on datasets and models.
+default_prompt: Please run a fairness audit on my dataset to check for bias and disparate impact.

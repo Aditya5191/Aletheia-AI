@@ -1,0 +1,27 @@
+{
+  "name": "create-aletheia-skill",
+  "version": "1.0.9",
+  "description": "Installer for the Aletheia Fairness Auditor Plugins",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "create-aletheia-skill": "./bin/index.js"
+  },
+  "scripts": {
+    "start": "node ./bin/index.js"
+  },
+  "keywords": [
+    "ai",
+    "skill",
+    "claude",
+    "codex",
+    "antigravity",
+    "fairness",
+    "auditor"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@inquirer/prompts": "^7.3.1"
+  }
+}

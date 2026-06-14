@@ -1,0 +1,8 @@
+{
+  "name": "aletheia",
+  "description": "Automated algorithmic fairness auditing with MCP and LangGraph.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Aletheia Framework"
+  }
+}

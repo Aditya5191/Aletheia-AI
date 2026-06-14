@@ -1,0 +1,5 @@
+{
+  "name": "aletheia-fairness-plugin",
+  "description": "Complete algorithmic fairness audit pipeline with bundled Sandbox MCP and Data Science workflows.",
+  "version": "1.0.0"
+}

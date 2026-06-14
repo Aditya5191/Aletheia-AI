@@ -1,0 +1,219 @@
+algorithm_id: 14
+name: Fairness in Relational Domains (FairPSL)
+type: FRAMEWORK
+agent_parameter_tuning_guide:
+  - parameter: "delta"
+    default: 0.05
+    impact: "Fairness threshold for RD/RR/RC metrics. Tighter values (0.01) enforce strict parity but may over-constrain the optimizer, degrading accuracy. Looser values (0.15) allow more disparity but preserve utility. Use 0.05 for most audits; tighten only if regulatory compliance demands it."
+  - parameter: "metric"
+    default: "RD"
+    impact: "Which fairness metric to constrain. 'RD' (Risk Difference) measures absolute denial rate gap. 'RR' (Risk Ratio) measures proportional gap. 'RC' (Relative Chance) measures acceptance ratio. Finance domains often prefer RR; HR and education prefer RD."
+  - parameter: "solver"
+    default: "SCS"
+    impact: "CVXPY backend solver. SCS is fast for large sparse problems. Use ECOS for small-medium problems with tighter accuracy. MOSEK requires a license but is fastest for production-scale domains > 50,000 entities."
+  - parameter: "psl_rule_weights"
+    default: 1.0
+    impact: "Weight assigned to each PSL rule in the objective. Higher weights enforce rules more strictly. Set lower (0.1-0.5) for soft, noisy rules. Set higher (5-10) for hard business logic constraints."
+  - parameter: "decision_threshold"
+    default: 0.5
+    impact: "Binarization threshold for continuous decision variables. After optimization, values >= threshold are granted, below are denied. Lower thresholds increase grant rates across all groups."
+pipeline_dag:
+  - step_id: 1
+    name: "Evaluate FOL Patterns and Compute Group Counts"
+    sub_skill: "fol_grounding"
+    pseudo_code: |
+      def compute_relational_counts(domain, is_protected_fn, is_unprotected_fn, is_denied_fn):
+          """
+          Evaluate First-Order Logic formulas over the domain to compute
+          protected/unprotected group sizes and denial counts.
+          
+          Args:
+              domain: list of entity identifiers (e.g., range(n))
+              is_protected_fn: callable(v) -> bool, evaluates F1[v] AND F2[v]
+              is_unprotected_fn: callable(v) -> bool, evaluates NOT F1[v] AND F2[v]
+              is_denied_fn: callable(v) -> bool, evaluates NOT d(v)
+          Returns:
+              dict with keys 'a', 'c', 'n1', 'n2', 'protected_indices', 'unprotected_indices'
+          """
+          a, c, n1, n2 = 0, 0, 0, 0
+          protected_indices = []
+          unprotected_indices = []
+
+          for v in domain:
+              if is_protected_fn(v):
+                  n1 += 1
+                  protected_indices.append(v)
+                  if is_denied_fn(v):
+                      a += 1
+              elif is_unprotected_fn(v):
+                  n2 += 1
+                  unprotected_indices.append(v)
+                  if is_denied_fn(v):
+                      c += 1
+
+          return {
+              'a': a, 'c': c, 'n1': n1, 'n2': n2,
+              'protected_indices': protected_indices,
+              'unprotected_indices': unprotected_indices
+          }
+    constraints: ["domain must be finite and enumerable", "FOL evaluation functions must be deterministic"]
+    output: "group_counts"
+  - step_id: 2
+    name: "Compute Relational Fairness Metrics"
+    sub_skill: "metric_calculation"
+    depends_on: ["group_counts"]
+    pseudo_code: |
+      def evaluate_relational_fairness(counts, delta=0.05):
+          """
+          Compute Risk Difference, Risk Ratio, and Relative Chance from
+          group denial counts and check delta-fairness satisfaction.
+          
+          Args:
+              counts: dict with keys 'a', 'c', 'n1', 'n2'
+              delta: float, fairness threshold
+          Returns:
+              dict with metric values and boolean fairness satisfaction flags
+          """
+          a, c, n1, n2 = counts['a'], counts['c'], counts['n1'], counts['n2']
+
+          # Denial rates per group
+          p1 = a / n1 if n1 > 0 else 0.0
+          p2 = c / n2 if n2 > 0 else 0.0
+
+          # Risk Difference: absolute gap in denial rates
+          rd = p1 - p2
+
+          # Risk Ratio: proportional gap in denial rates
+          rr = p1 / p2 if p2 > 0 else float('inf')
+
+          # Relative Chance: ratio of acceptance rates
+          rc = (1 - p1) / (1 - p2) if (1 - p2) > 0 else float('inf')
+
+          return {
+              'risk_difference': float(rd),
+              'risk_ratio': float(rr),
+              'relative_chance': float(rc),
+              'protected_denial_rate': float(p1),
+              'unprotected_denial_rate': float(p2),
+              'delta_fair_RD': bool(abs(rd) <= delta),
+              'delta_fair_RR': bool((1 - delta) <= rr <= (1 + delta)),
+              'delta_fair_RC': bool((1 - delta) <= rc <= (1 + delta)),
+              'delta': delta,
+              'counts': counts
+          }
+    constraints: ["n1 and n2 must be > 0 for meaningful metrics", "delta must be in (0, 1)"]
+    output: "fairness_report"
+  - step_id: 3
+    name: "Build Linear Fairness Constraints"
+    sub_skill: "constraint_generation"
+    depends_on: ["fairness_report", "group_counts"]
+    pseudo_code: |
+      def build_fairness_constraints(decision_vars, protected_indices, unprotected_indices, metric='RD', delta=0.05):
+          """
+          Translate delta-fairness requirements into linear inequalities
+          over CVXPY decision variables. Preserves convexity of the
+          optimization problem.
+          
+          Args:
+              decision_vars: cvxpy Variable, shape (domain_size,)
+              protected_indices: list of int
+              unprotected_indices: list of int
+              metric: str, one of 'RD', 'RR', 'RC'
+              delta: float, fairness threshold
+          Returns:
+              list of cvxpy constraints
+          """
+          import cvxpy as cp
+
+          n1 = len(protected_indices)
+          n2 = len(unprotected_indices)
+          constraints = []
+
+          # Sum of denials: since decision_vars in [0,1] represent grant probability,
+          # denial count = n - sum(grants)
+          grants_protected = cp.sum(decision_vars[protected_indices])
+          grants_unprotected = cp.sum(decision_vars[unprotected_indices])
+          denials_protected = n1 - grants_protected    # a
+          denials_unprotected = n2 - grants_unprotected  # c
+
+          if metric == 'RD':
+              # |a/n1 - c/n2| <= delta
+              # Linearized: n2*a - n1*c <= n1*n2*delta AND >= -n1*n2*delta
+              constraints.append(n2 * denials_protected - n1 * denials_unprotected <= delta * n1 * n2)
+              constraints.append(n2 * denials_protected - n1 * denials_unprotected >= -delta * n1 * n2)
+
+          elif metric == 'RR':
+              # a/n1 <= (1+delta) * c/n2
+              # Linearized: a*n2 <= (1+delta)*c*n1
+              constraints.append(denials_protected * n2 <= (1 + delta) * denials_unprotected * n1)
+              constraints.append(denials_protected * n2 >= (1 - delta) * denials_unprotected * n1)
+
+          elif metric == 'RC':
+              # (1-a/n1)/(1-c/n2) bounded
+              # Linearized: grants_p * n2 <= (1+delta) * grants_u * n1
+              constraints.append(grants_protected * n2 <= (1 + delta) * grants_unprotected * n1)
+              constraints.append(grants_protected * n2 >= (1 - delta) * grants_unprotected * n1)
+
+          # Box constraints: decision variables in [0, 1]
+          constraints.append(decision_vars >= 0)
+          constraints.append(decision_vars <= 1)
+
+          return constraints
+    constraints: ["n1 and n2 must be constants derived from known atoms", "metric must be one of RD, RR, RC"]
+    output: "linear_constraints"
+  - step_id: 4
+    name: "Fair PSL MAP Inference via Convex Optimization"
+    sub_skill: "constrained_optimization"
+    depends_on: ["linear_constraints"]
+    pseudo_code: |
+      def fair_psl_inference(domain_size, psl_rule_coefficients, psl_rule_weights, linear_constraints, decision_threshold=0.5):
+          """
+          Solve the PSL MAP inference problem subject to linear fairness
+          constraints using CVXPY. Minimizes weighted sum of squared hinge
+          losses while satisfying relational fairness guarantees.
+          
+          Args:
+              domain_size: int, number of entities
+              psl_rule_coefficients: list of np.ndarray, each shape (domain_size,)
+              psl_rule_weights: list of float, weight per rule
+              linear_constraints: list of cvxpy constraints
+              decision_threshold: float, binarization cutoff
+          Returns:
+              dict with continuous assignments, binary decisions, and solver status
+          """
+          import cvxpy as cp
+          import numpy as np
+
+          decision_vars = cp.Variable(domain_size, name="decision")
+
+          # PSL objective: weighted sum of squared hinge losses
+          objective = 0
+          for coeffs, weight in zip(psl_rule_coefficients, psl_rule_weights):
+              # Hinge loss: max(0, body - head) approximated as slack variable
+              slack = cp.Variable(nonneg=True)
+              linear_constraints.append(slack >= coeffs @ decision_vars)
+              linear_constraints.append(slack >= 0)
+              objective += weight * cp.square(slack)
+
+          # Solve convex program
+          problem = cp.Problem(cp.Minimize(objective), linear_constraints)
+          problem.solve(solver=cp.SCS, verbose=False)
+
+          if decision_vars.value is None:
+              return {"error": "Solver did not converge", "status": problem.status}
+
+          continuous = decision_vars.value
+          binary = (continuous >= decision_threshold).astype(int)
+
+          return {
+              'continuous_assignments': continuous,
+              'binary_decisions': binary,
+              'grant_rate': float(np.mean(binary)),
+              'solver_status': problem.status,
+              'optimal_value': float(problem.value) if problem.value else None
+          }
+    constraints: ["requires cvxpy and SCS solver installed", "problem must remain convex for global optimum guarantee"]
+    output: "final_result"
+orchestration_pattern: "sequential_with_conditional_skip"
+sandbox_requirements: ["numpy", "cvxpy", "scipy"]
+failure_handling: "return_partial_state_on_timeout"

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "sandbox": {
+      "command": "python",
+      "args": [
+        "./mcp_sandbox/mcp_server.py"
+      ]
+    }
+  }
+}
