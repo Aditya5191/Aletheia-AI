@@ -20,10 +20,8 @@
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
 ---
+<img width="1612" height="853" alt="image" src="https://github.com/user-attachments/assets/3b93afa6-041b-461f-8707-ca752034d438" />
 
-<img width="800" src="https://raw.githubusercontent.com/Aditya5191/Aletheia-AI/main/docs/hero.png" alt="Aletheia Hero" onerror="this.style.display='none'"/>
-
-### *"Your AI model is making biased decisions. We prove it, measure it, and fix it — autonomously."*
 
 </div>
 
