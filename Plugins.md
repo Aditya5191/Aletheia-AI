@@ -34,7 +34,8 @@ Import via Settings → Plugins
 </td>
 <td align="center" width="33%">
 
-### <img src="https://www.gstatic.com/lamda/images/gemini_favicon_f069958c85030456e93de685481c559f160ea06.svg" width="40" alt="Gemini"/> Gemini CLI / Antigravity
+### <img width="640" height="480" alt="image" src="https://github.com/user-attachments/assets/95b07027-ce84-434d-8778-f0c70f2dfb44" />
+ Gemini CLI / Antigravity
 
 **Google's AI coding agent**
 
