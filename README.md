@@ -48,7 +48,7 @@
 
 ---
 
-## 🧠 What is Aletheia?
+##  What is Aletheia?
 
 **Aletheia** is a production-ready, autonomous agentic pipeline that **detects, measures, fixes, and verifies bias** in any dataset or pretrained ML model — without requiring a data science team.
 
@@ -256,7 +256,7 @@ Plain-English verdict and before/after comparison for decision-makers. Full stat
 
 ---
 
-## 🔌 Plugin Support
+## Plugin Support
 
 Aletheia is packaged as a **plug-and-play plugin** for all major AI coding agents.
 
@@ -270,7 +270,7 @@ Supports: **Claude Code · Gemini CLI / Antigravity · OpenAI Codex · Custom Ag
 
 ---
 
-## 🔒 Privacy & Security
+## Privacy & Security
 
 → **[Full Privacy & Sandbox Architecture](docs/PRIVACY.md)**
 
@@ -330,7 +330,7 @@ Supports: **Claude Code · Gemini CLI / Antigravity · OpenAI Codex · Custom Ag
 
 ---
 
-## 💰 Cost Estimate
+## Cost Estimate
 
 | Component | Resource | Est. Cost / Month |
 |-----------|---------|-------------------|
@@ -344,7 +344,7 @@ Supports: **Claude Code · Gemini CLI / Antigravity · OpenAI Codex · Custom Ag
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Using the Live MVP
 
@@ -391,17 +391,17 @@ cd frontend && npm install && npm run dev
 
 ---
 
-## 🔗 Project Links
+##  Project Links
 
 | Resource | Link |
 |---------|------|
-| 🚀 **Live MVP** | https://aletheia-frontend-69262873588.us-central1.run.app/ |
-| ▶️ **Demo Video** | https://youtu.be/Xu2u8bvfD-w |
-| 📁 **GitHub Repository** | https://github.com/Aditya5191/Aletheia-AI |
+|  **Live MVP** | https://aletheia-frontend-69262873588.us-central1.run.app/ |
+|  **Demo Video** | https://youtu.be/Xu2u8bvfD-w |
+|  **GitHub Repository** | https://github.com/Aditya5191/Aletheia-AI |
 
 ---
 
-## 📚 Documentation Index
+##  Documentation Index
 
 | File | Contents |
 |------|---------|
@@ -416,7 +416,6 @@ cd frontend && npm install && npm run dev
 
 <div align="center">
 
-[![Google Solution Challenge](https://img.shields.io/badge/Google-Solution%20Challenge%202025-4285F4?style=for-the-badge&logo=google)](https://developers.google.com/community/gdsc-solution-challenge)
 [![Vertex AI](https://img.shields.io/badge/Powered%20by-Vertex%20AI%20%2F%20Gemini-4285F4?style=for-the-badge&logo=google-cloud)](https://cloud.google.com/vertex-ai)
 
 </div>
