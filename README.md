@@ -29,7 +29,7 @@
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [What is Aletheia?](#-what-is-aletheia)
 - [Why India Needs This](#-why-india-needs-this)
@@ -121,7 +121,7 @@ India currently has **no AI fairness regulation** equivalent to the EU AI Act. T
 
 ---
 
-## 🔄 Two Audit Modes
+##  Two Audit Modes
 
 ### Mode 1 — Dataset Audit
 
@@ -171,14 +171,14 @@ Agents call `list_algorithms()` → `get_algorithm_info()` for each candidate �
 
 | Category | Algorithms | Purpose |
 |----------|-----------|---------|
-| 🔍 **Detection** | Intersectional Scanner, Mutual Info Proxy, Distance Covariance, SHAP Proxy | Find hidden bias |
-| 🔧 **Mitigation** | Disparate Impact Repair, Equal Opportunity, Recidivism Calibrator | Fix the bias |
-| 🧬 **Causal** | Causal Fair Inference, Counterfactual Fairness, Causal Explanation | Understand why |
-| 🏗️ **Structural** | Fairness Feedback Reparation, DRO Without Demographics, Relational Fairness PSL | Specialist cases |
+|  **Detection** | Intersectional Scanner, Mutual Info Proxy, Distance Covariance, SHAP Proxy | Find hidden bias |
+|  **Mitigation** | Disparate Impact Repair, Equal Opportunity, Recidivism Calibrator | Fix the bias |
+|  **Causal** | Causal Fair Inference, Counterfactual Fairness, Causal Explanation | Understand why |
+|  **Structural** | Fairness Feedback Reparation, DRO Without Demographics, Relational Fairness PSL | Specialist cases |
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ### System Architecture
 
@@ -272,7 +272,7 @@ Supports: **Claude Code · Gemini CLI / Antigravity · OpenAI Codex · Custom Ag
 
 ## Privacy & Security
 
-→ **[Full Privacy & Sandbox Architecture](docs/PRIVACY.md)**
+→ **[Full Privacy & Sandbox Architecture](Privacy.md)**
 
 **Zero-knowledge architecture. Your data never reaches us.**
 
@@ -284,7 +284,7 @@ Supports: **Claude Code · Gemini CLI / Antigravity · OpenAI Codex · Custom Ag
 
 ---
 
-## 👾 Agent Breakdowns
+##  Agent Breakdowns
 
 | Mode | Documentation |
 |------|--------------|
@@ -294,7 +294,7 @@ Supports: **Claude Code · Gemini CLI / Antigravity · OpenAI Codex · Custom Ag
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### AI Orchestration
 | Technology | Role |
