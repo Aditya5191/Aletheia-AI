@@ -1,71 +1,113 @@
 ---
-description: The main Aletheia Auditor skill. Use this to conduct an automated fairness audit.
----
-
----
 name: aletheia-fairness-auditor
-description: Orchestrate the Aletheia data science pipeline to perform deep statistical and causal bias detection on datasets and models. Make sure to use this skill whenever the user mentions dataset bias, fairness auditing, disparate impact, model calibration, algorithmic fairness, or wants to check if a model discriminates against protected groups, even if they don't explicitly ask for an 'audit'.
+description: Orchestrate the Aletheia data science pipeline to perform deep statistical and causal bias detection on datasets and models. Activate when the user mentions dataset bias, fairness auditing, disparate impact, model calibration, algorithmic fairness, or wants to check if a model discriminates against protected groups — even if they do not use the word "audit".
 ---
 
 # Aletheia Fairness Auditor
 
-Expert Data Scientist and Fairness Auditor. 
+Expert Data Scientist and Fairness Auditor.
 
-This skill empowers you to run complex, multi-step algorithmic fairness audits locally. You will profile data, calculate bias metrics, apply mathematical mitigations, and generate visual reports.
+This skill runs multi-step algorithmic fairness audits: profiling data, calculating bias metrics, applying mathematical mitigations, and generating a full PDF report with charts.
+
+---
 
 ## When to Activate
 
 - The user asks to audit a dataset or model for bias.
-- Reviewing model predictions for disparate impact.
-- The user provides a CSV and asks if it is "fair" or "biased".
-- The user asks you to apply fairness algorithms (e.g., Reweighing, Calibrated Equalized Odds).
+- The user provides a CSV and asks whether it is fair or biased.
+- The user asks you to apply fairness algorithms (e.g. Reweighing, Calibrated Equalized Odds).
+- The user asks about disparate impact, protected attributes, or model discrimination.
 
-## The Execution Environment
+---
 
-You **MUST** perform all computations by executing Python code.
-1. **Primary (Secure Sandbox):** Attempt to use the `sandbox bash tool (e.g. bash, sandbox_bash, or mcp__sandbox__bash)` tool to execute scripts in Docker.
-2. **Fallback (Native):** If the sandbox MCP is unavailable or Docker is not installed, you have permission to execute code in your native environment using your built-in `bash` tool.
-- Generate standard `matplotlib` or `seaborn` charts (as `.png` files) instead of JSON files.
+## Step 0 — Determine Execution Mode (MANDATORY FIRST STEP)
 
-## Progressive Workflow
+Work through the tiers in order and stop at the first one that succeeds. Inform the user which tier is active before starting Step 1.
 
-The audit is a 4-step process. You will assume different specialized roles. **Do not attempt to guess the math or the workflow.** You must read the precise instructions for each role in the `references/workflows/` directory before beginning that step.
+### Tier 1 — Sandbox MCP (preferred)
 
-### Step 1: The Data Surveyor
-Profile the dataset to identify protected attributes and data quality issues.
-👉 **Read `references/workflows/1_data_surveyor.md`**
+Attempt to call the sandbox bash tool exposed in this session (`bash`, `sandbox_bash`, `mcp__aletheia-sandbox__bash`, or `mcp__sandbox__bash`). Run:
+```
+echo "sandbox-ok"
+```
+If it returns `sandbox-ok`, the sandbox MCP is live. Proceed with Tier 1 for all steps.
 
-### Step 2: The Fairness Adjudicator
+If the sandbox tool is not listed in your available tools, or returns an error, move to Tier 2.
+
+### Tier 2 — Native Python via shell
+
+Use the Claude built-in `bash` tool (not the sandbox one) to verify Python is available:
+```bash
+python --version
+```
+If Python responds, use it for all pipeline steps. Write scripts to `./aletheia-workspace/` using `write_file` and execute them with the `bash` tool. All outputs go to `./aletheia-outputs/`.
+
+**Windows note:** If the bash tool raises a process-creation error (`CreateProcessAsUserW`, exit code 1312, or similar), move to Tier 3.
+
+### Tier 3 — Inline Python (guaranteed fallback)
+
+Execute all audit code as inline Python without any shell. Use `matplotlib` backend `Agg`:
+```python
+import matplotlib
+matplotlib.use('Agg')
+```
+Save all outputs (charts, markdown, CSV) to `./aletheia-outputs/` using Python's `open()` and `pathlib`. This tier always works.
+
+---
+
+## Execution Rules
+
+- **Tier 1:** Use the sandbox bash tool for all script execution. Write scripts to `/workspace/`, run them via the sandbox tool.
+- **Tier 2:** Use the built-in `bash` tool. Write scripts to `./aletheia-workspace/`, run them with `python`.
+- **Tier 3:** Execute Python inline. No shell required.
+- In all tiers, save charts as `.png` files using `matplotlib`. Do not attempt interactive display.
+- Create `./aletheia-outputs/figures/` before writing any chart.
+
+---
+
+## The Pipeline
+
+The audit is a 4-step process. Read the workflow document for each step before beginning it. Do not guess or invent mathematical formulas.
+
+### Step 1 — Data Surveyor
+Profile the dataset and identify protected attributes.
+Read `references/workflows/1_data_surveyor.md`.
+
+### Step 2 — Fairness Adjudicator
 Select an algorithm from the bundled library and run the bias audit.
-👉 **Read `references/workflows/2_fairness_adjudicator.md`**
+Read `references/workflows/2_fairness_adjudicator.md`.
 
-### Step 3: The Bias Mitigator
-Apply the selected mitigation algorithm and compute the "after" metrics.
-👉 **Read `references/workflows/3_mitigation_agent.md`**
+### Step 3 — Bias Mitigator
+Apply the mitigation algorithm and compute post-mitigation metrics.
+Read `references/workflows/3_mitigation_agent.md`.
 
-### Step 4: The Report Compiler
-Weave the findings and generated PNG charts into a final markdown report.
-👉 **Read `references/workflows/4_report_compiler.md`**
+### Step 4 — Report Compiler
+Compile all findings and charts into a PDF report and markdown summary.
+Read `references/workflows/4_report_compiler.md`.
+
+---
 
 ## Algorithm Knowledge Library
 
-Aletheia supports 13 different fairness algorithms (e.g., Disparate Impact Repair, Causal Fair Inference). 
+Aletheia supports 13 fairness algorithms. When a workflow instructs you to load an algorithm, read its implementation guide from `references/algorithms/`. Do not invent the mathematics.
 
-Whenever a workflow tells you to load an algorithm's knowledge, **do not invent the math**. You MUST read its specific implementation guide from the `references/algorithms/` directory.
+For a summary of all available algorithms, see `references/algorithms_overview.md`.
 
-Example: If you select the `disparate_impact_repair` algorithm, read `references/algorithms/disparate_impact_repair.md` to learn how to write the mitigation script.
+---
 
-## Patterns
+## Output Files
 
-### ✅ Correct: Sandboxed Python Execution
-```python
-# Write the script
-write_file("/workspace/audit.py", "import pandas as pd...")
-# Execute inside the sandbox
-sandbox bash tool (e.g. bash, sandbox_bash, or mcp__sandbox__bash)("python /workspace/audit.py")
+After the pipeline completes, confirm to the user that the following files are available:
+
+| File | Description |
+|---|---|
+| `final_report.pdf` | Full PDF audit report with embedded charts |
+| `agent4.md` | Structured markdown summary of the audit |
+| `figures/` | All rendered chart images (.png) |
+| `fixed_dataset.csv` | Dataset with mitigated predictions applied |
+
+If running in Tier 1 (sandbox), copy outputs to the host first:
+```bash
+docker cp aletheia-sandbox:/workspace/outputs/. ./aletheia-outputs/
 ```
-
-
-
-## References
-For a summary of the 13 available algorithms, see `references/algorithms_overview.md`.
+In Tier 2 and Tier 3, files are already on the host at `./aletheia-outputs/`.

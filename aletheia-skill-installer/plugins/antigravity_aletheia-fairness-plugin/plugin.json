@@ -1,5 +1,20 @@
 {
-  "name": "aletheia-fairness-plugin",
-  "description": "Complete algorithmic fairness audit pipeline with bundled Sandbox MCP and Data Science workflows.",
-  "version": "1.0.0"
+  "name": "aletheia-fairness-auditor",
+  "version": "2.0.0",
+  "description": "Automated algorithmic fairness auditing. Detects bias, applies mitigations, and generates reports across 13 statistical and causal algorithms.",
+  "author": {
+    "name": "Aletheia Framework"
+  },
+  "repository": "https://github.com/Aditya5191/Aletheia-AI",
+  "license": "MIT",
+  "keywords": [
+    "fairness",
+    "bias",
+    "auditing",
+    "ml",
+    "ethics",
+    "ai-safety",
+    "disparate-impact",
+    "algorithmic-fairness"
+  ]
 }

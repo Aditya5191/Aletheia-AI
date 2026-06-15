@@ -1,0 +1,20 @@
+{
+  "name": "aletheia-marketplace",
+  "interface": {
+    "displayName": "Aletheia Fairness Auditor"
+  },
+  "plugins": [
+    {
+      "name": "aletheia-fairness-auditor",
+      "source": {
+        "source": "local",
+        "path": "./plugins/aletheia-fairness-auditor"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

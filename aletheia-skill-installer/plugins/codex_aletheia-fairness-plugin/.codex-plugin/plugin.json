@@ -1,0 +1,30 @@
+{
+  "name": "aletheia-fairness-auditor",
+  "version": "2.0.0",
+  "description": "Automated algorithmic fairness auditing. Detects bias, applies mitigations, and generates reports across 13 statistical and causal algorithms.",
+  "author": {
+    "name": "Aletheia Framework",
+    "url": "https://github.com/Aditya5191/Aletheia-AI"
+  },
+  "homepage": "https://github.com/Aditya5191/Aletheia-AI",
+  "repository": "https://github.com/Aditya5191/Aletheia-AI",
+  "license": "MIT",
+  "keywords": ["fairness", "bias", "auditing", "ml", "ethics", "ai-safety"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Aletheia Fairness Auditor",
+    "shortDescription": "Detect and fix bias in datasets and ML models.",
+    "longDescription": "Aletheia is a multi-agent fairness auditing framework. It profiles datasets for protected attributes, applies 13 statistical and causal bias detection algorithms (Disparate Impact Repair, Equality of Opportunity, SHAP Proxy Detection, and more), runs mitigations, and compiles polished audit reports — all executed securely in a sandboxed Docker environment.",
+    "developerName": "Aletheia Framework",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://github.com/Aditya5191/Aletheia-AI",
+    "defaultPrompt": [
+      "Run a fairness audit on my dataset.",
+      "Check if my model discriminates against protected groups.",
+      "Detect bias in this CSV file and suggest mitigations.",
+      "Apply disparate impact repair to my training data."
+    ]
+  }
+}

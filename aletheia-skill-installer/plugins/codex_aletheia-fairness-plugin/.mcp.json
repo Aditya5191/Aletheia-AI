@@ -1,0 +1,12 @@
+{
+  "mcp_servers": {
+    "aletheia-sandbox": {
+      "command": "python",
+      "args": ["./mcp_sandbox/mcp_server.py"],
+      "description": "Secure Docker sandbox for executing fairness audit Python scripts. Path is relative to the plugin install directory.",
+      "env": {
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  }
+}

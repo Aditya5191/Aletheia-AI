@@ -354,13 +354,37 @@ All values from actual pipeline outputs. No placeholders.
 
 ---
 
-### 11 — Provide Summary to User
-Present to the user:
+### 11 — Copy Outputs to Host and Provide Summary
+
+**Copy all output files from the container to the host machine.** This is mandatory — without this step the user cannot open the PDF or the markdown report.
+
+Use the sandbox bash tool to determine the container name or ID:
+```bash
+echo $HOSTNAME
+```
+
+Then, back on the host using `run_command` (Antigravity) or the built-in `bash` tool (Claude / Codex), run:
+```bash
+docker cp aletheia-sandbox:/workspace/outputs/. ./aletheia-outputs/
+```
+
+If the container name is different, substitute the correct name. After the copy, verify the files exist on the host:
+```bash
+ls -lh ./aletheia-outputs/
+ls -lh ./aletheia-outputs/figures/
+```
+
+**Confirm the following files are present on the host:**
+- `aletheia-outputs/final_report.pdf` — full PDF audit report with embedded charts
+- `aletheia-outputs/agent4.md` — structured markdown summary of the audit
+- `aletheia-outputs/agent4_metrics.json` — pipeline scorecard metrics
+- `aletheia-outputs/figures/` — all rendered SVG/PNG chart files
+- `aletheia-outputs/fixed_dataset.csv` — dataset with mitigated predictions applied
+
+**If `docker cp` fails**, check that Docker Desktop is running and that the container was not stopped. As a fallback, the sandbox may have written to a mounted volume — check `./outputs/` on the host.
+
+**Present to the user:**
 - The pipeline verdict in one sentence
-- Fairness score: before → after
+- Fairness score: before mitigation → after mitigation
 - Total charts rendered across all three agents
-- Confirm all files saved in `/workspace/outputs/`:
-  - `final_report.pdf`
-  - `agent4.md`
-  - `agent4_metrics.json`
-  - `figures/` directory with all SVG chart renders
+- A clear list of the output files now available locally with their full relative paths so the user can open them immediately

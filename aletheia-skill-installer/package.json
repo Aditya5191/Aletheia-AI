@@ -1,6 +1,6 @@
 {
   "name": "create-aletheia-skill",
-  "version": "1.0.9",
+  "version": "2.3.0",
   "description": "Installer for the Aletheia Fairness Auditor Plugins",
   "main": "index.js",
   "type": "module",
@@ -22,6 +22,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@inquirer/prompts": "^7.3.1"
+    "@inquirer/prompts": "^7.3.1",
+    "adm-zip": "^0.5.17",
+    "chalk": "^5.6.2",
+    "ora": "^9.4.0"
   }
 }
