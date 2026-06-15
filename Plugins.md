@@ -46,7 +46,8 @@ Auto-install to `~/.gemini/config/plugins/`
 </td>
 <td align="center" width="33%">
 
-### <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/ChatGPT_logo.svg/1024px-ChatGPT_logo.svg.png" width="40" alt="Codex"/> OpenAI Codex
+### <img width="1200" height="630" alt="image" src="https://github.com/user-attachments/assets/544dc09f-6c79-48c7-b9c0-ebe598c144c1" />
+ OpenAI Codex
 
 **OpenAI's coding agent**
 
