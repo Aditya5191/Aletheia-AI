@@ -421,10 +421,6 @@ cd frontend && npm install && npm run dev
 
 <div align="center">
 
-**Built by Team Technopaths for the Google Solution Challenge 2025**
-
-*Advithiya Duddu · Problem Statement: Unbiased AI Decision*
-
 [![Google Solution Challenge](https://img.shields.io/badge/Google-Solution%20Challenge%202025-4285F4?style=for-the-badge&logo=google)](https://developers.google.com/community/gdsc-solution-challenge)
 [![Vertex AI](https://img.shields.io/badge/Powered%20by-Vertex%20AI%20%2F%20Gemini-4285F4?style=for-the-badge&logo=google-cloud)](https://cloud.google.com/vertex-ai)
 
