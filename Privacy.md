@@ -23,76 +23,11 @@ When you run an Aletheia audit, **your data — your dataset, your model file, y
 
 ---
 
-## What Happens Step by Step
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        YOUR MACHINE                             │
-│                                                                 │
-│   You upload:                                                   │
-│   ┌──────────────┐   ┌──────────────┐   ┌──────────────────┐   │
-│   │  dataset.csv │   │  model.pkl   │   │  sample.csv      │   │
-│   └──────┬───────┘   └──────┬───────┘   └────────┬─────────┘   │
-│          │                  │                     │             │
-│          └──────────────────┼─────────────────────┘             │
-│                             │                                   │
-│                    ┌────────▼────────┐                          │
-│                    │  FastAPI Backend │                          │
-│                    │  (your server)  │                          │
-│                    └────────┬────────┘                          │
-│                             │  docker cp                        │
-│                    ┌────────▼────────────────────────────────┐  │
-│                    │         DOCKER CONTAINER                 │  │
-│                    │  ┌────────────────────────────────────┐ │  │
-│                    │  │  /workspace/                       │ │  │
-│                    │  │    dataset.csv  ← your data here   │ │  │
-│                    │  │    model.pkl    ← stays here only  │ │  │
-│                    │  │    outputs/     ← generated here   │ │  │
-│                    │  └────────────────────────────────────┘ │  │
-│                    │                                          │  │
-│                    │  ┌────────────┐  ┌────────────────────┐ │  │
-│                    │  │  Agent 1   │  │  Agent 2           │ │  │
-│                    │  │  Surveyor  │→ │  Auditor           │ │  │
-│                    │  └────────────┘  └────────────────────┘ │  │
-│                    │  ┌────────────┐  ┌────────────────────┐ │  │
-│                    │  │  Agent 3   │→ │  Agent 4           │ │  │
-│                    │  │  Mitigator │  │  Report Compiler   │ │  │
-│                    │  └────────────┘  └────────────────────┘ │  │
-│                    │                                          │  │
-│                    └──────────────────────────────────────────┘  │
-│                             │                                   │
-│                             │  docker cp (outputs only)         │
-│                    ┌────────▼────────┐                          │
-│                    │   your output   │                          │
-│                    │   directory     │                          │
-│                    │   report.pdf    │                          │
-│                    │   fixed.csv     │                          │
-│                    └────────┬────────┘                          │
-│                             │                                   │
-│                    ┌────────▼────────┐                          │
-│                    │  CONTAINER      │                          │
-│                    │  DESTROYED      │                          │
-│                    │  all data gone  │                          │
-│                    └─────────────────┘                          │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
 ## The Five Privacy Guarantees
 
 ### 1. Your Files Are Copied Into Docker, Not Sent Anywhere
 
 When you upload a file through the Aletheia web interface, it is received by the FastAPI backend running on **your server or your cloud VM**. It is then copied directly into a Docker container on that same machine using `docker cp`. The file never traverses the public internet to reach any Aletheia-controlled server.
-
-```python
-# What actually happens in api.py
-subprocess.run([
-    "docker", "cp",
-    os.path.abspath("uploads/dataset.csv"),
-    f"{container_id}:/workspace/dataset.csv"
-], check=True)
-```
 
 ### 2. All Four Agents Run Inside the Container
 
@@ -135,35 +70,11 @@ The MCP servers are knowledge delivery systems — they function like a textbook
 
 After the pipeline completes, the backend copies output files out of the container and then removes it entirely:
 
-```python
-# From api.py — what happens in the finally block
-subprocess.run(
-    ["docker", "cp", f"{container_id}:/workspace/outputs/.", "outputs/"],
-    capture_output=True
-)
-subprocess.run(
-    ["docker", "rm", "-f", container_id],
-    capture_output=True
-)
-```
-
 When `docker rm -f` completes, every byte of your original data inside that container is gone. There is no persistent storage, no log that contains your data, no cache.
 
 ### 5. Stale Containers Are Cleaned on Startup
 
 Every time the backend restarts, it runs a cleanup function that removes any containers that might have been left over from a previous crashed session:
-
-```python
-def cleanup_stale_resources():
-    result = subprocess.run(
-        ["docker", "ps", "-a", "--filter",
-         "name=aletheia-", "--format", "{{.ID}}"],
-        capture_output=True, text=True
-    )
-    for cid in result.stdout.strip().split("\n"):
-        if cid:
-            subprocess.run(["docker", "rm", "-f", cid])
-```
 
 No orphaned containers. No leftover data.
 
@@ -250,17 +161,6 @@ When you install and use the Aletheia plugin in Claude Code or any coding agent:
 **The plugin connects Claude to the Aletheia MCP server for algorithm knowledge only.** The MCP server receives algorithm IDs. Your dataset and model files are processed locally inside Docker and are never transmitted anywhere.
 
 The conversation you have with Claude about your audit is subject to Anthropic's (or whichever LLM provider's) privacy policies, as with any Claude conversation. However, the actual data file contents are not sent to Claude — Claude only sees the audit findings and metrics after they have been computed locally.
-
----
-
-## Compliance Note
-
-This architecture makes Aletheia compatible with:
-
-- **GDPR** — No personal data is processed on external servers. No data retention beyond the audit session.
-- **India DPDP Act 2023** — No personal data is transferred to Aletheia. All processing on your infrastructure.
-- **Enterprise Data Governance** — Audit trail is maintained locally. Your legal team can verify exactly what happened.
-- **Healthcare / Financial Data** — Sensitive data never leaves your security perimeter.
 
 ---
 
