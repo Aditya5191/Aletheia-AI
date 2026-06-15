@@ -28,7 +28,8 @@ When you run an Aletheia audit, **your data — your dataset, your model file, y
 ### 1. Your Files Are Copied Into Docker, Not Sent Anywhere
 
 When you upload a file through the Aletheia web interface, it is received by the FastAPI backend running on **your server or your cloud VM**. It is then copied directly into a Docker container on that same machine using `docker cp`. The file never traverses the public internet to reach any Aletheia-controlled server.
-<img width="800" height="500" alt="image" src="https://github.com/user-attachments/assets/ab57a929-45ff-47f1-9dff-dc1f240d1b59" />
+<img width="500" height="500" alt="image" src="https://github.com/user-attachments/assets/ab57a929-45ff-47f1-9dff-dc1f240d1b59" />
+
 
 
 ### 2. All Four Agents Run Inside the Container
