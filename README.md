@@ -79,43 +79,10 @@ India currently has **no AI fairness regulation** equivalent to the EU AI Act. T
 
 ---
 
-## ⚙️ How it Works
+##  How it Works
 
-```
-                    ┌─────────────────────────────────────────┐
-                    │           SELECT AUDIT TYPE              │
-                    └──────────────┬──────────────────────────┘
-                                   │
-              ┌────────────────────┼────────────────────┐
-              ▼                                          ▼
-   ┌─────────────────────┐               ┌──────────────────────────┐
-   │   DATASET AUDIT      │               │      MODEL AUDIT          │
-   │   Upload CSV         │               │  Upload .pkl + sample.csv │
-   └──────────┬──────────┘               └──────────────┬───────────┘
-              │                                          │
-              │           ┌──────────────────┐           │
-              └──────────▶│  SPAWN DOCKER     │◀──────────┘
-                          │  SANDBOX          │
-                          └────────┬─────────┘
-                                   │
-                    ┌──────────────▼──────────────┐
-                    │     4-AGENT LANGGRAPH        │
-                    │     PIPELINE BEGINS          │
-                    └──────────────┬──────────────┘
-                                   │
-              ┌────────────────────┼────────────────────┐
-              ▼                    ▼                     ▼
-    ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
-    │  TOOLS / MCP     │  │  SANDBOX CODE    │  │  UI CHART        │
-    │  SERVERS         │  │  EXECUTION       │  │  SCHEMA SKILLS   │
-    │  (13 Algorithms) │  │  TOOLS           │  │                  │
-    └──────────────────┘  └──────────────────┘  └──────────────────┘
-                                   │
-                    ┌──────────────▼──────────────┐
-                    │  PDF REPORT + FIXED OUTPUT   │
-                    │  RETURNED TO USER            │
-                    └─────────────────────────────┘
-```
+<img width="1920" height="1080" alt="Action step" src="https://github.com/user-attachments/assets/3c105ded-b105-4b1a-b0d3-6468738859b6" />
+
 
 ---
 
@@ -180,38 +147,7 @@ Agents call `list_algorithms()` → `get_algorithm_info()` for each candidate �
 
 ### System Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         CLIENT SIDE                             │
-│    Next.js 14 Dashboard  ←→  WebSocket (real-time streaming)    │
-└─────────────────────────────┬───────────────────────────────────┘
-                              │ HTTPS / WSS
-┌─────────────────────────────▼───────────────────────────────────┐
-│                      BACKEND SERVER                             │
-│  FastAPI + Python 3.10  |  Port 8005 (Dataset) / 8006 (Model)  │
-│                                                                 │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌────────────────┐  │
-│  │  LangGraph       │  │  MCP Servers    │  │  Docker Mgr    │  │
-│  │  State Machine   │  │  Port 8000-8002 │  │  Sandbox Ctrl  │  │
-│  └────────┬────────┘  └────────┬────────┘  └───────┬────────┘  │
-└───────────┼─────────────────── ┼ ──────────────────┼───────────┘
-            │                    │                   │
-┌───────────▼────────────────────▼───────────────────▼───────────┐
-│                     DOCKER SANDBOX                              │
-│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌─────────────┐ │
-│  │ Agent 1   │→ │ Agent 2   │→ │ Agent 3   │→ │  Agent 4    │ │
-│  │ Surveyor  │  │ Auditor   │  │ Mitigator │  │  Compiler   │ │
-│  └───────────┘  └───────────┘  └───────────┘  └─────────────┘ │
-│                                                                 │
-│  All data isolated · Never leaves container · Destroyed after   │
-└─────────────────────────────────────────────────────────────────┘
-            ↓
-┌───────────────────────────────────────────────────────────────┐
-│                    GOOGLE CLOUD                                │
-│  Vertex AI (Gemini Pro) · Cloud Run · Compute Engine          │
-│  Artifact Registry · Secrets Manager                          │
-└───────────────────────────────────────────────────────────────┘
-```
+<img width="1672" height="941" alt="cloud-artiture" src="https://github.com/user-attachments/assets/c25e3ce3-93ad-40dc-b0f5-16e828c07243" />
 
 ### Three Pillars of the Architecture
 
@@ -226,7 +162,7 @@ Plain-English verdict and before/after comparison for decision-makers. Full stat
 
 ---
 
-## ⚡ Key Differentiators
+##  Key Differentiators
 
 | Capability | IBM AIF360 | Google What-If | Microsoft Fairlearn | Aequitas | Themis-ML | **Aletheia ✦** |
 |-----------|:----------:|:--------------:|:-------------------:|:--------:|:---------:|:--------------:|
@@ -258,7 +194,7 @@ Plain-English verdict and before/after comparison for decision-makers. Full stat
 
 Aletheia is packaged as a **plug-and-play plugin** for all major AI coding agents.
 
-→ **[Full Plugin Integration Guide](docs/PLUGINS.md)**
+→ **[Full Plugin Integration Guide](Plugins.md)**
 
 ```bash
 npx create-aletheia-skill@latest
@@ -286,9 +222,9 @@ Supports: **Claude Code · Gemini CLI / Antigravity · OpenAI Codex · Custom Ag
 
 | Mode | Documentation |
 |------|--------------|
-| 📊 Dataset Audit Pipeline | [Dataset Agents — all 4 agents explained](docs/DATASET_AGENTS.md) |
-| 🤖 Model Audit Pipeline | [Model Agents — classification + regression](docs/MODEL_AGENTS.md) |
-| 🔬 Algorithm Reference | [13 Algorithms — MCP server explained](docs/ALGORITHMS.md) |
+| 📊 Dataset Audit Pipeline | [Dataset Agents — all 4 agents explained](DATASET_AGENTS.md) |
+| 🤖 Model Audit Pipeline | [Model Agents — classification + regression](MODEL_AGENTS.md) |
+| 🔬 Algorithm Reference | [13 Algorithms — MCP server explained](docs/algorithms.md) |
 
 ---
 
@@ -404,11 +340,11 @@ cd frontend && npm install && npm run dev
 | File | Contents |
 |------|---------|
 | [`README.md`](README.md) | This file — full overview |
-| [`docs/DATASET_AGENTS.md`](docs/DATASET_AGENTS.md) | Dataset pipeline — all 4 agents, inputs, outputs |
-| [`docs/MODEL_AGENTS.md`](docs/MODEL_AGENTS.md) | Model pipeline — classification + regression agents |
-| [`docs/ALGORITHMS.md`](docs/ALGORITHMS.md) | All 13 MCP algorithms explained |
-| [`docs/PLUGINS.md`](docs/PLUGINS.md) | Plugin integration for Claude Code, Codex, Gemini CLI |
-| [`docs/PRIVACY.md`](docs/PRIVACY.md) | Privacy architecture, Docker isolation, self-hosting |
+| [`docs/DATASET_AGENTS.md`](DATASET_AGENTS.md) | Dataset pipeline — all 4 agents, inputs, outputs |
+| [`docs/MODEL_AGENTS.md`](MODEL_AGENTS.md) | Model pipeline — classification + regression agents |
+| [`docs/ALGORITHMS.md`](ALGORITHMS.md) | All 13 MCP algorithms explained |
+| [`docs/PLUGINS.md`](PLUGINS.md) | Plugin integration for Claude Code, Codex, Gemini CLI |
+| [`docs/PRIVACY.md`](PRIVACY.md) | Privacy architecture, Docker isolation, self-hosting |
 
 ---
 
