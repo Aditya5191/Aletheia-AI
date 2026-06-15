@@ -38,14 +38,14 @@ export const BackgroundHalo: React.FC = () => {
   const gradientColor = 'rgba(80, 220, 192, 0.15)';
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-background font-sans">
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-background font-sans" style={{ willChange: 'auto', contain: 'strict' }}>
       
       {/* CENTRAL BREATHING HALO */}
       <motion.div
         className="absolute left-1/2 top-1/2 w-[900px] h-[900px] rounded-full"
         animate={{
-          scale: [1, 1.1, 1],
-          opacity: [0.3, 0.5, 0.3],
+          scale: [1, 1.08, 1],
+          opacity: [0.25, 0.4, 0.25],
         }}
         transition={{
           duration: 10,
@@ -56,6 +56,7 @@ export const BackgroundHalo: React.FC = () => {
           background: `radial-gradient(circle, ${gradientColor} 0%, rgba(80,220,192,0) 70%)`,
           translateX: '-50%',
           translateY: '-50%',
+          willChange: 'transform, opacity',
         }}
       />
 

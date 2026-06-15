@@ -100,7 +100,7 @@ export default function Landing() {
 
   const navItems = [
     { label: 'Science', path: '/science' },
-    { label: 'Claude Skill', path: '/claude-skill' },
+    { label: 'Agent Plugin', path: '/claude-skill' },
     { label: 'Privacy', path: '/privacy' },
     { label: 'About and FAQ', path: '/about' },
   ];

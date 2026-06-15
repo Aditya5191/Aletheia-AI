@@ -107,10 +107,11 @@ export const ReasoningSimulator = () => {
             )}
 
             {isSimulating && (
-              <div className="flex flex-col items-center gap-4">
-                 <div className="relative w-16 h-16">
-                    <Brain size={64} className="text-primary animate-pulse" />
-                    <div className="absolute inset-0 border-2 border-primary border-dashed rounded-full animate-spin-slow"></div>
+              <div className="flex flex-col items-center gap-6">
+                 <div className="relative w-16 h-16 flex items-center justify-center">
+                    <div className="absolute inset-0 rounded-full border border-white/5 border-t-primary border-r-primary animate-spin" style={{ animationDuration: '1.5s' }}></div>
+                    <div className="absolute inset-2 rounded-full border border-white/5 border-b-primary border-l-primary animate-spin" style={{ animationDirection: 'reverse', animationDuration: '2s' }}></div>
+                    <Activity size={20} className="text-primary animate-pulse" />
                  </div>
                  <span className="text-[10px] font-mono text-primary animate-pulse uppercase tracking-[0.2em]">Agent Reasoning...</span>
               </div>
@@ -134,7 +135,7 @@ export const ReasoningSimulator = () => {
 
                  <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl flex gap-3">
                     <Info size={16} className="text-primary shrink-0" />
-                    <p className="text-[10px] text-on-surface-variant leading-relaxed">This pipeline is optimized for <span className="text-white font-bold">{constraints.mode}</span> using implementation logic tailored for <span className="text-white font-bold">{constraints.labels}</span>.</p>
+                    <p className="text-[10px] text-on-surface-variant leading-relaxed">This pipeline is optimized for&nbsp;<span className="text-white font-bold">{constraints.mode}</span>&nbsp;using implementation logic tailored for&nbsp;<span className="text-white font-bold">{constraints.labels}</span>.</p>
                  </div>
               </div>
             )}

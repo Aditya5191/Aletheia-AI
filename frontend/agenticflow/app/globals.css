@@ -77,10 +77,16 @@
   }
 }
 
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 body {
   background: var(--color-background);
   color: var(--color-on-background);
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 ::selection {
