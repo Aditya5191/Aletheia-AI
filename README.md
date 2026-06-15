@@ -1,489 +1,431 @@
 <div align="center">
 
+<img src="https://img.shields.io/badge/ALETHEIA-AI%20Fairness%20Auditing-ff6b35?style=for-the-badge&logoColor=white" alt="Aletheia"/>
+
 # ALETHEIA AI
+### Autonomous Algorithmic Fairness Auditing Protocol
 
-### Production-Grade Algorithmic Fairness Auditing via Multi-Agent AI
+[![Live MVP](https://img.shields.io/badge/🚀%20Live%20MVP-aletheia--frontend-4285F4?style=for-the-badge)](https://aletheia-frontend-69262873588.us-central1.run.app/)
+[![Demo Video](https://img.shields.io/badge/▶%20Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/Xu2u8bvfD-w)
+[![GitHub](https://img.shields.io/badge/GitHub-Aletheia--AI-181717?style=for-the-badge&logo=github)](https://github.com/Aditya5191/Aletheia-AI)
+[![Google Solution Challenge](https://img.shields.io/badge/Google-Solution%20Challenge%202025-4285F4?style=for-the-badge&logo=google)](https://developers.google.com/community/gdsc-solution-challenge)
 
-[![License: Research](https://img.shields.io/badge/License-Research-blue.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-3776AB.svg?logo=python&logoColor=white)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![Next.js](https://img.shields.io/badge/Next.js-14+-000000.svg?logo=next.js&logoColor=white)](https://nextjs.org)
-[![Docker](https://img.shields.io/badge/Docker-Sandboxed-2496ED.svg?logo=docker&logoColor=white)](https://docker.com)
-[![Google Cloud](https://img.shields.io/badge/Google_Cloud-Deployed-4285F4.svg?logo=google-cloud&logoColor=white)](https://cloud.google.com)
-[![MCP](https://img.shields.io/badge/MCP-Compatible-FF6B35.svg)](https://modelcontextprotocol.io)
-[![LangGraph](https://img.shields.io/badge/LangGraph-Orchestrated-7C3AED.svg)](https://langchain-ai.github.io/langgraph)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-WebSocket-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com)
+[![LangGraph](https://img.shields.io/badge/LangGraph-Multi--Agent-FF6B35?style=flat-square)](https://langchain-ai.github.io/langgraph/)
+[![Vertex AI](https://img.shields.io/badge/Vertex%20AI-Gemini%20Pro-4285F4?style=flat-square&logo=google-cloud)](https://cloud.google.com/vertex-ai)
+[![Docker](https://img.shields.io/badge/Docker-Sandboxed-2496ED?style=flat-square&logo=docker&logoColor=white)](https://docker.com)
+[![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=flat-square&logo=next.js)](https://nextjs.org)
+[![MCP](https://img.shields.io/badge/MCP-Custom%20Protocol-BB9AF7?style=flat-square)](https://modelcontextprotocol.io)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-**[Live Demo](https://aletheia-frontend-69262873588.us-central1.run.app/)**
+---
+
+**Team Technopaths · Leader: Advithiya Duddu**
+**Problem Statement: Unbiased AI Decision — Ensuring Fairness and Detecting Bias in Automated Decisions**
 
 ---
 
-*Most AI fairness tools tell you a number. Aletheia tells you who is being harmed, why, how to fix it, and proves it worked — automatically, end to end, in plain English.*
+<img width="800" src="https://raw.githubusercontent.com/Aditya5191/Aletheia-AI/main/docs/hero.png" alt="Aletheia Hero" onerror="this.style.display='none'"/>
 
----
+### *"Your AI model is making biased decisions. We prove it, measure it, and fix it — autonomously."*
 
 </div>
 
 ---
 
-## The Problem
+## 📋 Table of Contents
 
-Algorithmic bias is one of the most consequential unsolved problems in applied AI. Criminal justice systems flag innocent people as high-risk at twice the rate for certain racial groups. Hiring models reject qualified candidates based on zip code. Loan systems deny credit using proxies that encode the very discrimination they claim to avoid.
-
-Most organisations know this is happening. Almost none have the tools to prove it, measure it precisely, fix it, and document the fix for regulators — without a dedicated team of ML fairness researchers.
-
-**Aletheia solves this end to end.** Upload a dataset — *or a trained model and a sample of its data* — and get a legally-referenced, plain-English audit report with before/after comparisons, compliance status, and a drop-in fix — fully automated, in minutes.
-
-Aletheia ships **two audit modes**:
-
-- **Dataset Auditor** — upload a CSV. Profiles the data, detects historical bias and proxies, mitigates it, and returns a fixed dataset.
-- **Model Auditor** — upload a trained classification or regression model (`.pkl` / `.joblib`) plus a sample CSV. Audits the *model's behaviour* — the groups it disadvantages and the proxies it has internalised — and returns a drop-in fix that needs **no retraining**.
-
----
-
-## What Makes This Hard (And Why Existing Tools Fall Short)
-
-| Limitation | Existing Tools | Aletheia |
-|---|---|---|
-| Requires ML expertise to interpret | Yes | No — plain English throughout |
-| Detects only surface-level bias | Yes | Detects proxy, intersectional, causal, and indirect bias |
-| Static algorithm selection | Yes | Dynamic selection from 13 algorithms per dataset |
-| No mitigation | Most | Full mitigation with before/after proof |
-| No compliance mapping | No | EEOC, EU AI Act, ISO 24027 |
-| No PDF audit trail | No | Publication-ready PDF with charts |
-| Requires code changes | Yes | Zero-code — drag, drop, run |
+- [What is Aletheia?](#-what-is-aletheia)
+- [Why India Needs This](#-why-india-needs-this)
+- [How it Works](#-how-it-works)
+- [Two Audit Modes](#-two-audit-modes)
+- [The 13-Algorithm MCP Server](#-the-13-algorithm-mcp-server)
+- [Architecture](#-architecture)
+- [Key Differentiators](#-key-differentiators)
+- [Plugin Support](#-plugin-support)
+- [Privacy & Security](#-privacy--security)
+- [Agent Breakdowns](#-agent-breakdowns)
+- [Tech Stack](#-tech-stack)
+- [Cost Estimate](#-cost-estimate)
+- [Quick Start](#-quick-start)
+- [Project Links](#-project-links)
 
 ---
 
-## Architecture Overview
+## 🧠 What is Aletheia?
 
-Aletheia is a distributed multi-agent system built on three core layers:
+**Aletheia** is a production-ready, autonomous agentic pipeline that **detects, measures, fixes, and verifies bias** in any dataset or pretrained ML model — without requiring a data science team.
+
+At its core is a **custom-built Audit Algorithm MCP Server** (Knowledge Skill Delivery model) that injects runnable algorithm knowledge into each agent's context at runtime. Rather than hardcoding any single fairness method, Aletheia's agents dynamically discover, reason through, and implement the most appropriate algorithm for the specific dataset structure, domain, and data availability they encounter.
 
 ```
-├── backend/                        # FastAPI WebSocket streaming servers
-│   ├── dataset_backend/            # Dataset Auditor  (CSV in → fixed dataset)
-│   │   ├── agents/                 #   LangGraph 4-agent graph + Markdown prompts
-│   │   └── backend/api.py          #   Streaming API, artifacts on :8005
-│   └── model_backend/              # Model Auditor    (trained model in → drop-in fix)
-│       ├── agents/                 #   Classification + Regression graphs & prompts
-│       └── backend/api.py          #   Streaming API, artifacts on :8006
-├── frontend/agenticflow/           # React/Next.js AgenticFlow Dashboard
-│   └── components/                 # FlowCanvas + ModelFlowCanvas, deep-dive modal
-├── mcps/                           # Shared Model Context Protocol Servers
-│   ├── auditor/                    # Algorithm Knowledge Delivery (13 algorithms)
-│   ├── sandbox/                    # Dockerized Python Execution Environment
-│   └── miscellaneous/              # UI Blueprint and Chart Schema Delivery
-├── dataset/                        # Dataset-mode input (data.csv)
-├── model_upload/                   # Model-mode input (model.pkl/.joblib + sample.csv)
-├── outputs/   ·   model_outputs/   # Host-synced charts, JSON, code logs, PDF reports
-├── main.py                         # CLI entry point
-├── pytest.ini                      # Test configuration
-└── requirements.txt
+Upload CSV or Model  →  4 Autonomous Agents  →  PDF Report + Fixed Output
+       ↓                        ↓                         ↓
+  No ML expertise          Docker isolated            Plain English
+  No configuration         MCP-powered               + Technical metrics
+  No code required         13 algorithms             + Drop-in fix
 ```
 
-![Agent Workflow](./diagram/USER%20FLOW%20DIAGRAM.png)
+---
 
-### The Dataset Auditor — Four-Agent Pipeline
+## 🇮🇳 Why India Needs This
 
-Each agent is a specialised LLM instance with its own tools, prompt, and responsibility boundary. They communicate via a shared state graph orchestrated by LangGraph.
+India's AI ecosystem is deploying algorithms in high-stakes decisions affecting millions — **without any systematic fairness auditing.**
 
-| Agent | Role | Tools |
-|-------|------|-------|
-| **Data Surveyor** | Exhaustive EDA — profiles every column, detects proxies, identifies protected attributes, flags data quality issues, selects chart types dynamically | `execute_cell`, `write_file`, `get_chart_schemas` |
-| **Fairness Adjudicator** | Selects the optimal algorithm from 13 options, implements it exactly, computes FPR/TPR/DIR/SPD/EOD/FPRD per group, generates plain-English findings | `list_algorithms`, `load_algorithm_knowledge`, `execute_cell`, `get_chart_schemas` |
-| **Bias Mitigator** | Applies group-specific calibration or residualization, computes before/after metrics, calculates fairness score improvement, saves fixed dataset | `load_algorithm_knowledge`, `execute_cell`, `write_file` |
-| **Report Compiler** | Reads all three agent outputs, generates matplotlib/seaborn charts as PNGs, compiles a full multi-section PDF using ReportLab with tables, compliance status, and executive summary | `execute_cell`, `read_file`, `write_file` |
+| Sector | Reality Today |
+|--------|--------------|
+| **HRtech** (Naukri, Unstop, HireQuotient) | AI screening tools learn caste and gender signals from historical hiring data |
+| **Fintech** (Slice, KreditBee, MoneyView) | ML credit scoring uses postcodes and education as proxies for socioeconomic group |
+| **HealthTech** | Diagnostic AI trained on urban hospital data performs significantly worse on rural patients |
+| **EdTech** | Adaptive learning models calibrated on high-income student patterns disadvantage others |
+
+India currently has **no AI fairness regulation** equivalent to the EU AI Act. The Digital Personal Data Protection Act 2023 covers privacy but not algorithmic bias. However, India's **Constitution already addresses this** — Articles 15 and 16 prohibit discrimination on grounds of religion, race, caste, sex, and place of birth. AI systems that replicate historical discrimination patterns conflict with these guarantees.
+
+**Aletheia helps Indian companies get ahead of regulation before it arrives.**
 
 ---
 
-### The Model Auditor — Two Specialised Pipelines
+## ⚙️ How it Works
 
-The Model Auditor audits a **trained model directly** instead of a raw dataset. Upload a serialised model (`.pkl` / `.joblib`) and a representative sample CSV, choose **Classification** or **Regression**, and a parallel four-agent pipeline audits the model's *behaviour* — its predictions, the groups it disadvantages, and the proxies it has internalised — then ships a drop-in fix that requires **no retraining**. The same MCP layer (algorithm knowledge, Docker sandbox, chart schemas) powers both modes; the agents differ by task type.
-
-**Classification models**
-
-| Agent | Role |
-|-------|------|
-| **Model Inspector** | Loads and validates the classifier, generates predictions + probabilities on the sample, computes SHAP feature importance, detects protected attributes and proxy features |
-| **Behavioral Auditor** | Selects a fairness algorithm via the MCP, computes per-group PPR/FPR/TPR and DIR/SPD/EOD/FPRD, runs proxy + intersectional detection, and probes the model counterfactually (identical candidate, protected attribute flipped) |
-| **Threshold Calibrator** | Derives per-group decision thresholds that equalise the failing fairness metrics, produces a before/after comparison, and emits a drop-in `threshold_map.json` |
-| **Report Compiler** | Renders all charts as PNGs and compiles the full PDF report plus the frontend summary |
-
-**Regression models**
-
-| Agent | Role |
-|-------|------|
-| **Model Profiler** | Loads and validates the regressor, generates predictions, computes SHAP importance (in output units), detects protected attributes and proxies |
-| **Disparity Auditor** | Measures systematic over-/under-prediction per group (prediction gap, MPE, MAE, R²), runs proxy + intersectional detection, and probes counterfactually in real units (dollars, points, years) |
-| **Output Recalibrator** | Computes per-group output corrections that remove the systematic gap and emits a drop-in `correction_map.json` — applied at inference with no model change |
-| **Report Compiler** | Renders all charts as PNGs and compiles the full PDF report plus the frontend summary |
-
-Both pipelines deliver a `fixed_predictions.csv`, a fairness score before/after, compliance status, and a publication-ready PDF — identical in spirit to the Dataset Auditor, but operating on a live model.
-
----
-
-## The Knowledge Skill Delivery Model
-
-The core technical innovation is the **Aletheia MCP Auditor** — a Model Context Protocol server that delivers algorithm knowledge dynamically to LLM agents rather than hardcoding implementations.
-
-Instead of brittle API calls or pre-built library wrappers, the server injects complete runnable pseudo-code, mathematical specifications, parameter tuning guides, and causal constraints directly into the agent's context window at runtime. The agent then implements the algorithm from first principles inside a sandboxed Docker container.
-
-This means:
-- Any new algorithm can be added without touching agent code
-- The agent adapts implementation to the specific dataset structure
-- No dependency on external fairness libraries that may not fit the data
-- Full auditability — the exact implementation is logged and reproducible
-
-### Two Delivery Modes
-
-| Type | Format | When Used |
-|------|--------|-----------|
-| **PURE** | Single `knowledge.md` — complete pseudo-code, formulas, parameter guides | Algorithms with direct mathematical paths: threshold optimisation, BER certification |
-| **FRAMEWORK** | Multi-step `framework.yaml` DAG + `framework_scaffold.py` state machine | Complex sequential pipelines: generational tracking, convex optimisation, causal inference |
+```
+                    ┌─────────────────────────────────────────┐
+                    │           SELECT AUDIT TYPE              │
+                    └──────────────┬──────────────────────────┘
+                                   │
+              ┌────────────────────┼────────────────────┐
+              ▼                                          ▼
+   ┌─────────────────────┐               ┌──────────────────────────┐
+   │   DATASET AUDIT      │               │      MODEL AUDIT          │
+   │   Upload CSV         │               │  Upload .pkl + sample.csv │
+   └──────────┬──────────┘               └──────────────┬───────────┘
+              │                                          │
+              │           ┌──────────────────┐           │
+              └──────────▶│  SPAWN DOCKER     │◀──────────┘
+                          │  SANDBOX          │
+                          └────────┬─────────┘
+                                   │
+                    ┌──────────────▼──────────────┐
+                    │     4-AGENT LANGGRAPH        │
+                    │     PIPELINE BEGINS          │
+                    └──────────────┬──────────────┘
+                                   │
+              ┌────────────────────┼────────────────────┐
+              ▼                    ▼                     ▼
+    ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+    │  TOOLS / MCP     │  │  SANDBOX CODE    │  │  UI CHART        │
+    │  SERVERS         │  │  EXECUTION       │  │  SCHEMA SKILLS   │
+    │  (13 Algorithms) │  │  TOOLS           │  │                  │
+    └──────────────────┘  └──────────────────┘  └──────────────────┘
+                                   │
+                    ┌──────────────▼──────────────┐
+                    │  PDF REPORT + FIXED OUTPUT   │
+                    │  RETURNED TO USER            │
+                    └─────────────────────────────┘
+```
 
 ---
 
-## The Algorithm Library — 13 Implemented Algorithms
+## 🔄 Two Audit Modes
 
-### PURE Algorithms
+### Mode 1 — Dataset Audit
 
-| ID | Name | Detection Method | Mitigation Technique |
-|----|------|-----------------|---------------------|
-| `disparate_impact_repair` | Disparate Impact (80% Rule) | BER certification against epsilon threshold | Geometric repair via quantile-aligned CDF transformation |
-| `equality_of_opportunity` | Equality of Opportunity | TPR/FPR parity measurement across groups | Group-specific threshold optimisation via grid search |
-| `recidivism_fairness_calibration` | Recidivism Fairness Calibration | Impossibility theorem validation (Eq. 2.6) | Explicit tradeoff calibration — FPR/FNR/PPV strategies |
-| `brownian_distance_covariance` | Brownian Distance Covariance | Non-linear proxy detection via dCor with permutation FDR | Non-linear residualization via gradient-boosted regression |
-| `causal_fair_inference` | Causal Fair Inference (PSE) | Path-Specific Effect estimation via IPW with bootstrap CI | Constrained Maximum Likelihood with SLSQP and PSE bounds |
-| `causal_explanation_formula` | Causal Explanation Formula | Mechanism decomposition: TV = SE + IE - DE | Narrow Tailoring optimisation with legal feasibility bounds |
+Upload a CSV with demographic attributes and an outcome column. No model required.
 
-### FRAMEWORK Algorithms
+**What you get:**
+- Fixed dataset CSV with bias repaired
+- Publication-ready PDF audit report
+- Plain-English bias verdict
+- Before/after fairness metric comparison
+- All agent code (ipykernel) visible and downloadable
 
-| ID | Name | Pipeline Steps | Core Technique |
-|----|------|---------------|----------------|
-| `intersectional_subgroup_scan` | Intersectional Subgroup Scan | 4: Combinatorial generation, DIR + chi-squared, BH FDR, Ranking | Intersectional group fairness, multiple testing correction |
-| `mutual_info_proxy_scanner` | Mutual Information Proxy Scanner | 4: KSG MI estimation, Null permutations, FDR correction, Residualization | Information-theoretic dependence, Ridge residuals |
-| `shap_proxy_detection` | SHAP Feature Attribution Auditing | 4: Baseline, KernelSHAP, Proxy scoring, Mitigation | Game-theoretic attribution, exponential sample reweighting |
-| `counterfactual_orthogonalization` | Counterfactual Fairness (OB) | 3: Correlation audit, SVD orthogonal projection, Matrix reconstruction | Lagrange orthogonalization, SVD decomposition |
-| `fairness_feedback_reparation` | Fairness Feedback Loops (MIDS + STAR) | 6: DP, EOdds, AccGap, KL-divergence, Generational tracking, STAR batch sampling | Model-Induced Distribution Shifts, quota-based reparation |
-| `dro_fairness_no_demographics` | DRO Fairness Without Demographics | 5: Group risks, Disparity dynamics, Spectral radius, DRO params, Dual SGD | Chi-squared DRO, Jacobian stability analysis |
-| `relational_fairness_psl` | Relational Fairness (FairPSL) | 4: FOL grounding, RD/RR/RC metrics, Linear constraints, Convex MAP inference | First-Order Logic, Probabilistic Soft Logic, CVXPY |
+**Agents:** Data Surveyor → Fairness Adjudicator → Bias Mitigator → Report Compiler
 
-### Sector Suitability Matrix
-
-| Algorithm | Hiring | Finance | Healthcare | Criminal Justice | Education |
-|-----------|:------:|:-------:|:----------:|:----------------:|:---------:|
-| `disparate_impact_repair` | Yes | Yes | -- | Yes | -- |
-| `equality_of_opportunity` | Yes | Yes | -- | Yes | -- |
-| `recidivism_fairness_calibration` | -- | -- | -- | Yes | -- |
-| `intersectional_subgroup_scan` | Yes | Yes | Yes | Yes | Yes |
-| `mutual_info_proxy_scanner` | Yes | Yes | Yes | -- | Yes |
-| `brownian_distance_covariance` | Yes | Yes | Yes | -- | Yes |
-| `shap_proxy_detection` | Yes | Yes | Yes | -- | Yes |
-| `causal_fair_inference` | Yes | Yes | -- | -- | Yes |
-| `counterfactual_orthogonalization` | Yes | Yes | -- | -- | Yes |
-| `causal_explanation_formula` | Yes | Yes | -- | -- | Yes |
-| `fairness_feedback_reparation` | Yes | Yes | -- | -- | Yes |
-| `dro_fairness_no_demographics` | -- | Yes | Yes | -- | Yes |
-| `relational_fairness_psl` | Yes | Yes | -- | -- | Yes |
+→ **[Full Dataset Agent Breakdown](docs/DATASET_AGENTS.md)**
 
 ---
 
-## What Aletheia Produces
+### Mode 2 — Model Audit
 
-For every dataset, Aletheia automatically generates:
+Upload a trained sklearn-compatible `.pkl` or `.joblib` model + a representative sample CSV.
 
-**For Non-Technical Decision Makers**
-- Plain-English verdict: who is harmed, by how much, what the consequence is
-- False alarm rate by group with colour-coded severity (red/yellow/green)
-- Before vs after comparison showing exactly what improved
-- Compliance status against EEOC 4/5ths rule, EU AI Act, ISO 24027
-- Overall fairness score (0-100) before and after mitigation
-- Recommended next steps in plain English
-- Publication-ready PDF audit report with all charts and tables
+**What you get:**
+- `threshold_map.json` (classifiers) or `correction_map.json` (regressors) — drop-in fix
+- Fixed predictions CSV
+- SHAP attribution charts
+- Counterfactual discrimination evidence
+- Publication-ready PDF audit report
 
-**For ML and Data Teams**
-- Full EDA report with column profiles, correlation analysis, proxy detection
-- Exact fairness metrics: DIR, SPD, EOD, FPRD per protected group
-- Chi-squared statistical tests with p-values
-- Algorithm selection rationale and implementation log
-- Fixed dataset CSV with mitigated predictions
-- All intermediate agent reports (agent1.md through agent4.md)
+**Agents:** Model Inspector/Profiler → Behavioral/Disparity Auditor → Threshold Calibrator/Output Recalibrator → Report Compiler
 
-**For Compliance and Legal**
-- EEOC 4/5ths rule pass/fail before and after
-- EU AI Act documentation compliance
-- ISO 24027 bias taxonomy documentation
-- Full reproducible audit trail across all four agents
-
-**For Model Audits (trained model + sample)**
-- SHAP feature importance and proxy attribution for the live model
-- Counterfactual evidence — the exact score/output delta from flipping only the protected attribute
-- A drop-in `threshold_map.json` (classification) or `correction_map.json` (regression) — apply the fix at inference with no retraining
-- `fixed_predictions.csv` with calibrated/corrected outputs, plus the full PDF report
+→ **[Full Model Agent Breakdown](docs/MODEL_AGENTS.md)**
 
 ---
 
-## Security and Privacy
+## 🔬 The 13-Algorithm MCP Server
 
-- All data processing runs inside an isolated Docker sandbox container — no data leaves the container during analysis
-- No dataset content is stored, logged, or transmitted to external services
-- The sandbox environment resets between runs — no cross-contamination between audits
-- Vertex AI credentials are stored as secrets and never embedded in code or images
-- The fixed dataset is written only to the local `/outputs/` directory under explicit user control
-- Agent prompts are externalized to Markdown files — fully auditable and version-controlled
+Aletheia's core differentiator is the **custom Audit Algorithm MCP Server** — a Knowledge Skill Delivery system that injects peer-reviewed fairness algorithm specifications into agent context at runtime.
 
----
+Agents call `list_algorithms()` → `get_algorithm_info()` for each candidate → reason through an elimination log → `load_algorithm_knowledge()` for selected algorithms → implement from mathematical specification.
 
-## Performance and Scalability
+**No hardcoded choices. No library wrappers. Full auditability.**
 
-- The sandboxed `execute_cell` REPL is persistent within a run — variables stay in memory across cells, avoiding redundant I/O
-- All chart generation uses matplotlib with `Agg` backend — no display server required, fully headless
-- The FastAPI backend streams agent output via WebSocket — the UI updates in real time without polling
-- The four-agent pipeline runs sequentially with shared state — each agent reads only the outputs it needs, minimising token usage
-- Google Cloud deployment uses Cloud Run for the frontend (auto-scaling) and a dedicated VM for the backend and sandbox (persistent Docker socket)
-- The PDF is compiled server-side using ReportLab — no browser rendering dependency, suitable for CLI-only deployment
+→ **[Full MCP & Algorithm Reference](docs/ALGORITHMS.md)**
 
----
+### Algorithm Categories at a Glance
 
-## The AgenticFlow Dashboard
-
-The frontend is a live forensic observability dashboard built in Next.js with real-time WebSocket streaming.
-
-**Key interface features:**
-- **Two workspaces** — switch between the **Workflows** (Dataset Auditor) and **Model Auditor** tabs in the sidebar; each renders its own live agent graph
-- **Model upload flow** — a **Classification / Regression** toggle plus drag-and-drop drop zones for the model (`.pkl` / `.joblib`) and its sample CSV
-- **Interactive Guided Tour** — a built-in "Show Tour" feature that visually walks users through the entire multi-agent fairness pipeline using mock test data
-- **Smart Notifications** — animated, bouncing tooltips that guide users to inspect agent nodes as soon as their tasks are completed
-- Drag-and-drop CSV upload with instant dataset preview
-- Interactive agent node graph — click any agent to inspect its live output, charts, and code (works identically for dataset and model agents)
-- Deep-dive modal per agent showing Analytics, Review, and Code tabs
-- **Embedded Graph Explanations** — dynamic contextual explanations beautifully integrated below charts to enhance metric readability without obstructing visuals
-- **Scalable Tool Tracing** — a scrollable, robust tool-call log viewer within agent nodes that scales gracefully for long-running pipelines
-- Dynamic chart rendering from agent-generated JSON using the chart schema system
-- Plain-English findings panel with colour-coded severity (error/warning/success)
-- One-click download for the PDF report, fixed CSV / fixed predictions, and the drop-in threshold or correction map
-
-The chart schema system (`get_chart_schemas` MCP tool) ensures the agent always generates JSON that matches exactly what the frontend can render — bar, grouped bar, stacked bar, line, scatter, box plot, heatmap, waterfall — with no hardcoded chart types.
+| Category | Algorithms | Purpose |
+|----------|-----------|---------|
+| 🔍 **Detection** | Intersectional Scanner, Mutual Info Proxy, Distance Covariance, SHAP Proxy | Find hidden bias |
+| 🔧 **Mitigation** | Disparate Impact Repair, Equal Opportunity, Recidivism Calibrator | Fix the bias |
+| 🧬 **Causal** | Causal Fair Inference, Counterfactual Fairness, Causal Explanation | Understand why |
+| 🏗️ **Structural** | Fairness Feedback Reparation, DRO Without Demographics, Relational Fairness PSL | Specialist cases |
 
 ---
 
-## MCP Tools Reference
+## 🏗️ Architecture
 
-### Aletheia Auditor Tools
+### System Architecture
 
-| Tool | Purpose |
-|------|---------|
-| `list_algorithms()` | Returns a JSON menu of all 13 registered algorithms with IDs and names |
-| `get_algorithm_info(algorithm_id)` | Returns full metadata: name, type, purpose, sector suitability, tool schemas. Pass `"all"` for complete registry |
-| `load_algorithm_knowledge(algorithm_id)` | Loads the algorithm knowledge skill (Markdown or YAML + scaffold) directly into the agent context window |
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         CLIENT SIDE                             │
+│    Next.js 14 Dashboard  ←→  WebSocket (real-time streaming)    │
+└─────────────────────────────┬───────────────────────────────────┘
+                              │ HTTPS / WSS
+┌─────────────────────────────▼───────────────────────────────────┐
+│                      BACKEND SERVER                             │
+│  FastAPI + Python 3.10  |  Port 8005 (Dataset) / 8006 (Model)  │
+│                                                                 │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌────────────────┐  │
+│  │  LangGraph       │  │  MCP Servers    │  │  Docker Mgr    │  │
+│  │  State Machine   │  │  Port 8000-8002 │  │  Sandbox Ctrl  │  │
+│  └────────┬────────┘  └────────┬────────┘  └───────┬────────┘  │
+└───────────┼─────────────────── ┼ ──────────────────┼───────────┘
+            │                    │                   │
+┌───────────▼────────────────────▼───────────────────▼───────────┐
+│                     DOCKER SANDBOX                              │
+│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌─────────────┐ │
+│  │ Agent 1   │→ │ Agent 2   │→ │ Agent 3   │→ │  Agent 4    │ │
+│  │ Surveyor  │  │ Auditor   │  │ Mitigator │  │  Compiler   │ │
+│  └───────────┘  └───────────┘  └───────────┘  └─────────────┘ │
+│                                                                 │
+│  All data isolated · Never leaves container · Destroyed after   │
+└─────────────────────────────────────────────────────────────────┘
+            ↓
+┌───────────────────────────────────────────────────────────────┐
+│                    GOOGLE CLOUD                                │
+│  Vertex AI (Gemini Pro) · Cloud Run · Compute Engine          │
+│  Artifact Registry · Secrets Manager                          │
+└───────────────────────────────────────────────────────────────┘
+```
 
-### Sandbox Execution Tools
+### Three Pillars of the Architecture
 
-| Tool | Purpose |
-|------|---------|
-| `bash(command)` | Executes shell commands inside the Docker sandbox |
-| `execute_cell(code)` | Runs a Jupyter-style Python cell and streams output |
-| `read_file(path)` | Reads a file from the sandbox container |
-| `write_file(path, content)` | Writes a new file to the sandbox container |
-| `edit_file(path, target, replacement)` | Surgically edits specific blocks within a file |
-| `grep(pattern, path)` | Searches for text patterns within sandbox files |
-| `list_files(path)` | Lists directory contents in the sandbox |
-| `lint_code(path)` | Runs syntax checking on Python files before execution |
+**01 — Knowledge Skill Delivery Model**
+The custom MCP Auditor server injects complete runnable algorithm knowledge into agent context at runtime. Any new algorithm can be added without touching agent code. Adapts implementation to each dataset's column structure from first principles. No external library dependencies — full auditability.
+
+**02 — Custom Sandbox Environment**
+LangGraph orchestrates specialist agents in a highly isolated Docker sandbox. Every decision a human fairness researcher would make — automated. All data isolated, never leaves the container. Full reproducible audit trail across all agents.
+
+**03 — Dual-Audience Output Layer**
+Plain-English verdict and before/after comparison for decision-makers. Full statistical metrics (DIR, SPD, EOD, FPRD), fixed CSV/model, and technical ZIP for ML teams. All agent code (ipykernel notebooks) available for user interpretability. Publication-ready PDF with charts and compliance tables.
 
 ---
 
-## Knowledge Skill Quality Standards
+## ⚡ Key Differentiators
 
-Every algorithm knowledge file in the library adheres to:
+| Capability | IBM AIF360 | Google What-If | Microsoft Fairlearn | Aequitas | Themis-ML | **Aletheia ✦** |
+|-----------|:----------:|:--------------:|:-------------------:|:--------:|:---------:|:--------------:|
+| Zero-code drag-and-drop | ❌ | Partial | ❌ | Partial | ❌ | **✅** |
+| Auto algorithm selection | ❌ | ❌ | ❌ | ❌ | ❌ | **✅ 13 algorithms** |
+| Bias detection | Manual | Visual only | Manual | ✅ | Limited | **Full — proxy, intersectional, causal** |
+| Automated bias mitigation | Some | ❌ | Some | ❌ | Some | **✅ Full before/after** |
+| Proxy / indirect bias | ❌ | ❌ | ❌ | ❌ | ❌ | **✅ SHAP, dCor, MI** |
+| Intersectional analysis | ❌ | ❌ | ❌ | ❌ | ❌ | **✅** |
+| Causal fairness analysis | ❌ | ❌ | ❌ | ❌ | ❌ | **✅ PSE, CEF** |
+| Sandboxed execution | ❌ | ❌ | ❌ | ❌ | ❌ | **✅ Docker isolated** |
+| PDF audit report | ❌ | ❌ | ❌ | ❌ | ❌ | **✅ Publication-ready** |
+| Plain-English findings | ❌ | Partial | ❌ | Partial | ❌ | **✅ Full narrative** |
+| Fixed dataset/model output | Manual | ❌ | Manual | ❌ | ❌ | **✅ Auto-generated** |
+| Requires ML expertise | ✅ | ✅ | ✅ | Some | ✅ | **❌ No** |
+| Multi-agent AI pipeline | ❌ | ❌ | ❌ | ❌ | ❌ | **✅ LangGraph** |
+| Plugin for coding agents | ❌ | ❌ | ❌ | ❌ | ❌ | **✅ Claude, Codex, Gemini** |
 
-- Runnable Python pseudo-code with imports, edge-case handling, and type annotations
-- Full docstrings with Args and Returns on every function
-- Default parameter values with dataset-conditional tuning guidance
-- Explicit output specifications — exact dictionary keys and types returned
-- Actionable bug warnings — division-by-zero guards, memory limits, convergence checks
-- No filler text — every line serves a functional purpose for agent implementation
+**Four things no competitor does:**
+
+1. **Closes the full loop** — detect → fix → document. Every competitor is either a library, a visualiser, or a point detector. None close the loop automatically.
+2. **Dynamic algorithm selection via KSD** — 13 algorithms selected at runtime based on domain and data structure. No hardcoded wrappers.
+3. **Four-agent LangGraph orchestration in Docker** — custom sandbox handler. No other fairness tool uses multi-agent AI orchestration.
+4. **Zero-code — built for non-technical users** — equally usable by a founder and a data scientist.
 
 ---
 
-## Quick Start
+## 🔌 Plugin Support
 
-### CLI Pipeline
+Aletheia is packaged as a **plug-and-play plugin** for all major AI coding agents.
+
+→ **[Full Plugin Integration Guide](docs/PLUGINS.md)**
 
 ```bash
-# 1. Install dependencies
+npx create-aletheia-skill@latest
+```
+
+Supports: **Claude Code · Gemini CLI / Antigravity · OpenAI Codex · Custom Agents**
+
+---
+
+## 🔒 Privacy & Security
+
+→ **[Full Privacy & Sandbox Architecture](docs/PRIVACY.md)**
+
+**Zero-knowledge architecture. Your data never reaches us.**
+
+- All processing happens inside an isolated Docker container on your infrastructure
+- The MCP server receives only algorithm IDs — never your data
+- Container is destroyed after every audit
+- GDPR-compatible by architecture
+- Full self-host option for air-gap isolation
+
+---
+
+## 👾 Agent Breakdowns
+
+| Mode | Documentation |
+|------|--------------|
+| 📊 Dataset Audit Pipeline | [Dataset Agents — all 4 agents explained](docs/DATASET_AGENTS.md) |
+| 🤖 Model Audit Pipeline | [Model Agents — classification + regression](docs/MODEL_AGENTS.md) |
+| 🔬 Algorithm Reference | [13 Algorithms — MCP server explained](docs/ALGORITHMS.md) |
+
+---
+
+## 🛠️ Tech Stack
+
+### AI Orchestration
+| Technology | Role |
+|-----------|------|
+| **LangGraph** | Multi-agent state machine orchestration |
+| **Vertex AI / Gemini 3.1 Pro** | LLM backbone for all 4 agents |
+| **MCP Protocol** | Custom tool/knowledge delivery servers |
+| **Docker Sandbox** | Isolated Python REPL execution environment |
+
+### Cloud & Infrastructure
+| Technology | Role |
+|-----------|------|
+| **Google Cloud Run** | Auto-scaling frontend hosting |
+| **Google Compute Engine** | Backend VM with Docker socket |
+| **Artifact Registry** | Container image storage |
+| **Secrets Manager** | Vertex AI credential storage |
+
+### Backend & APIs
+| Technology | Role |
+|-----------|------|
+| **FastAPI** | WebSocket streaming backend server |
+| **Python 3.10+** | All agent logic and algorithm code |
+| **WeasyPrint + matplotlib** | Server-side PDF generation |
+| **NumPy / Pandas / SHAP / scipy** | ML computation |
+
+### Frontend
+| Technology | Role |
+|-----------|------|
+| **Next.js 14 / React** | AgenticFlow dashboard |
+| **WebSocket** | Real-time agent output streaming |
+| **Tailwind CSS** | Responsive observability UI |
+| **JSON Schema-driven charts** | Dynamic chart rendering |
+
+---
+
+## 💰 Cost Estimate
+
+| Component | Resource | Est. Cost / Month |
+|-----------|---------|-------------------|
+| Compute Engine (Backend) | 2× e2-standard-2 (2 vCPU, 8 GB RAM) | ~₹8,200 |
+| Persistent Disk | 2× 50 GB balanced | ~₹900 |
+| Static IP Address | 2× Attached Static IPs | ~₹500 |
+| Cloud Run (Frontend) | Serverless Next.js, auto-scaling | ~₹0–500 |
+| Artifact Registry | Docker images (~450 MB) | ~₹100 |
+| Vertex AI API | Gemini 3.1 Pro, scales with volume | ~₹200–1,000 |
+| **Total** | | **~₹11,000/month** |
+
+---
+
+## 🚀 Quick Start
+
+### Using the Live MVP
+
+```
+https://aletheia-frontend-69262873588.us-central1.run.app/
+```
+
+1. Select **Dataset Audit** or **Model Audit**
+2. Upload your file (CSV for datasets, .pkl/.joblib + sample.csv for models)
+3. Watch the 4-agent pipeline run in real time
+4. Download your PDF report and fixed output
+
+### As a Claude Code Skill
+
+```bash
+npx create-aletheia-skill@latest
+# Select: Claude Code → Import via Settings > Plugins
+```
+
+Then in Claude: *"The Aletheia sandbox container is already built. Audit this dataset: [attach file]"*
+
+### Self-Hosting
+
+```bash
+git clone https://github.com/Aditya5191/Aletheia-AI
+cd Aletheia-AI
+
+# Build Docker sandbox
+docker build -t sandbox-python:latest ./mcps/sandbox/
+
+# Start backend
+cd backend/dataset_backend
 pip install -r requirements.txt
+uvicorn backend.api:app --port 8005
 
-# 2. Build the sandbox
-docker build -t sandbox-python:latest ./mcps/sandbox
+# Start MCP servers
+python mcps/sandbox/mcp_server.py &
+python mcps/auditor/server.py &
+python mcps/miscellaneous/server.py &
 
-# 3. Configure credentials
-# Place your Google Cloud Vertex AI service account JSON at:
-# .secrets/vertex-credentials.json
-
-# 4. Add your dataset
-# Place your CSV at: dataset/data.csv
-
-# 5. Run the full audit pipeline
-python main.py
-```
-
-### AgenticFlow Web Dashboard
-
-```bash
-# Start the Dataset Auditor backend (MCP servers on 8000-8002, artifacts on 8005)
-uvicorn backend.dataset_backend.backend.api:app --host 0.0.0.0 --port 8005
-
-# Start the Model Auditor backend (artifacts on 8006) — run alongside for the Model Auditor tab
-uvicorn backend.model_backend.backend.api:app --host 0.0.0.0 --port 8006
-
-# Start the frontend
-cd frontend/agenticflow
-npm install
-npm run dev
-# Open http://localhost:3000
-```
-
-> The frontend points the Model Auditor tab at the model backend via `NEXT_PUBLIC_MODEL_API_URL` (defaults to `http://localhost:8006`).
-
----
-
-## Google Cloud Deployment
-
-![Cloud Architecture](./diagram/cloudArtichure.png)
-
-Aletheia runs as a distributed production application on Google Cloud, utilizing Cloud Run for the auto-scaling frontend and two dedicated VMs for the distinct auditing backends to ensure deep isolation and performance.
-
-### 1. Deploy Dataset Auditor Backend
-The Dataset Auditor runs on its own VM (`aletheia-dataset-vm`) and serves traffic on port 8005.
-
-```bash
-docker build -f Dockerfile.dataset -t us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend-dataset:latest .
-docker push us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend-dataset:latest
-
-gcloud compute ssh aletheia-dataset-vm --zone=us-central1-a --command="\
-  sudo docker pull us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend-dataset:latest && \
-  sudo docker rm -f dataset-backend-api && \
-  sudo docker run -d --name dataset-backend-api --restart=always -p 8005:8005 \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend-dataset:latest"
-```
-
-### 2. Deploy Model Auditor Backend
-The Model Auditor runs on a separate VM (`aletheia-model-vm`) and serves traffic on port 8006.
-
-```bash
-docker build -f Dockerfile.model -t us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend-model:latest .
-docker push us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend-model:latest
-
-gcloud compute ssh aletheia-model-vm --zone=us-central1-a --command="\
-  sudo docker pull us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend-model:latest && \
-  sudo docker rm -f model-backend-api && \
-  sudo docker run -d --name model-backend-api --restart=always -p 8006:8006 \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend-model:latest"
-```
-
-### 3. Deploy Frontend (Cloud Run)
-The frontend connects to both backends via `sslip.io` DNS mapping to bypass mixed-content and CORS restrictions.
-
-```bash
-docker build -t us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/frontend:latest \
-  --build-arg NEXT_PUBLIC_API_URL=https://136-116-198-116.sslip.io \
-  --build-arg NEXT_PUBLIC_WS_URL=wss://136-116-198-116.sslip.io \
-  --build-arg NEXT_PUBLIC_MODEL_API_URL=https://34-136-249-125.sslip.io \
-  --build-arg NEXT_PUBLIC_MODEL_WS_URL=wss://34-136-249-125.sslip.io \
-  ./frontend/agenticflow
-
-docker push us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/frontend:latest
-
-gcloud run deploy aletheia-frontend \
-  --image us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/frontend:latest \
-  --region us-central1 \
-  --project project-f97facc4-90fc-43df-91f
-```
-
-### Useful VM Commands
-
-```bash
-# Stream backend logs
-gcloud compute ssh aletheia-dataset-vm --zone=us-central1-a --command="sudo docker logs dataset-backend-api -f"
-gcloud compute ssh aletheia-model-vm --zone=us-central1-a --command="sudo docker logs model-backend-api -f"
-
-# Check running sandbox containers
-gcloud compute ssh aletheia-model-vm --zone=us-central1-a --command="sudo docker ps"
-```
----
-
-## Claude Desktop Integration
-
-```json
-{
-  "mcpServers": {
-    "aletheia-auditor": {
-      "command": "python",
-      "args": ["C:\\path\\to\\mcps\\auditor\\server.py"]
-    },
-    "aletheia-sandbox": {
-      "command": "python",
-      "args": ["C:\\path\\to\\mcps\\sandbox\\mcp_server.py"]
-    }
-  }
-}
+# Start frontend
+cd frontend && npm install && npm run dev
 ```
 
 ---
 
-## Installation
+## 🔗 Project Links
 
-### Core Dependencies
-
-```bash
-pip install mcp numpy pandas scipy scikit-learn statsmodels shap
-```
-
-### Deep Learning Algorithms
-
-Required for `fairness_feedback_reparation` and `dro_fairness_no_demographics`:
-
-```bash
-pip install torch
-```
-
-### Convex Optimisation Algorithms
-
-Required for `relational_fairness_psl`:
-
-```bash
-pip install cvxpy
-```
+| Resource | Link |
+|---------|------|
+| 🚀 **Live MVP** | https://aletheia-frontend-69262873588.us-central1.run.app/ |
+| ▶️ **Demo Video** | https://youtu.be/Xu2u8bvfD-w |
+| 📁 **GitHub Repository** | https://github.com/Aditya5191/Aletheia-AI |
 
 ---
 
-## Research Foundation
+## 📚 Documentation Index
 
-The `PAPER/` directory contains original research papers and mathematical derivations for each algorithm, including bias type analysis, sector suitability assessments, and formal proofs of the fairness properties each algorithm guarantees and the trade-offs it accepts.
-
----
-
-## Future Roadmap
-
-- **Continuous monitoring** — scheduled re-audits as new data arrives, with drift detection alerting when fairness degrades
-- **Multi-dataset comparison** — audit the same model across demographic subpopulations in different geographies
-- **Regulatory report templates** — pre-formatted outputs aligned to EEOC, EU AI Act Article 10, and UK Equality Act requirements
-- **API-first integration** — submit datasets and retrieve audit reports programmatically for embedding into existing MLOps pipelines
-- **Expanded algorithm library** — federated fairness for distributed data, fairness under covariate shift, and longitudinal fairness tracking
-
----
-
-## License
-
-Provided for academic and research purposes.
+| File | Contents |
+|------|---------|
+| [`README.md`](README.md) | This file — full overview |
+| [`docs/DATASET_AGENTS.md`](docs/DATASET_AGENTS.md) | Dataset pipeline — all 4 agents, inputs, outputs |
+| [`docs/MODEL_AGENTS.md`](docs/MODEL_AGENTS.md) | Model pipeline — classification + regression agents |
+| [`docs/ALGORITHMS.md`](docs/ALGORITHMS.md) | All 13 MCP algorithms explained |
+| [`docs/PLUGINS.md`](docs/PLUGINS.md) | Plugin integration for Claude Code, Codex, Gemini CLI |
+| [`docs/PRIVACY.md`](docs/PRIVACY.md) | Privacy architecture, Docker isolation, self-hosting |
 
 ---
 
 <div align="center">
 
-Built to make AI systems accountable — to the people they affect, and to the organisations that deploy them.
+**Built by Team Technopaths for the Google Solution Challenge 2025**
 
-**[Live Demo](https://aletheia-frontend-69262873588.us-central1.run.app/)**
+*Advithiya Duddu · Problem Statement: Unbiased AI Decision*
+
+[![Google Solution Challenge](https://img.shields.io/badge/Google-Solution%20Challenge%202025-4285F4?style=for-the-badge&logo=google)](https://developers.google.com/community/gdsc-solution-challenge)
+[![Vertex AI](https://img.shields.io/badge/Powered%20by-Vertex%20AI%20%2F%20Gemini-4285F4?style=for-the-badge&logo=google-cloud)](https://cloud.google.com/vertex-ai)
 
 </div>
