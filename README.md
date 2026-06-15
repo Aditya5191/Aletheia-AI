@@ -21,7 +21,7 @@
 
 ---
 
-**Team Technopaths · Leader: Advithiya Duddu**
+**Team Technopaths · 
 **Problem Statement: Unbiased AI Decision — Ensuring Fairness and Detecting Bias in Automated Decisions**
 
 ---
