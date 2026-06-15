@@ -22,7 +22,8 @@
 <tr>
 <td align="center" width="33%">
 
-### <img src="[https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Claude_AI_logo.svg/1024px-Claude_AI_logo.svg.png](https://uxplanet.org/claude-code-for-web-design-338064dbdfc0)" width="40" alt="Claude"/> Claude Code
+### <img width="793" height="411" alt="image" src="https://github.com/user-attachments/assets/83a538b8-695c-4fe6-9e2f-0bce4faeb810" />
+> Claude Code
 
 **Anthropic's CLI coding agent**
 
