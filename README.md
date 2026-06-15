@@ -21,11 +21,6 @@
 
 ---
 
-**Team Technopaths · 
-**Problem Statement: Unbiased AI Decision — Ensuring Fairness and Detecting Bias in Automated Decisions**
-
----
-
 <img width="800" src="https://raw.githubusercontent.com/Aditya5191/Aletheia-AI/main/docs/hero.png" alt="Aletheia Hero" onerror="this.style.display='none'"/>
 
 ### *"Your AI model is making biased decisions. We prove it, measure it, and fix it — autonomously."*
