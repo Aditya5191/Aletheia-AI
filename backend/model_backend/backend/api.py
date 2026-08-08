@@ -66,7 +66,7 @@ app.mount("/model_outputs", StaticFiles(directory="model_outputs"), name="model_
 
 
 def start_docker_sandbox():
-    image          = "us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/sandbox-python:latest"
+    image          = "sandbox-python:latest" if IS_LOCAL else "us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/sandbox-python:latest"
     container_name = f"aletheia-model-{uuid.uuid4().hex[:8]}"
     os.makedirs("model_upload", exist_ok=True)
     os.makedirs("model_outputs", exist_ok=True)

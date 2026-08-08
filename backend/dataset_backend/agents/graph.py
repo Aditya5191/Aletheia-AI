@@ -140,20 +140,21 @@ async def run_langgraph_agent(
                         tool.args_schema.Config.extra = "allow"
             # -----------------------------------------------
 
-            # Use GOOGLE_APPLICATION_CREDENTIALS from .env if set, otherwise fall back to default path
-            creds_path = os.environ.get(
-                "GOOGLE_APPLICATION_CREDENTIALS",
-                os.path.abspath(".secrets/vertex-credentials.json")
-            )
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.abspath(creds_path)
-            print(f"[AUTH] Using credentials: {os.environ['GOOGLE_APPLICATION_CREDENTIALS']}", flush=True)
+            creds_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+            if creds_path and os.path.exists(creds_path):
+                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.abspath(creds_path)
+                print(f"[AUTH] Using credentials: {os.environ['GOOGLE_APPLICATION_CREDENTIALS']}", flush=True)
+            else:
+                if "GOOGLE_APPLICATION_CREDENTIALS" in os.environ:
+                    os.environ.pop("GOOGLE_APPLICATION_CREDENTIALS")
+                print("[AUTH] Using Application Default Credentials (ADC)", flush=True)
 
             model_name = os.environ.get("VERTEX_MODEL", "gemini-2.0-flash")
             print(f"[LLM] Using model: {model_name}", flush=True)
 
             llm = ChatVertexAI(
                 model=model_name,
-                location="global",
+                location=os.environ.get("VERTEX_LOCATION", "us-central1"),
                 temperature=0.2,
                 max_retries=8,
                 safety_settings={
@@ -169,6 +170,8 @@ async def run_langgraph_agent(
             llm_mitigator = llm.bind_tools(all_tools)
             llm_compiler = llm.bind_tools(all_tools)
 
+            import time
+
             def data_surveyor(state: AgentState):
                 prompt_path = os.path.join(os.path.dirname(__file__), "prompts", "data_surveyor.md")
                 with open(prompt_path, "r", encoding="utf-8") as f:
@@ -177,6 +180,7 @@ async def run_langgraph_agent(
                 system_prompt = SystemMessage(
                     content=raw_prompt.replace("{container_id}", container_id)
                 )
+                time.sleep(4.5) # Prevent 15 RPM free tier rate limit
                 response = llm_surveyor.invoke([system_prompt] + clean_messages(state["messages"]))
                 return {"messages": [response], "sender": "data_surveyor"}
 
@@ -188,6 +192,7 @@ async def run_langgraph_agent(
                 system_prompt = SystemMessage(
                     content=raw_prompt.replace("{container_id}", container_id)
                 )
+                time.sleep(4.5)
                 response = llm_adjudicator.invoke([system_prompt] + clean_messages(state["messages"]))
                 return {"messages": [response], "sender": "fairness_adjudicator"}
 
@@ -199,6 +204,7 @@ async def run_langgraph_agent(
                 system_prompt = SystemMessage(
                     content=raw_prompt.replace("{container_id}", container_id)
                 )
+                time.sleep(4.5)
                 response = llm_mitigator.invoke([system_prompt] + clean_messages(state["messages"]))
                 return {"messages": [response], "sender": "mitigation_agent"}
 
@@ -210,6 +216,7 @@ async def run_langgraph_agent(
                 system_prompt = SystemMessage(
                     content=raw_prompt.replace("{container_id}", container_id)
                 )
+                time.sleep(4.5)
                 response = llm_compiler.invoke([system_prompt] + clean_messages(state["messages"]))
                 return {"messages": [response], "sender": "report_compiler"}
 

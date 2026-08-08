@@ -255,7 +255,7 @@ async def run_model_pipeline(
 
             llm = ChatVertexAI(
                 model=model_name,
-                location="global",
+                location=os.environ.get("VERTEX_LOCATION", "us-central1"),
                 temperature=0.2,
                 max_retries=8,
                 safety_settings={

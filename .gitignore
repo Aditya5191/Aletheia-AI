@@ -20,6 +20,7 @@ dist/
 !.env.example
 .secrets/
 secrets/
+secrets.zip
 *credentials*.json
 
 # ── Node / Next.js (frontend) ──

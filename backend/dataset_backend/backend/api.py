@@ -14,6 +14,7 @@ from websockets.exceptions import ConnectionClosedOK, ConnectionClosedError
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
+os.environ.pop("GOOGLE_APPLICATION_CREDENTIALS", None)
 
 # Import the agent graph logic
 import sys
@@ -96,7 +97,7 @@ def cleanup_stale_resources():
 cleanup_stale_resources()
 
 def start_docker_sandbox():
-    image = "us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/sandbox-python:latest"
+    image = "sandbox-python:latest" if IS_LOCAL else "us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/sandbox-python:latest"
     container_name = f"aletheia-api-{uuid.uuid4().hex[:8]}"
     os.makedirs("dataset", exist_ok=True)
     os.makedirs("outputs", exist_ok=True)
@@ -262,14 +263,14 @@ async def audit_websocket(websocket: WebSocket):
             auditor_process = subprocess.Popen(
                 [sys.executable, "mcps/auditor/server.py"],
                 env={**os.environ, "PORT": str(AUDITOR_MCP_PORT)},
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
+                stdout=None,
+                stderr=None
             )
             miscellaneous_process = subprocess.Popen(
                 [sys.executable, "mcps/miscellaneous/server.py"],
                 env={**os.environ, "PORT": str(MISC_MCP_PORT)},
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
+                stdout=None,
+                stderr=None
             )
 
             await asyncio.sleep(3)
