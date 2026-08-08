@@ -76,6 +76,17 @@ export default function TopAppBar() {
             Developer
           </button>
           <button
+            onClick={() => setViewMode("test")}
+            className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold transition-[color,background-color,transform] duration-150 ease-out active:scale-95 ${
+              viewMode === "test"
+                ? "bg-primary text-white shadow-lg shadow-primary/40"
+                : "text-gray-500 hover:text-gray-300"
+            }`}
+          >
+            <FlaskConical className="w-3.5 h-3.5" />
+            Test
+          </button>
+          <button
             onClick={() => setViewMode("user")}
             className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold transition-[color,background-color,transform] duration-150 ease-out active:scale-95 ${
               viewMode === "user"

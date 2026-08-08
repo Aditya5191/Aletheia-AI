@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { API_BASE_URL, MODEL_API_BASE_URL } from "../lib/config";
 import {
   X,
@@ -37,6 +37,8 @@ interface NodeDetailModalProps {
   nodeId: string;
   onClose: () => void;
   forceTestMode?: boolean;
+  testFileName?: string;
+  testTargetColumn?: string;
 }
 
 /* ------------------------------------------------------------------ */
@@ -1769,9 +1771,9 @@ function ChartSection({ charts, onActiveChartChange }: { charts: ChartDef[], onA
 /*  Modal Component                                                    */
 /* ------------------------------------------------------------------ */
 
-export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: NodeDetailModalProps) {
+export default function NodeDetailModal({ nodeId, onClose, forceTestMode, testFileName, testTargetColumn }: NodeDetailModalProps) {
   const { viewMode, tourTab } = useViewMode();
-  const isTestMode = forceTestMode || viewMode === "test-developer";
+  const isTestMode = forceTestMode || viewMode === "test";
   // Model Auditor nodes share the same modal as the dataset agents, but they
   // have no static entry in `nodeDetails`. Synthesize a detail header for them.
   const MODEL_NODE_META: Record<string, { title: string; iconType: "database" | "brain" | "code" }> = {
@@ -1783,13 +1785,22 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
   const isModel = nodeId in MODEL_NODE_META;
   const isReportNode = nodeId === "report-writer" || nodeId === "report-compiler";
 
-  const detail: NodeDetailData | undefined = nodeDetails[nodeId] ?? (isModel ? {
-    title: MODEL_NODE_META[nodeId].title,
-    iconType: MODEL_NODE_META[nodeId].iconType,
-    statusLabel: "Completed",
-    statusColor: "#64c8ff",
-    charts: [], metrics: [], findings: [], review: "", codeSnippet: "", lastRun: "just now",
-  } : undefined);
+  const rawDetail = nodeDetails[nodeId];
+  const detail: NodeDetailData | undefined = useMemo(() => {
+    return rawDetail
+      ? JSON.parse(
+          JSON.stringify(rawDetail)
+            .replace(/data\.csv/g, testFileName || "data.csv")
+            .replace(/approved/g, testTargetColumn || "approved")
+        )
+      : (isModel ? {
+          title: MODEL_NODE_META[nodeId].title,
+          iconType: MODEL_NODE_META[nodeId].iconType,
+          statusLabel: "Completed",
+          statusColor: "#64c8ff",
+          charts: [], metrics: [], findings: [], review: "", codeSnippet: "", lastRun: "just now",
+        } : undefined);
+  }, [nodeId, isModel, rawDetail, testFileName, testTargetColumn]);
 
   const [activeTab, setActiveTab] = useState<"chart" | "review" | "code">(isReportNode ? "review" : "chart");
   const [activeChartData, setActiveChartData] = useState<ChartDef | null>(null);
@@ -1913,7 +1924,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
     return () => clearInterval(intervalId);
   }, [agentNum, isTestMode]);
 
-  // In test-developer mode, use the static hardcoded data; in live mode, use dynamic API data
+  // In test mode, use the static hardcoded data; in live mode, use dynamic API data
   const chartsToRender = isTestMode ? (detail?.charts || []) : (dynamicCharts || []);
   const metricsToRender = isTestMode ? (detail?.metrics || []) : (dynamicMetrics?.metrics || []);
   const findingsToRender = isTestMode ? (detail?.findings || []) : (dynamicMetrics?.findings || []);
