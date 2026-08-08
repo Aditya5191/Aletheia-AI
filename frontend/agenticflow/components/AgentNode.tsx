@@ -200,7 +200,7 @@ function AgentNode({ id, data, selected }: NodeProps<AgentNodeType>) {
         )}
 
         {/* Individual Tool Accordions - Only visible in Developer Mode */}
-        {(viewMode === "developer" || viewMode === "test-developer") && data.toolCalls && data.toolCalls.length > 0 && (
+        {(viewMode === "developer" || viewMode === "test") && data.toolCalls && data.toolCalls.length > 0 && (
           <div className="flex flex-col gap-2 mt-2">
             <div className="flex justify-between items-center px-1">
               <span className="text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold">

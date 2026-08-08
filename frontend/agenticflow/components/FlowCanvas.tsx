@@ -166,8 +166,8 @@ export default function FlowCanvas() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isLocked, setIsLocked] = useState(false);
   const [discoveredAttributes, setDiscoveredAttributes] = useState<string[]>([]);
-
-
+  const [testFileName, setTestFileName] = useState("data.csv");
+  const [testTargetColumn, setTestTargetColumn] = useState("approved");
 
   const nodeTypes = useMemo(() => ({ 
     agent: AgentNode, 
@@ -188,7 +188,9 @@ export default function FlowCanvas() {
 
   const handleRunStartRef = useRef<(nodeId: string) => void>(() => {});
 
-  const handleUploadComplete = useCallback((fileName: string) => {
+  const handleUploadComplete = useCallback((fileName: string, targetCol?: string) => {
+    if (fileName) setTestFileName(fileName);
+    if (targetCol) setTestTargetColumn(targetCol);
     setNodes(initialNodes);
     setDiscoveredAttributes([]);
 
@@ -389,10 +391,10 @@ export default function FlowCanvas() {
       /* ---------------------------------------------------------------- */
       /*  TEST-DEVELOPER MODE: mock pipeline triggered by Run button      */
       /* ---------------------------------------------------------------- */
-      if (viewMode === "test-developer" && nodeId === "data-inspector") {
+      if (viewMode === "test" && nodeId === "data-inspector") {
         const mockAttributes = ["gender", "age", "race", "income"];
 
-        const mockToolSets: Record<string, { id: string; name: string; inputs: string; output: string }[]> = {
+        const rawMockToolSets: Record<string, { id: string; name: string; inputs: string; output: string }[]> = {
           "data-inspector": [
             {
               id: "mt-1", name: "bash",
@@ -462,6 +464,20 @@ export default function FlowCanvas() {
             },
           ],
         };
+
+        const replacePlaceholders = (str: string) => 
+          str.replace(/data\.csv/g, testFileName).replace(/approved/g, testTargetColumn);
+
+        const mockToolSets = Object.fromEntries(
+          Object.entries(rawMockToolSets).map(([key, tools]) => [
+            key,
+            tools.map(tool => ({
+              ...tool,
+              inputs: replacePlaceholders(tool.inputs),
+              output: replacePlaceholders(tool.output)
+            }))
+          ])
+        );
 
         const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
@@ -847,6 +863,8 @@ export default function FlowCanvas() {
         <NodeDetailModal
           nodeId={selectedNodeId}
           onClose={() => setSelectedNodeId(null)}
+          testFileName={testFileName}
+          testTargetColumn={testTargetColumn}
         />
       )}
 

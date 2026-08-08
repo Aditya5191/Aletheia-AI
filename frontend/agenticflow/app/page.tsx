@@ -361,59 +361,84 @@ export default function Landing() {
                 ))}
               </div>
             </div>
-            <div className="relative group">
-              <div className="absolute inset-0 bg-primary/20 blur-[100px] group-hover:bg-primary/30 transition-all duration-700"></div>
-              <div className="relative aspect-[3/4] bg-[#1a1b26] border border-white/10 rounded-2xl p-8 shadow-2xl transform rotate-2 group-hover:rotate-0 transition-transform duration-500 overflow-hidden">
-                <div className="w-full h-8 bg-white/5 rounded mb-10 flex items-center px-4 justify-between">
-                  <div className="flex gap-2">
-                    <div className="w-2 h-2 rounded-full bg-red-500/50"></div>
-                    <div className="w-2 h-2 rounded-full bg-yellow-500/50"></div>
-                    <div className="w-2 h-2 rounded-full bg-green-500/50"></div>
-                  </div>
-                  <span className="text-[8px] font-mono text-white/20">ALETHEIA_AUDIT_V4.PDF</span>
+            <div className="relative group perspective-1000">
+              <div className="absolute inset-0 bg-white/5 blur-[100px] transition-all duration-700"></div>
+              {/* PDF Container */}
+              <div className="relative bg-[#fdfdfc] text-[#1a1a1a] rounded-sm p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-500 group-hover:-translate-y-2 border border-black/10 font-[family-name:var(--font-lora)]">
+                
+                {/* Academic Header */}
+                <div className="flex flex-col items-center text-center border-b-2 border-black pb-6 mb-6">
+                  <span className="text-[9px] uppercase tracking-[0.2em] font-sans font-bold text-black/50 mb-2">Technical Report Series · Vol 42</span>
+                  <h4 className="text-2xl font-bold leading-tight text-black">Aletheia Protocol:<br/>Algorithmic Fairness Audit</h4>
+                  <p className="text-[10px] italic mt-3 text-black/70">Generated autonomously via multi-agent adjudication</p>
                 </div>
-                <div className="flex flex-col gap-6">
-                   <div className="flex flex-col gap-2">
-                      <span className="text-[10px] font-mono text-primary font-bold uppercase tracking-widest">Section 01: Summary</span>
-                      <div className="h-8 w-3/4 bg-primary/10 rounded border-l-2 border-primary"></div>
-                   </div>
-                   
-                   <div className="space-y-3">
-                      <div className="h-3 w-full bg-white/5 rounded"></div>
-                      <div className="h-3 w-full bg-white/5 rounded"></div>
-                      <div className="h-3 w-2/3 bg-white/5 rounded"></div>
+
+                <div className="flex flex-col gap-6 relative z-10">
+                   {/* Abstract */}
+                   <div>
+                     <h5 className="text-[10px] font-sans font-bold uppercase tracking-widest text-black mb-2 border-b border-black/20 pb-1 inline-block">Executive Summary</h5>
+                     <div className="text-[10px] text-justify leading-relaxed font-sans text-black/80 space-y-2">
+                       <p>Analysis of 1,024,491 inference records completed.</p>
+                       <p>Base rate disparity detected in Protected Attribute: Gender (DI = 0.72). Applied iterative reweighing (kamiran_calders_2012) to correct disparate impact.</p>
+                       <p>Post-mitigation DI improved to 0.95. EEOC 4/5ths rule satisfied. Model artifacts compiled and cryptographically signed.</p>
+                     </div>
                    </div>
 
-                   <div className="mt-4 p-4 bg-white/[0.02] border border-white/5 rounded-xl space-y-4">
-                      <div className="flex justify-between items-center">
-                         <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Fairness Metric</span>
-                         <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Status</span>
-                      </div>
-                      <div className="flex justify-between items-center border-t border-white/5 pt-2">
-                         <span className="text-[10px] font-bold text-white/80">Disparate Impact</span>
-                         <span className="text-[10px] font-bold text-red-400">FAIL</span>
-                      </div>
-                      <div className="flex justify-between items-center border-t border-white/5 pt-2">
-                         <span className="text-[10px] font-bold text-white/80">Equal Opportunity</span>
-                         <span className="text-[10px] font-bold text-green-400">PASS</span>
-                      </div>
+                   {/* LaTeX Style Table */}
+                   <div className="mt-2 text-[10px]">
+                     <h5 className="text-[10px] font-sans font-bold uppercase tracking-widest text-black mb-3">Table 1. Disparate Impact (DI) Analysis</h5>
+                     <div className="w-full border-t-[1.5px] border-b-[1.5px] border-black py-1">
+                        <table className="w-full text-left">
+                          <thead>
+                            <tr className="border-b border-black/30">
+                              <th className="font-serif font-bold py-1.5 w-1/2">Protected Class</th>
+                              <th className="font-serif font-bold py-1.5 text-right w-1/4">Pre-DI</th>
+                              <th className="font-serif font-bold py-1.5 text-right w-1/4">Post-DI</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td className="py-1">Gender (Female)</td>
+                              <td className="py-1 text-right text-red-600">0.72</td>
+                              <td className="py-1 text-right font-bold">0.95</td>
+                            </tr>
+                            <tr>
+                              <td className="py-1">Age (&lt;25)</td>
+                              <td className="py-1 text-right text-red-600">0.68</td>
+                              <td className="py-1 text-right font-bold">0.88</td>
+                            </tr>
+                            <tr>
+                              <td className="py-1">Race (Non-White)</td>
+                              <td className="py-1 text-right">0.85</td>
+                              <td className="py-1 text-right font-bold">0.91</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                     </div>
+                     <p className="text-[8px] italic mt-2 text-black/60">* Values &lt; 0.80 indicate potential disparate impact violation.</p>
                    </div>
 
-                   <div className="grid grid-cols-2 gap-4 mt-4">
-                     <div className="aspect-video bg-primary/5 rounded border border-primary/10 flex items-center justify-center relative overflow-hidden">
-                        <BarChart3 size={24} className="text-primary/20" />
-                        <div className="absolute bottom-2 left-2 right-2 h-1 bg-white/5 rounded-full overflow-hidden">
-                           <div className="h-full w-2/3 bg-primary"></div>
+                   {/* Math Equation Mock */}
+                   <div className="py-3 px-4 bg-black/5 rounded-sm flex items-center justify-center border border-black/10">
+                      <div className="font-[family-name:var(--font-lora)] text-[11px] text-center w-full flex items-center justify-center gap-2">
+                        <span><span className="italic">DI</span> = </span>
+                        <div className="flex flex-col items-center justify-center mx-1">
+                          <span className="border-b border-black/80 px-2 pb-[1px]">Pr(<span className="italic">Y</span>=1 | <span className="italic">D</span>=unprivileged)</span>
+                          <span className="pt-[1px] px-2">Pr(<span className="italic">Y</span>=1 | <span className="italic">D</span>=privileged)</span>
                         </div>
-                     </div>
-                     <div className="aspect-video bg-white/5 rounded border border-white/5 flex items-center justify-center">
-                        <Telescope size={24} className="text-white/10" />
-                     </div>
+                        <span>&ge; 0.8</span>
+                      </div>
                    </div>
                 </div>
-                <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-[#1a1b26] to-transparent pt-20">
-                  <div className="p-4 bg-primary rounded font-display font-black text-black text-center text-xs tracking-widest">
-                    VERIFIED COMPLIANT
+
+                {/* Academic Stamp */}
+                <div className="absolute -bottom-6 -right-6 w-32 h-32 border-4 border-red-700/80 rounded-full flex items-center justify-center opacity-80 transform -rotate-12 pointer-events-none z-0">
+                  <div className="w-28 h-28 border border-red-700/50 rounded-full flex items-center justify-center">
+                     <div className="text-center">
+                       <span className="block text-[8px] font-sans font-black text-red-700 tracking-[0.2em] uppercase">Audit</span>
+                       <span className="block text-xl font-serif font-black text-red-700 leading-none">PASSED</span>
+                       <span className="block text-[6px] font-mono text-red-700 mt-1">ISO/IEC 42001</span>
+                     </div>
                   </div>
                 </div>
               </div>

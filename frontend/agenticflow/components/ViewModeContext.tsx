@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
-export type ViewMode = "developer" | "user" | "test-developer";
+export type ViewMode = "developer" | "user" | "test";
 export type CurrentView = "dataset" | "model" | "library";
 
 interface ViewModeContextType {
