@@ -8,6 +8,8 @@ The project uses a **Dual-Knowledge Delivery Model** and a **Dual-Backend Archit
 - **Sandbox MCP Server:** Provides a secure, Dockerized Python environment where agents can execute their generated implementation code against user datasets and models.
 - **Dual-Backend:** Runs two separate FastAPI instances (`dataset_backend` on 8005, `model_backend` on 8006) with distinct LangGraph flows.
 
+Alongside this is **LLM BiasProbe** — a separate, standalone addon that adversarially tests *any* LLM endpoint (not this app's own dataset/model pipelines) for bias. It has no LangGraph, no Docker sandbox, and no MCP dependency — it's a Gemini-driven scenario generator + judge running against a pluggable target connector (Ollama, OpenAI-compatible, Anthropic, or arbitrary custom HTTP), exposed as both a standalone CLI (`biasprobe/`) and a third FastAPI backend (`biasprobe_backend` on 8007) feeding a GUI tab. See its own section below.
+
 ### Core Technologies
 - **MCP (Model Context Protocol):** Facilitates communication between agents and tools.
 - **LangGraph:** Orchestrates the multi-agent workflows for both Dataset Audits (4 agents) and Model Audits (4 agents).
@@ -26,6 +28,8 @@ The project uses a **Dual-Knowledge Delivery Model** and a **Dual-Backend Archit
 - `PAPER/`: Original research papers and reference implementations for the 13 algorithms.
 - `outputs/`: Directory for generated bias graphs, reports, and audit summaries.
 - `main.py`: Entry point for starting the sandbox, MCP servers, and agent pipeline.
+- `biasprobe/`: Standalone LLM BiasProbe package (generator, judge, connectors, CLI) — independent of the LangGraph agents above.
+- `backend/biasprobe_backend/`: FastAPI service (port 8007) that streams BiasProbe runs over WebSocket for the GUI tab.
 
 ---
 
@@ -49,6 +53,16 @@ The project uses a **Dual-Knowledge Delivery Model** and a **Dual-Backend Archit
   ```bash
   python main.py
   ```
+- **Run LLM BiasProbe (standalone CLI):**
+  ```bash
+  cd biasprobe && pip install -r requirements.txt
+  python -m biasprobe.cli doctor   # check Ollama + Vertex AI connectivity
+  python -m biasprobe.cli run --use-case "..." --target-model llama3.1:8b
+  ```
+- **Run LLM BiasProbe GUI backend:**
+  ```bash
+  python backend/biasprobe_backend/backend/api.py   # port 8007
+  ```
 
 ---
 
@@ -68,6 +82,11 @@ The project uses a **Dual-Knowledge Delivery Model** and a **Dual-Backend Archit
 
 **3. Interactive Q&A (Chatbot)**
 - Both backends feature a `/qa/ask` endpoint that streams natural-language LLM explanations grounded in the agents' generated reports, adjusting its persona based on the active `view_type`.
+
+**4. LLM BiasProbe (`biasprobe_backend`)**
+- Not a LangGraph agent pipeline — a Gemini-driven **generator** proposes forced-choice comparative scenarios (two positions, one pinned as the objectively stronger candidate on fixed non-protected merit facts), a **connector** sends baseline + position-swap prompt variants to the target model under test, and a Gemini **judge** scores whether the model's choice tracks the swapped protected attribute instead of the fixed merit facts.
+- Target model is pluggable: local Ollama, any OpenAI-compatible endpoint, Anthropic, or an arbitrary custom HTTP endpoint (request template + response path supplied by the user).
+- Every Gemini call retries with exponential backoff on HTTP 429 quota errors.
 
 ### Algorithm Types
 - **PURE:** Delivered as a single `knowledge.md` containing pseudo-code and math.

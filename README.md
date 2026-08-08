@@ -33,6 +33,7 @@
 - [Why India Needs This](#-why-india-needs-this)
 - [How it Works](#-how-it-works)
 - [Two Audit Modes](#-two-audit-modes)
+- [LLM BiasProbe (Addon)](#-llm-biasprobe-addon)
 - [The 13-Algorithm MCP Server](#-the-13-algorithm-mcp-server)
 - [Architecture](#-architecture)
 - [Key Differentiators](#-key-differentiators)
@@ -122,6 +123,24 @@ Upload a trained sklearn-compatible `.pkl` or `.joblib` model + a representative
 **Agents:** Model Inspector/Profiler → Behavioral/Disparity Auditor → Threshold Calibrator/Output Recalibrator → Report Compiler
 
 → **[Full Model Agent Breakdown](docs/MODEL_AGENTS.md)**
+
+---
+
+## 🧪 LLM BiasProbe (Addon)
+
+Aletheia's two audit modes test *datasets* and *trained models*. **LLM BiasProbe** is a separate addon that adversarially tests **any LLM API endpoint** for bias — your own model, a third-party API, a local Ollama model — pointed at a specific deployment use case you describe.
+
+```
+Describe use case  →  Gemini generates forced-choice scenarios  →  Target model answers  →  Gemini judges
+```
+
+**Why forced-choice, not yes/no:** a single "would you approve this one candidate?" prompt has a ceiling effect — absent a competing candidate, a model says yes almost regardless of the protected attribute, and bias hides behind that ceiling. Every BiasProbe scenario is instead a head-to-head choice between two positions, where Position A is pinned to be objectively stronger on fixed, non-protected merit facts (a MELD score, years of experience) that never change across variants — only the protected attribute moves. An unbiased model should pick A every time; a choice that instead tracks the attribute is the bias signal.
+
+**Plug in any target endpoint:** Ollama, OpenAI-compatible (OpenAI, Groq, Together, vLLM, LM Studio), Anthropic, or a fully custom HTTP endpoint (request template + response path), with a live "Test Connection" check before committing to a real run. API keys are session-only — never written to disk.
+
+**Available two ways:**
+- **CLI** — `biasprobe/`, see [biasprobe/README.md](biasprobe/README.md)
+- **GUI** — the **LLM BiasProbe** sidebar tab: endpoint config form → live results table (fills in row by row as the target answers and the judge scores it) → full report (Summary/Cases/Raw, downloadable JSON)
 
 ---
 
@@ -348,6 +367,7 @@ cd frontend && npm install && npm run dev
 | [`docs/ALGORITHMS.md`](ALGORITHMS.md) | All 13 MCP algorithms explained |
 | [`docs/PLUGINS.md`](PLUGINS.md) | Plugin integration for Claude Code, Codex, Gemini CLI |
 | [`docs/PRIVACY.md`](PRIVACY.md) | Privacy architecture, Docker isolation, self-hosting |
+| [`biasprobe/README.md`](biasprobe/README.md) | LLM BiasProbe — standalone CLI + GUI addon for adversarial bias testing of any LLM endpoint |
 
 ---
 

@@ -16,6 +16,8 @@
 
 ---
 
+> **Note:** this plugin bundles the Dataset Audit and Model Audit pipelines. **LLM BiasProbe** is a separate addon (standalone CLI + web GUI tab) and isn't currently part of the `create-aletheia-skill` installer — see [biasprobe/README.md](biasprobe/README.md) to run it directly.
+
 ## Supported Agents
 
 <table>

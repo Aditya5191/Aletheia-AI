@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Aletheia AI is a multi-agent system for automated algorithmic fairness auditing. Users upload a CSV; a four-agent LangGraph pipeline (Data Surveyor → Fairness Adjudicator → Mitigation Agent → Report Compiler) runs inside a Docker sandbox, selects from 13 bias-detection algorithms, and produces a PDF audit report with before/after comparisons.
 
+A separate addon, **LLM BiasProbe** ([biasprobe/](biasprobe/)), adversarially tests *any* LLM endpoint (not just this app's own pipelines) for bias, using Gemini to generate forced-choice comparative scenarios and judge the target's responses. It has its own standalone CLI plus a GUI tab wired into the same frontend — see the dedicated section below.
+
 ## Commands
 
 ### Backend
@@ -31,6 +33,18 @@ npm run lint
 ### Docker Sandbox Image
 ```bash
 docker build -t sandbox-python:latest ./mcps/sandbox
+```
+
+### LLM BiasProbe
+```bash
+# Standalone CLI (from biasprobe/)
+cd biasprobe
+pip install -r requirements.txt
+python -m biasprobe.cli doctor   # sanity-check Ollama + Vertex AI connectivity
+python -m biasprobe.cli run --use-case "..." --target-model llama3.1:8b
+
+# GUI backend (from repo root — needs biasprobe's deps in the same venv)
+python backend/biasprobe_backend/backend/api.py   # port 8007
 ```
 
 ## Architecture
@@ -86,6 +100,15 @@ The frontend connects to the backend's WebSocket `/stream` endpoint. Agents gene
 
 ### API & Streaming
 [backend/dataset_backend/backend/api.py](backend/dataset_backend/backend/api.py) — FastAPI WebSocket handler. Manages sandbox container lifecycle and streams agent events to the frontend as they occur.
+
+### LLM BiasProbe
+A separate, self-contained tool — not part of the dataset/model audit pipelines above, and no Docker sandbox involved (it's just HTTP calls out to Gemini and a user-supplied target endpoint):
+
+- **[biasprobe/](biasprobe/)** — the actual pipeline package. `scenario_generator.py` (Gemini produces forced-choice comparative scenarios — two positions, Position A pinned as the merit-favored one on fixed non-protected facts), `counterfactual_builder.py` (expands each scenario into a baseline run + two position-swap runs per attribute variant), `connectors.py` (pluggable `TargetConnector`s — Ollama, OpenAI-compatible, Anthropic, or a generic custom-HTTP connector built from a request template + response path), `target_runner.py`, `judge.py`, `aggregator.py`, `report.py`. CLI entry point in `cli.py` (`run` / `report` / `doctor`).
+- **[backend/biasprobe_backend/backend/api.py](backend/biasprobe_backend/backend/api.py)** — lightweight FastAPI service, port 8007. `POST /biasprobe/test-connection` (dry-run a target endpoint config before a real run) and `WS /ws/biasprobe` (streams `biasprobe_stage`/`biasprobe_scenarios`/`biasprobe_target_response`/`biasprobe_verdict`/`biasprobe_report`/`biasprobe_error` events; writes each run to `biasprobe_outputs/<run_id>/report.json`). Imports the `biasprobe` package via `sys.path` — needs `biasprobe/requirements.txt` installed into the same venv the backend runs in.
+- **Frontend** — new "LLM BiasProbe" sidebar tab (`ViewModeContext`'s `CurrentView` gained a `"biasprobe"` value), rendering `BiasProbePanel.tsx`: `BiasProbeConfigForm.tsx` (endpoint + audit params, with a live Test Connection check) → a live results table populated from the WS stream → `BiasProbeResultsModal.tsx` (Summary/Cases/Raw tabs) for the full report. Types mirrored from the Python schemas in `lib/biasprobeTypes.ts`.
+
+**Key gotcha specific to this tool:** every run does `1 + 2×(variants_per_dimension − 1)` target calls and one judge call *per scenario+dimension* — cheap-looking CLI flags scale fast. Gemini calls retry with backoff on HTTP 429 (`utils.call_gemini`), but there's no retry budget large enough to survive a genuinely exhausted daily quota.
 
 ## Key Gotchas
 

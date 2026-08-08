@@ -19,7 +19,9 @@
 
 ## The Core Guarantee
 
-When you run an Aletheia audit, **your data — your dataset, your model file, your sample CSV — never leaves your own infrastructure.** This is not a privacy policy statement. It is a technical fact enforced by the architecture.
+When you run an Aletheia **Dataset Audit** or **Model Audit**, **your data — your dataset, your model file, your sample CSV — never leaves your own infrastructure.** This is not a privacy policy statement. It is a technical fact enforced by the architecture.
+
+This guarantee is specific to those two pipelines. **LLM BiasProbe** is architecturally different by necessity — its entire job is to talk to external LLM endpoints — see [LLM BiasProbe's Data Flow](#llm-biasprobes-data-flow) below.
 
 ---
 
@@ -78,6 +80,28 @@ When `docker rm -f` completes, every byte of your original data inside that cont
 Every time the backend restarts, it runs a cleanup function that removes any containers that might have been left over from a previous crashed session:
 
 No orphaned containers. No leftover data.
+
+---
+
+## LLM BiasProbe's Data Flow
+
+**LLM BiasProbe is a different tool with a different privacy model.** It doesn't process your dataset or model at all — it generates *synthetic* test scenarios and sends them to (a) Gemini, for scenario generation and judging, and (b) whichever target LLM endpoint you configure, to see how that model responds. Both of those are, by design, external calls — that's the whole point of the tool.
+
+What this means concretely:
+
+```
+Your use-case description → Gemini (generates synthetic test scenarios)
+Synthetic test prompts     → your configured target endpoint (Ollama, OpenAI,
+                              Anthropic, or a custom endpoint you specify)
+Target's responses         → Gemini (judged for bias)
+```
+
+- **No real user data is involved.** BiasProbe never touches a dataset, a model file, or real production traffic — the prompts it sends are synthetic scenarios Gemini invented from your use-case description.
+- **If you point BiasProbe at a third-party API** (OpenAI, Anthropic, or any custom endpoint), that provider receives the synthetic test prompts and returns responses — the same as using their API directly for anything else.
+- **API keys are session-only.** A key you enter for a target endpoint lives in memory for the duration of that run and is sent once, over your own backend, directly to the provider you configured. It is never written to disk, never logged, and not persisted between runs — you re-enter it (or your password manager does) each time.
+- **Running it locally against Ollama** keeps the target-model half fully on your machine; only the Gemini generator/judge calls leave your infrastructure in that case.
+
+If you need the zero-external-calls guarantee that the Dataset/Model Audit pipelines provide, don't point BiasProbe at anything other than a fully local target model, and be aware the generator/judge step still calls Gemini regardless of what you're testing.
 
 ---
 

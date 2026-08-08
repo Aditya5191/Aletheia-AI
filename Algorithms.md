@@ -16,6 +16,8 @@
 
 ---
 
+> **Note:** this document covers the algorithm library used by the **Dataset Audit** and **Model Audit** pipelines. **LLM BiasProbe** (the addon that tests LLM endpoints directly) doesn't use any of these 13 algorithms — it runs a Gemini-driven forced-choice comparative methodology instead. See [biasprobe/README.md](biasprobe/README.md).
+
 ## What Is the Audit Algorithm MCP?
 
 The **Audit Algorithm MCP Server** is a custom-built [Model Context Protocol](https://modelcontextprotocol.io) server that acts as a living library of fairness algorithm knowledge. It is the core innovation that makes Aletheia fundamentally different from every existing fairness tool.
