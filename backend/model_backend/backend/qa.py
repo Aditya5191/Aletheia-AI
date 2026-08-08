@@ -61,11 +61,18 @@ def get_available_agent_context(test_mode: bool = False, view_type: str = "datas
         report = _read_text(md_path)
         metrics = _read_json(os.path.join(OUTPUTS_DIR, f"agent{num}_metrics.json"))
         if test_mode and num in [1, 2]:
+            if num == 1:
+                mock_report = f"# Mock Report for {name}\n\nIn test mode, {name} evaluated the model predictions. The baseline False Positive Rate (FPR) is 0.15 for the privileged group and 0.38 for the unprivileged group, indicating a high false alarm rate for minorities."
+                mock_metrics = {"false_positive_rate_ratio": 2.53, "accuracy_diff": -0.12}
+            else:
+                mock_report = f"# Mock Report for {name}\n\nIn test mode, {name} detected significant disparity in Equal Opportunity. The unprivileged group is receiving far fewer true positives. The recommended mitigation is Equalized Odds Threshold Calibration."
+                mock_metrics = {"equal_opportunity_diff": -0.34, "average_odds_diff": -0.28}
+                
             result[num] = {
                 "name": name,
                 "available": True,
-                "report": f"# Mock Report for {name}\n\nIn test mode, {name} analyzed the mock dataset and found that Disparate Impact is 0.72 for unprivileged groups, and the base rate of positive outcomes is heavily skewed.\n\nEverything looks highly biased in this simulation.",
-                "metrics": {"disparate_impact": 0.72, "statistical_parity_difference": -0.21}
+                "report": mock_report,
+                "metrics": mock_metrics
             }
         else:
             result[num] = {

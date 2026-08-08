@@ -21,6 +21,7 @@ import ModelUploadNode, { type ModelUploadNodeType } from "./ModelUploadNode";
 import DockerNode, { type DockerNodeType, type DockerStatus } from "./DockerNode";
 import NodeDetailModal from "./NodeDetailModal";
 import CanvasControls from "./CanvasControls";
+import AskSidebar from "./AskSidebar";
 
 import { useViewMode } from "./ViewModeContext";
 import { MODEL_WS_BASE_URL } from "../lib/config";
@@ -352,6 +353,139 @@ export default function ModelFlowCanvas() {
     (nodeId: string) => {
       if (nodeId !== "model-inspector") return;
 
+      /* ---------------------------------------------------------------- */
+      /*  TEST-DEVELOPER MODE: mock pipeline triggered by Run button      */
+      /* ---------------------------------------------------------------- */
+      if (viewMode === "test") {
+        const mockAttributes = ["gender", "age", "race", "income"];
+
+        const mockToolSets: Record<string, { id: string; name: string; inputs: string; output: string }[]> = {
+          "model-inspector": [
+            {
+              id: "mt-1", name: "bash",
+              inputs: '{\n  "command": "python -c \\\"import joblib, pandas as pd\\nmodel = joblib.load(\'model.pkl\')\\ndf = pd.read_csv(\'sample.csv\')\\nprint(f\'Model Type: RandomForestClassifier\')\\nprint(f\'Sample Shape: {df.shape}\')\\nprint(f\'Features: {list(df.columns)}\')\\\""\n}',
+              output: 'Model Type: RandomForestClassifier\nSample Shape: (1000, 11)\nFeatures: [\'age\', \'gender\', \'race\', \'income\', \'education\', \'hours_per_week\', \'occupation\', \'marital_status\', \'workclass\', \'native_country\', \'capital_gain\']'
+            },
+            {
+              id: "mt-2", name: "bash",
+              inputs: '{\n  "command": "python profile_model_predictions.py"\n}',
+              output: '══════════════════════════════════════════\n     MODEL PREDICTION PROFILING REPORT\n══════════════════════════════════════════\n\n📊 Generating predictions on 1,000 samples...\n\nBase Positive Prediction Rate: 41.5%\n\n🔍 Protected Attributes Detected:\n   ► gender  (2 groups: Male, Female)\n   ► age     (binned: <25, 25-40, 40-60, 60+)\n   ► race    (4 groups)\n   ► income  (continuous → quartiles)\n\n✅ Profile saved to /workspace/outputs/model_profile.json'
+            }
+          ],
+          "behavioral-auditor": [
+            {
+              id: "mt-3", name: "list_algorithms",
+              inputs: '{\n  "category": "bias_detection"\n}',
+              output: '[\n  "equal_opportunity",\n  "equalized_odds",\n  "predictive_parity",\n  "disparate_impact_ratio"\n]\n\n→ Selected: equalized_odds (evaluates both False Positive Rate and True Positive Rate)'
+            },
+            {
+              id: "mt-4", name: "bash",
+              inputs: '{\n  "command": "python evaluate_fairness.py"\n}',
+              output: 'GENDER:\n         Male: TPR=0.85, FPR=0.15  ✓\n       Female: TPR=0.62, FPR=0.38  ⚠️  FAIL (High False Alarm Rate)\n\nAGE:\n        25-40: TPR=0.82, FPR=0.18  ✓\n          <25: TPR=0.55, FPR=0.45  ⚠️  FAIL (High False Alarm Rate)\n        40-60: TPR=0.80, FPR=0.19  ✓\n          60+: TPR=0.78, FPR=0.20  ✓\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n⚠️  DISPARITY DETECTED: gender (FPR 0.38 vs 0.15), age (<25 FPR 0.45 vs 0.18)'
+            },
+            {
+              id: "mt-5", name: "bash",
+              inputs: '{\n  "command": "python -c \\\"import matplotlib.pyplot as plt\\nprint(\'Charts generated.\')\\\""\n}',
+              output: '📊 Charts generated:\n   /workspace/outputs/roc_curves.png\n   /workspace/outputs/fpr_disparities.png\n\n✅ Bias summary → /workspace/outputs/model_bias_report.json'
+            }
+          ],
+          "threshold-calibrator": [
+            {
+              id: "mt-6", name: "load_algorithm_knowledge",
+              inputs: '{\n  "algorithm": "equalized_odds_postprocessing"\n}',
+              output: '📖 Algorithm: Equalized Odds Threshold Calibration\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nMethod: Solve linear program to find group-specific thresholds \nthat align True Positive Rates (TPR) and False Positive Rates (FPR)\nacross all demographic groups.\n\nConstraint: TPR_a ≈ TPR_b AND FPR_a ≈ FPR_b\n'
+            },
+            {
+              id: "mt-7", name: "bash",
+              inputs: '{\n  "command": "python run_calibration.py"\n}',
+              output: 'Calibrating Thresholds for GENDER...\n  Male Threshold:   0.50 → 0.51\n  Female Threshold: 0.50 → 0.63\n\nCalibrating Thresholds for AGE...\n  <25 Threshold:    0.50 → 0.65\n  25-40 Threshold:  0.50 → 0.49\n  40-60 Threshold:  0.50 → 0.50\n  60+ Threshold:    0.50 → 0.50\n\nNew Metrics:\n  Male:   TPR=0.81, FPR=0.16\n  Female: TPR=0.79, FPR=0.17  ✓ Aligned\n  <25:    TPR=0.75, FPR=0.18  ✓ Aligned\n\n✅ Calibrated model wrapper saved → /workspace/outputs/calibrated_model.pkl'
+            }
+          ],
+          "report-compiler": [
+            {
+              id: "mt-8", name: "bash",
+              inputs: '{\n  "command": "python compile_report.py"\n}',
+              output: 'Compiling LaTeX report...\n\n📄 MODEL FAIRNESS AUDIT REPORT\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nSections generated:\n  ✓ 1. Model Profile & Dataset Summary\n  ✓ 2. Pre-Calibration Metrics (FPR/TPR)\n  ✓ 3. Equalized Odds Post-processing\n  ✓ 4. Post-Calibration Validation\n\nEmbedded Charts: 3\nPages: 9\n\n✅ Report → /workspace/outputs/model_audit_report.pdf'
+            },
+            {
+              id: "mt-9", name: "read_file",
+              inputs: '{\n  "path": "/workspace/outputs/report_summary.txt"\n}',
+              output: '╔══════════════════════════════════════════╗\n║         MODEL FAIRNESS AUDIT REVIEW      ║\n╠══════════════════════════════════════════╣\n║                                          ║\n║  Model Type: RandomForestClassifier      ║\n║                                          ║\n║  ── BIAS DETECTED ──────────────────     ║\n║  • gender (Female):  FPR = 0.38 ✗ FAIL  ║\n║  • age    (<25):     FPR = 0.45 ✗ FAIL  ║\n║                                          ║\n║  ── MITIGATION APPLIED ─────────────     ║\n║  • Method: Equalized Odds Calibration    ║\n║  • gender (Female):  Threshold = 0.63    ║\n║  • age (<25):        Threshold = 0.65    ║\n║                                          ║\n║  ── IMPACT ─────────────────────────     ║\n║  • Female FPR: 0.38 → 0.17  ✓ FIXED     ║\n║  • <25 FPR:    0.45 → 0.18  ✓ FIXED     ║\n║  • Accuracy:   85.2% → 83.1% (Δ -2.1%) ║\n║                                          ║\n║  ── VERDICT ────────────────────────     ║\n║                                          ║\n║    ██████████████████ 95/100  APPROVED   ║\n║                                          ║\n║  False Positive and True Positive Rates  ║\n║  are now aligned across all groups.      ║\n║                                          ║\n╚══════════════════════════════════════════╝'
+            }
+          ]
+        };
+
+        const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+        const simulateAgent = async (
+          agentNodeId: string,
+          tools: { id: string; name: string; inputs: string; output: string }[]
+        ) => {
+          setNodes((nds) => nds.map((n) => n.id === agentNodeId ? ({ ...n, data: { ...n.data, isAgentRunning: true, toolCalls: [] } } as AgentNodeType) : n));
+          await delay(800);
+
+          for (const tool of tools) {
+            setNodes((nds) => nds.map((n) => {
+              if (n.id !== agentNodeId) return n;
+              const current = ((n.data as any).toolCalls as any[]) || [];
+              return { ...n, data: { ...n.data, toolCalls: [...current, { ...tool, output: "Running..." }] } } as AgentNodeType;
+            }));
+            await delay(1500);
+
+            setNodes((nds) => nds.map((n) => {
+              if (n.id !== agentNodeId) return n;
+              const current = ((n.data as any).toolCalls as any[]) || [];
+              const updated = current.map((tc: any) => tc.id === tool.id && tc.output === "Running..." ? { ...tc, output: tool.output } : tc);
+              return { ...n, data: { ...n.data, toolCalls: updated } } as AgentNodeType;
+            }));
+            await delay(500);
+          }
+
+          setNodes((nds) => nds.map((n) => n.id === agentNodeId ? ({ ...n, data: { ...n.data, isAgentRunning: false } } as AgentNodeType) : n));
+        };
+
+        (async () => {
+          setEdges((eds) => eds.map((e) => e.id === "e-upload-docker" ? { ...e, animated: true, style: { stroke: "#64c8ff", strokeWidth: 2 } } : e));
+          await delay(1000);
+
+          setDockerStatus("spawning");
+          await delay(2000);
+          setDockerStatus("running", "mock-container-abc123");
+          setEdges((eds) => eds.map((e) => e.id === "e-docker-mi" ? { ...e, animated: true, style: { stroke: "#64c8ff", strokeWidth: 2 } } : e));
+          await delay(1000);
+
+          await simulateAgent("model-inspector", mockToolSets["model-inspector"]);
+          await delay(1000);
+          setDiscoveredAttributes(mockAttributes);
+          handleRunComplete("model-inspector", mockAttributes);
+          await delay(4000);
+
+          await simulateAgent("behavioral-auditor", mockToolSets["behavioral-auditor"]);
+          await delay(500);
+          handleRunComplete("behavioral-auditor");
+          await delay(4000);
+
+          await simulateAgent("threshold-calibrator", mockToolSets["threshold-calibrator"]);
+          await delay(500);
+          handleRunComplete("threshold-calibrator");
+          await delay(4000);
+
+          await simulateAgent("report-compiler", mockToolSets["report-compiler"]);
+          await delay(500);
+          handleRunComplete("report-compiler");
+
+          await delay(2000);
+          setDockerStatus("stopped");
+        })();
+
+        return; // exit early
+      }
+
+      /* ---------------------------------------------------------------- */
+      /*  REAL MODE: original WebSocket-based flow                        */
+      /* ---------------------------------------------------------------- */
+
+
       setNodes((nds) =>
         nds.map((n) =>
           n.id === "model-inspector"
@@ -575,6 +709,8 @@ export default function ModelFlowCanvas() {
           onClose={() => setSelectedNodeId(null)}
         />
       )}
+
+      <AskSidebar />
     </div>
   );
 }

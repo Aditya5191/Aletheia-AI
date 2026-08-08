@@ -95,7 +95,8 @@ Upload a CSV with demographic attributes and an outcome column. No model require
 **What you get:**
 - Fixed dataset CSV with bias repaired
 - Publication-ready PDF audit report
-- Plain-English bias verdict
+- Interactive **AI Chatbot** to query agent findings in plain English
+- **Test Mode** for instant pipeline simulation
 - Before/after fairness metric comparison
 - All agent code (ipykernel) visible and downloadable
 
@@ -113,6 +114,8 @@ Upload a trained sklearn-compatible `.pkl` or `.joblib` model + a representative
 - `threshold_map.json` (classifiers) or `correction_map.json` (regressors) — drop-in fix
 - Fixed predictions CSV
 - SHAP attribution charts
+- Interactive **AI Chatbot** customized to explain model thresholds and prediction disparities
+- **Test Mode** for instant model auditing simulation
 - Counterfactual discrimination evidence
 - Publication-ready PDF audit report
 

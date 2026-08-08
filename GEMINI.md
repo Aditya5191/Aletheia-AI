@@ -3,13 +3,14 @@
 ## Project Overview
 **Aletheia** is an advanced Model Context Protocol (MCP) framework designed for automated algorithmic fairness auditing. It enables LLM agents to perform deep statistical and causal bias detection and mitigation on datasets without requiring pre-installed specialized libraries for every algorithm.
 
-The project uses a **Dual-Knowledge Delivery Model**:
+The project uses a **Dual-Knowledge Delivery Model** and a **Dual-Backend Architecture**:
 - **Auditor MCP Server:** Provides metadata and implementation "knowledge skills" (pseudo-code, math, and tuning guides) for 13 fairness algorithms.
-- **Sandbox MCP Server:** Provides a secure, Dockerized Python environment where agents can execute their generated implementation code against user datasets.
+- **Sandbox MCP Server:** Provides a secure, Dockerized Python environment where agents can execute their generated implementation code against user datasets and models.
+- **Dual-Backend:** Runs two separate FastAPI instances (`dataset_backend` on 8005, `model_backend` on 8006) with distinct LangGraph flows.
 
 ### Core Technologies
 - **MCP (Model Context Protocol):** Facilitates communication between agents and tools.
-- **LangGraph:** Orchestrates the multi-agent workflow (Data Surveyor & Fairness Adjudicator).
+- **LangGraph:** Orchestrates the multi-agent workflows for both Dataset Audits (4 agents) and Model Audits (4 agents).
 - **Docker:** Ensures a clean, isolated execution environment for audits.
 - **Vertex AI:** Powers the underlying LLM agents (Gemini 1.5 Pro).
 - **Python Data Science Stack:** `pandas`, `numpy`, `scipy`, `scikit-learn`, `statsmodels`, `shap`, `torch`, `cvxpy`.
@@ -53,13 +54,20 @@ The project uses a **Dual-Knowledge Delivery Model**:
 
 ## Development Conventions
 
-### Agent Workflow
-1. **Data Surveyor:** Uses sandbox tools (`bash`, `read_file`) to profile `data.csv`, check for missing values, and identify column types.
-2. **Fairness Adjudicator:** 
-    - Queries `auditor` MCP for suitable algorithms (`list_algorithms`, `get_algorithm_info`).
-    - Loads implementation logic (`load_algorithm_knowledge`).
-    - Writes and executes audit code in the sandbox.
-    - Generates plots and summaries in `/workspace/outputs/`.
+### Agent Workflows
+**1. Dataset Pipeline (`dataset_backend`)**
+- **Data Surveyor:** Profiles `data.csv`, checks for missing values, identifies column types.
+- **Fairness Adjudicator:** Queries `auditor` MCP, loads implementation logic, executes code in sandbox, plots graphs.
+- **Bias Mitigator & Report Compiler:** Applies dataset fixes and generates the final PDF.
+
+**2. Model Pipeline (`model_backend`)**
+- **Model Inspector:** Loads `.joblib`/`.pkl` and sample data to extract base rates.
+- **Behavioral Auditor:** Evaluates prediction disparities and False Positive Rates across cohorts.
+- **Threshold Calibrator:** Solves linear programs for Equalized Odds post-processing.
+- **Report Compiler:** Generates final model audit PDF.
+
+**3. Interactive Q&A (Chatbot)**
+- Both backends feature a `/qa/ask` endpoint that streams natural-language LLM explanations grounded in the agents' generated reports, adjusting its persona based on the active `view_type`.
 
 ### Algorithm Types
 - **PURE:** Delivered as a single `knowledge.md` containing pseudo-code and math.

@@ -35,13 +35,22 @@ docker build -t sandbox-python:latest ./mcps/sandbox
 
 ## Architecture
 
-### Agent Pipeline
-Defined in [backend/dataset_backend/agents/graph.py](backend/dataset_backend/agents/graph.py). The four agents communicate via a LangGraph typed state machine:
+### Agent Pipelines
+Aletheia runs two separate LangGraph workflows:
 
+**Dataset Pipeline** (`backend/dataset_backend/agents/graph.py`):
 1. **Data Surveyor** — EDA, proxy detection, writes `outputs/agent1.md` + `attributes.json`
 2. **Fairness Adjudicator** — Selects 1 of 13 algorithms, implements it, writes `outputs/agent2.md`
 3. **Mitigation Agent** — Applies calibration/residualization, writes mitigated CSV + `outputs/agent3.md`
 4. **Report Compiler** — Reads agent1–3 disk outputs, generates charts, produces `outputs/audit_report.pdf`
+
+**Model Pipeline** (`backend/model_backend/agents/graph.py`):
+1. **Model Inspector** — Extracts base rates from `.joblib` and sample CSV.
+2. **Behavioral Auditor** — Evaluates False Positive Rate and prediction disparities.
+3. **Threshold Calibrator** — Solves equalized odds linear programs.
+4. **Report Compiler** — Compiles the findings into the final model audit PDF.
+
+**Interactive Q&A (Chatbot)**: Both backends support streaming LLM explanations via a `/qa/ask` endpoint that adapts its instructions based on the active `view_type`.
 
 **Context handoff pattern:** At each agent boundary, `RemoveMessage` clears message history and the next agent reads the previous agent's markdown report from disk — this prevents context window exhaustion.
 

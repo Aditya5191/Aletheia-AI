@@ -321,6 +321,123 @@ print("Mitigation complete. New sample weights calculated.")`,
     codeSnippet: "",
     lastRun: "Just now",
   },
+  "model-inspector": {
+    title: "Model Inspector",
+    iconType: "search",
+    statusLabel: "Completed",
+    statusColor: "var(--color-primary)",
+    charts: [
+      {
+        id: "prediction_dist",
+        label: "Prediction Distribution",
+        type: "pie",
+        color: "var(--color-primary)",
+        data: [
+          { label: "Positive (1)", value: 415 },
+          { label: "Negative (0)", value: 585 },
+        ],
+      }
+    ],
+    metrics: [
+      { label: "Samples Evaluated", value: "1,000", change: "", up: true },
+      { label: "Base Positive Rate", value: "41.5%", change: "", up: true },
+      { label: "Protected Attrs", value: "4", change: "", up: true },
+    ],
+    findings: [
+      { severity: "success", text: "Model loaded successfully (RandomForestClassifier)" },
+      { severity: "warning", text: "Target variable (approved) shows slight imbalance (41.5% positive)" },
+    ],
+    review: "The Model Inspector successfully loaded the Random Forest model and evaluated predictions on the 1000-row sample dataset. No immediate execution errors were found.",
+    codeSnippet: `import joblib
+import pandas as pd
+
+def inspect_model(model_path, sample_path):
+    model = joblib.load(model_path)
+    df = pd.read_csv(sample_path)
+    preds = model.predict(df.drop(columns=['approved'], errors='ignore'))
+    return {"positive_rate": preds.mean(), "samples": len(df)}
+`,
+    lastRun: "Just now",
+  },
+  "behavioral-auditor": {
+    title: "Behavioral Auditor",
+    iconType: "brain",
+    statusLabel: "Completed",
+    statusColor: "var(--color-error)",
+    charts: [
+      {
+        id: "fpr_chart",
+        label: "False Positive Rate (FPR)",
+        type: "bar",
+        color: "var(--color-error)",
+        data: [
+          { label: "Male", value: 15 },
+          { label: "Female", value: 38 },
+        ],
+      }
+    ],
+    metrics: [
+      { label: "FPR Disparity", value: "2.5x", change: "Favors Male", up: false },
+      { label: "Equal Opportunity", value: "Fail", change: "Unprivileged Lagging", up: false },
+    ],
+    findings: [
+      { severity: "error", text: "High False Alarm Rate (FPR=0.38) detected for Female cohort vs Male (0.15)." },
+      { severity: "error", text: "Age group <25 also experiences elevated False Positive Rates." },
+    ],
+    review: "The Behavioral Auditor detected severe equal opportunity disparities. While the model achieves similar accuracy across groups, it produces significantly more false positives for unprivileged groups, meaning they are incorrectly flagged at much higher rates.",
+    codeSnippet: `from sklearn.metrics import confusion_matrix
+
+def calc_fpr(y_true, y_pred):
+    tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
+    return fp / (fp + tn)
+`,
+    lastRun: "Just now",
+  },
+  "threshold-calibrator": {
+    title: "Threshold Calibrator",
+    iconType: "tool",
+    statusLabel: "Completed",
+    statusColor: "var(--color-success)",
+    charts: [
+      {
+        id: "calibration_chart",
+        label: "Post-Calibration FPR",
+        type: "bar",
+        color: "var(--color-success)",
+        data: [
+          { label: "Male", value: 16 },
+          { label: "Female", value: 17 },
+        ],
+      }
+    ],
+    metrics: [
+      { label: "Female Threshold", value: "0.63", change: "+0.13", up: true },
+      { label: "Male Threshold", value: "0.51", change: "+0.01", up: true },
+    ],
+    findings: [
+      { severity: "success", text: "Equalized Odds Linear Program converged successfully." },
+      { severity: "success", text: "False Positive Rates aligned across all demographic cuts." },
+    ],
+    review: "Threshold Calibrator applied an Equalized Odds post-processing algorithm. By requiring a slightly higher confidence threshold (0.63) for the unprivileged group, the model's False Positive Rate was effectively normalized without retraining.",
+    codeSnippet: `def calibrate_thresholds(y_true, y_prob, group):
+    # Solves linear program for Equalized Odds
+    # ...
+    return {"Male": 0.51, "Female": 0.63}
+`,
+    lastRun: "Just now",
+  },
+  "report-compiler": {
+    title: "Report Compiler",
+    iconType: "code",
+    statusLabel: "Completed",
+    statusColor: "var(--color-primary)",
+    charts: [],
+    metrics: [],
+    findings: [],
+    review: "**Model Fairness Audit Report Compiled**\n\nThe Report Compiler agent synthesized the pre-calibration profiling and post-calibration equalized odds results into a single PDF.",
+    codeSnippet: "",
+    lastRun: "Just now",
+  },
   "output-formatter": {
     title: "Output Formatter",
     iconType: "code",

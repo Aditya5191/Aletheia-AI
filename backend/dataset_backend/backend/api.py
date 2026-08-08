@@ -203,12 +203,14 @@ async def get_output_file(filename: str):
 class QaAskRequest(BaseModel):
     question: str
     agent_numbers: list[int]
+    test_mode: bool = False
+    view_type: str = "dataset"
 
 
 @app.get("/qa/agents")
-async def qa_agents():
+async def qa_agents(test_mode: bool = False, view_type: str = "dataset"):
     """Report which agents currently have output on disk, for the Ask sidebar checkboxes."""
-    context = qa_module.get_available_agent_context()
+    context = qa_module.get_available_agent_context(test_mode=test_mode, view_type=view_type)
     return {
         str(num): {"name": info["name"], "available": info["available"]}
         for num, info in context.items()
@@ -224,7 +226,7 @@ async def qa_ask(req: QaAskRequest):
     """
     async def event_stream():
         try:
-            async for piece in qa_module.stream_answer(req.question, req.agent_numbers):
+            async for piece in qa_module.stream_answer(req.question, req.agent_numbers, test_mode=req.test_mode, view_type=req.view_type):
                 yield f"data: {json.dumps({'text': piece})}\n\n"
         except Exception as e:
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
