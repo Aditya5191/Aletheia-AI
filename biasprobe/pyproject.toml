@@ -1,0 +1,15 @@
+[project]
+name = "biasprobe"
+version = "0.1.0"
+description = "Adversarial LLM bias testing CLI using a Gemini generator/judge against an Ollama-hosted target model."
+requires-python = ">=3.10"
+
+[project.scripts]
+biasprobe = "biasprobe.cli:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["biasprobe*"]

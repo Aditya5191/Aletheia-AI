@@ -35,6 +35,7 @@ yarn-error.log*
 # ── Runtime / generated artifacts ──
 outputs/
 model_outputs/
+biasprobe_outputs/
 model_upload/
 test_for_model_audit/
 *.log

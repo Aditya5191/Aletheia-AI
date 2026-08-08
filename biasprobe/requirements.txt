@@ -1,0 +1,6 @@
+google-cloud-aiplatform
+requests
+pydantic>=2
+click
+rich
+python-dotenv

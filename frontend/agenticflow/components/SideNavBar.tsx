@@ -9,6 +9,7 @@ import {
   Compass,
   Library,
   Shield,
+  FlaskConical,
 } from "lucide-react";
 
 import { useViewMode } from "./ViewModeContext";
@@ -71,6 +72,18 @@ export default function SideNavBar() {
         >
           <Library className={`w-5 h-5 ${currentView === "library" ? "text-emerald-400" : "text-gray-500"}`} />
           <span className="font-bold tracking-tight">Algorithm Library</span>
+        </button>
+
+        <button
+          onClick={() => setCurrentView("biasprobe")}
+          className={`w-full flex items-center gap-3 px-4 py-3 transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] cursor-pointer ${
+            currentView === "biasprobe"
+              ? "bg-amber-500/10 text-amber-400 border-r-4 border-amber-500 shadow-[inset_1px_0_0_0_rgba(245,158,11,0.3)]"
+              : "text-gray-500 hover:text-gray-200 hover:bg-surface-container"
+          }`}
+        >
+          <FlaskConical className={`w-5 h-5 ${currentView === "biasprobe" ? "text-amber-400" : "text-gray-500"}`} />
+          <span className="font-bold tracking-tight">LLM BiasProbe</span>
         </button>
 
         <a
