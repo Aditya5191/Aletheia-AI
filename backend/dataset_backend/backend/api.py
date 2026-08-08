@@ -6,7 +6,8 @@ import json
 import shutil
 import traceback
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, BackgroundTasks, HTTPException, Form
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
+from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from typing import Dict, Optional
@@ -18,8 +19,14 @@ os.environ.pop("GOOGLE_APPLICATION_CREDENTIALS", None)
 
 # Import the agent graph logic
 import sys
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
 sys.path.append(os.path.abspath("."))
+
 from backend.dataset_backend.agents.graph import run_langgraph_agent
+from backend.dataset_backend.backend import qa as qa_module
 
 # ── Environment config ────────────────────────────────────────────────────────
 DEPLOY_ENV        = os.getenv("DEPLOY_ENV", "local")          # "local" | "prod"
@@ -40,9 +47,10 @@ else:
     MISC_MCP_URL    = os.getenv("MISC_MCP_URL",    f"http://localhost:{MISC_MCP_PORT}/sse")
 
 print(f"[CONFIG] DEPLOY_ENV={DEPLOY_ENV}")
-print(f"[CONFIG] Sandbox MCP  → {SANDBOX_MCP_URL}")
-print(f"[CONFIG] Auditor MCP  → {AUDITOR_MCP_URL}")
-print(f"[CONFIG] Misc MCP     → {MISC_MCP_URL}")
+print(f"[CONFIG] Sandbox MCP  -> {SANDBOX_MCP_URL}")
+print(f"[CONFIG] Auditor MCP  -> {AUDITOR_MCP_URL}")
+print(f"[CONFIG] Misc MCP     -> {MISC_MCP_URL}")
+
 
 app = FastAPI(title="Aletheia API")
 
@@ -192,6 +200,40 @@ async def get_output_file(filename: str):
         return FileResponse(file_path)
     raise HTTPException(status_code=404, detail="File not found")
 
+class QaAskRequest(BaseModel):
+    question: str
+    agent_numbers: list[int]
+
+
+@app.get("/qa/agents")
+async def qa_agents():
+    """Report which agents currently have output on disk, for the Ask sidebar checkboxes."""
+    context = qa_module.get_available_agent_context()
+    return {
+        str(num): {"name": info["name"], "available": info["available"]}
+        for num, info in context.items()
+    }
+
+
+@app.post("/qa/ask")
+async def qa_ask(req: QaAskRequest):
+    """Stream a natural-language answer grounded in the selected agents' on-disk reports.
+
+    Purely reads outputs/agent{N}.md — does not touch the live pipeline, the
+    /ws/audit handler, or the Docker sandbox, so it's safe to call at any time.
+    """
+    async def event_stream():
+        try:
+            async for piece in qa_module.stream_answer(req.question, req.agent_numbers):
+                yield f"data: {json.dumps({'text': piece})}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+        finally:
+            yield "data: [DONE]\n\n"
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+
 @app.websocket("/ws/audit")
 async def audit_websocket(websocket: WebSocket):
     await websocket.accept()
@@ -324,20 +366,45 @@ async def audit_websocket(websocket: WebSocket):
 
         
         current_sender = None
-        
-        async for event in run_langgraph_agent(
-            container_id,
-            sandbox_url=SANDBOX_MCP_URL,
-            aletheia_url=AUDITOR_MCP_URL,
-            miscellaneous_url=MISC_MCP_URL,
-        ):
+
+        # Run pipeline in separate task via queue to avoid anyio TaskGroup / GeneratorExit errors
+        queue = asyncio.Queue()
+
+        async def pipeline_task():
             try:
+                async for event in run_langgraph_agent(
+                    container_id,
+                    sandbox_url=SANDBOX_MCP_URL,
+                    aletheia_url=AUDITOR_MCP_URL,
+                    miscellaneous_url=MISC_MCP_URL,
+                ):
+                    await queue.put(event)
+                await queue.put({"__done__": True})
+            except asyncio.CancelledError:
+                pass
+            except Exception as e:
+                full_tb = traceback.format_exc()
+                print(f"[ERROR] Pipeline task error: {e}\n{full_tb}", flush=True)
+                if hasattr(e, 'exceptions'):
+                    for i, sub_e in enumerate(e.exceptions):
+                        print(f"[ERROR] Pipeline Sub-exception {i}: {sub_e}", flush=True)
+                await queue.put({"type": "error", "message": f"Pipeline error: {e}"})
+                await queue.put({"__done__": True})
+
+        task = asyncio.create_task(pipeline_task())
+
+        try:
+            while True:
+                event = await queue.get()
+                if "__done__" in event:
+                    break
+
                 await websocket.send_json(event)
-                
+
                 # Track which agent is currently active
                 if event.get("sender") and event["sender"] in sender_to_agent:
                     current_sender = event["sender"]
-                
+
                 # --- Capture execute_cell code from tool_calls ---
                 if event.get("type") == "tool_calls" and current_sender:
                     agent_num = sender_to_agent.get(current_sender)
@@ -352,7 +419,7 @@ async def audit_websocket(websocket: WebSocket):
                                 # Track by tool call ID so we can match the result
                                 pending_cells[cell_id] = cell
                                 save_code_cells(agent_num)
-                
+
                 # --- Capture tool results for execute_cell ---
                 if event.get("type") == "tool_result" and event.get("name") == "execute_cell":
                     # Match output to the most recent pending cell
@@ -369,7 +436,7 @@ async def audit_websocket(websocket: WebSocket):
                         agent_num = sender_to_agent.get(current_sender)
                         if agent_num:
                             save_code_cells(agent_num)
-                
+
                 # Check if Agent 1 (Data Surveyor) just finished to extract attributes
                 if event.get("sender") == "DATA_SURVEYOR" and event.get("type") == "message":
                     # Run docker exec to read attributes.json
@@ -397,9 +464,10 @@ async def audit_websocket(websocket: WebSocket):
                     except Exception:
                         pass
 
-            except (WebSocketDisconnect, ConnectionClosedOK, ConnectionClosedError):
-                print("[WS] Client disconnected during event stream.")
-                break
+        except (WebSocketDisconnect, ConnectionClosedOK, ConnectionClosedError):
+            print("[WS] Client disconnected during event stream.")
+            task.cancel()
+
         
         # Save final code cells for all agents
         for agent_num in [1, 2, 3, 4]:

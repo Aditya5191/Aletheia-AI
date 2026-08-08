@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useCallback, useMemo, useState, useEffect } from "react";
+import React, { useCallback, useMemo, useState, useEffect, useRef } from "react";
+
 import {
   ReactFlow,
   MiniMap,
@@ -159,20 +160,27 @@ export default function ModelFlowCanvas() {
     );
   }, [setNodes]);
 
-  const handleUploadComplete = useCallback((uploadedModelType: string) => {
+  const handleRunStartRef = useRef<(nodeId: string) => void>(() => {});
 
+  const handleUploadComplete = useCallback((uploadedModelType: string) => {
+    const newModelType = uploadedModelType === "regression" ? "regression" : "classification";
+    setModelType(newModelType);
 
     setNodes(makeInitialNodes());
     setDiscoveredAttributes([]);
-    const newModelType = uploadedModelType === "regression" ? "regression" : "classification";
-    setModelType(newModelType);
 
     setEdges(initialEdges.map((e) =>
       e.id === "e-upload-docker"
         ? { ...e, animated: true, style: { stroke: "#64c8ff", strokeWidth: 2 } }
         : e
     ));
+
+    setTimeout(() => {
+      handleRunStartRef.current("model-inspector");
+    }, 300);
   }, [setNodes, setEdges]);
+
+
 
   // Update agent1 title when modelType changes
   useEffect(() => {
@@ -486,6 +494,11 @@ export default function ModelFlowCanvas() {
     },
     [setNodes, setEdges, setDockerStatus, handleRunComplete, modelType]
   );
+
+  useEffect(() => {
+    handleRunStartRef.current = handleRunStart;
+  }, [handleRunStart]);
+
 
   // Wire callbacks into nodes whenever they change
   useEffect(() => {

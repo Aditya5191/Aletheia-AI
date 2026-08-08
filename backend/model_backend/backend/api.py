@@ -15,7 +15,12 @@ from typing import Dict, Optional
 from websockets.exceptions import ConnectionClosedOK, ConnectionClosedError
 
 import sys
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
 sys.path.append(os.path.abspath("."))
+
 from backend.model_backend.agents.model_graph import run_model_pipeline
 
 app = FastAPI(title="Aletheia Model Audit API")

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useCallback, useMemo, useState, useEffect } from "react";
+import React, { useCallback, useMemo, useState, useEffect, useRef } from "react";
+
 import {
   ReactFlow,
   MiniMap,
@@ -20,6 +21,7 @@ import UploadNode, { type UploadNodeType } from "./UploadNode";
 import DockerNode, { type DockerNodeType, type DockerStatus } from "./DockerNode";
 import NodeDetailModal from "./NodeDetailModal";
 import CanvasControls from "./CanvasControls";
+import AskSidebar from "./AskSidebar";
 
 import { useViewMode } from "./ViewModeContext";
 import { WS_BASE_URL } from "../lib/config";
@@ -184,9 +186,9 @@ export default function FlowCanvas() {
     );
   }, [setNodes]);
 
-  const handleUploadComplete = useCallback((fileName: string) => {
+  const handleRunStartRef = useRef<(nodeId: string) => void>(() => {});
 
-    
+  const handleUploadComplete = useCallback((fileName: string) => {
     setNodes(initialNodes);
     setDiscoveredAttributes([]);
 
@@ -196,7 +198,13 @@ export default function FlowCanvas() {
       }
       return e;
     }));
+
+    setTimeout(() => {
+      handleRunStartRef.current("data-inspector");
+    }, 300);
   }, [setNodes, setEdges]);
+
+
 
   // Horizontal gap between agent nodes (must account for agent card width ~280px + attribute column)
   const AGENT_GAP_X = 600;
@@ -761,6 +769,11 @@ export default function FlowCanvas() {
   );
 
   React.useEffect(() => {
+    handleRunStartRef.current = handleRunStart;
+  }, [handleRunStart]);
+
+
+  React.useEffect(() => {
     setNodes((nds) =>
       nds.map((n) => {
         if ((n.id === "data-inspector" || n.id === "fairness-adjudicator" || n.id === "mitigation-expert" || n.id === "report-writer") && n.type === "agent") {
@@ -836,6 +849,8 @@ export default function FlowCanvas() {
           onClose={() => setSelectedNodeId(null)}
         />
       )}
+
+      <AskSidebar />
     </div>
   );
 }
