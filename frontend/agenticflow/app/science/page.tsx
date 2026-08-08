@@ -14,7 +14,7 @@ import dynamic from 'next/dynamic';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ReasoningSimulator } from '@/components/ReasoningSimulator';
+
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -177,15 +177,7 @@ export default function SciencePage() {
           </div>
         </section>
 
-        {/* Interactive Selection simulator */}
-        <section className="px-8 lg:px-20 py-24 bg-background relative z-10">
-          <div className="max-w-[1200px] mx-auto flex flex-col gap-12 text-center items-center mb-16">
-            <span className="text-[10px] text-primary uppercase tracking-[0.5em] font-label font-bold">Live Reasoning Engine</span>
-            <h3 className="text-4xl lg:text-5xl font-display font-black uppercase text-white tracking-tight">Agentic Selection Simulator</h3>
-            <p className="text-on-surface-variant text-lg max-w-[700px]">Tell us your data constraints, and see Aletheia&apos;s reasoning engine identify the optimal scientific pipeline for your audit.</p>
-          </div>
-          <ReasoningSimulator />
-        </section>
+
 
         {/* Algorithm Library - NO GSAP TRIGGER FOR FULL VISIBILITY */}
         <section className="px-8 lg:px-20 py-40 bg-background relative z-10">

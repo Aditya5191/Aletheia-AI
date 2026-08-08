@@ -8,6 +8,14 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   weight: ["300", "400", "500", "600", "700", "800"],
 });
 
+import { Lora } from "next/font/google";
+const lora = Lora({
+  subsets: ["latin"],
+  variable: "--font-lora",
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+});
+
 export const metadata: Metadata = {
   title: "Aletheia AI - Forensic Observability",
   description:
@@ -22,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${plusJakartaSans.className} antialiased tracking-tight`}>
+      <body className={`${plusJakartaSans.className} ${lora.variable} antialiased tracking-tight`}>
         <SmoothScroll>
           {children}
         </SmoothScroll>

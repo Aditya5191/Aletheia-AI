@@ -180,7 +180,7 @@ async def run_langgraph_agent(
                 system_prompt = SystemMessage(
                     content=raw_prompt.replace("{container_id}", container_id)
                 )
-                time.sleep(4.5) # Prevent 15 RPM free tier rate limit
+
                 response = llm_surveyor.invoke([system_prompt] + clean_messages(state["messages"]))
                 return {"messages": [response], "sender": "data_surveyor"}
 
@@ -192,7 +192,7 @@ async def run_langgraph_agent(
                 system_prompt = SystemMessage(
                     content=raw_prompt.replace("{container_id}", container_id)
                 )
-                time.sleep(4.5)
+
                 response = llm_adjudicator.invoke([system_prompt] + clean_messages(state["messages"]))
                 return {"messages": [response], "sender": "fairness_adjudicator"}
 
@@ -204,7 +204,7 @@ async def run_langgraph_agent(
                 system_prompt = SystemMessage(
                     content=raw_prompt.replace("{container_id}", container_id)
                 )
-                time.sleep(4.5)
+
                 response = llm_mitigator.invoke([system_prompt] + clean_messages(state["messages"]))
                 return {"messages": [response], "sender": "mitigation_agent"}
 
@@ -216,7 +216,7 @@ async def run_langgraph_agent(
                 system_prompt = SystemMessage(
                     content=raw_prompt.replace("{container_id}", container_id)
                 )
-                time.sleep(4.5)
+
                 response = llm_compiler.invoke([system_prompt] + clean_messages(state["messages"]))
                 return {"messages": [response], "sender": "report_compiler"}
 

@@ -21,3 +21,5 @@ RUN pip install --no-cache-dir \
 RUN mkdir -p /workspace/outputs
 
 WORKDIR /workspace
+
+CMD ["tail", "-f", "/dev/null"]

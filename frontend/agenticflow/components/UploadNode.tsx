@@ -25,7 +25,7 @@ export interface UploadNodeData {
   fileSize?: string;
   isUploaded?: boolean;
   isUploading?: boolean;
-  onUploadComplete?: (fileName: string) => void;
+  onUploadComplete?: (fileName: string, targetColumn?: string) => void;
   [key: string]: unknown;
 }
 
@@ -86,7 +86,7 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
 
   // Check for existing dataset on mount
   useEffect(() => {
-    if (viewMode === "test-developer") {
+    if (viewMode === "test") {
       setRecentUploads([{ name: "data.csv", size: "71.3 KB", active: true }]);
       return;
     }
@@ -121,6 +121,21 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
     if (!pendingFile) return;
     setIsUploading(true);
     setError("");
+
+    if (viewMode === "test") {
+      setTimeout(() => {
+        setRecentUploads((prev) => [
+          { name: pendingFile.name, size: formatSize(pendingFile.size), active: true },
+          ...prev.map((f) => ({ ...f, active: false })),
+        ]);
+        data.onUploadComplete?.(pendingFile.name, targetColumn);
+        setPendingFile(null);
+        setCsvColumns([]);
+        setIsUploading(false);
+      }, 600);
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append("file", pendingFile);
@@ -137,7 +152,7 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
           { name: pendingFile.name, size: formatSize(pendingFile.size), active: true },
           ...prev.map((f) => ({ ...f, active: false })),
         ]);
-        data.onUploadComplete?.(pendingFile.name);
+        data.onUploadComplete?.(pendingFile.name, targetColumn);
         setPendingFile(null);
         setCsvColumns([]);
       } else {
@@ -149,7 +164,7 @@ function UploadNode({ id, data }: NodeProps<UploadNodeType>) {
     } finally {
       setIsUploading(false);
     }
-  }, [pendingFile, description, targetColumn, data]);
+  }, [pendingFile, description, targetColumn, data, viewMode]);
 
   const handleDrop = useCallback(
     async (e: React.DragEvent) => {

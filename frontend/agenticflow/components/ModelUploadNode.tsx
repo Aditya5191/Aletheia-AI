@@ -56,7 +56,7 @@ function ModelUploadNode({ data }: NodeProps<ModelUploadNodeType>) {
 
   // Check existing uploads on mount
   useEffect(() => {
-    if (viewMode === "test-developer") return;
+    if (viewMode === "test") return;
     fetch(`${MODEL_API_BASE_URL}/model/status`)
       .then((r) => r.json())
       .then((d) => {
@@ -91,6 +91,16 @@ function ModelUploadNode({ data }: NodeProps<ModelUploadNodeType>) {
     if (!modelFile || !sampleFile) return;
     setIsUploading(true);
     setError("");
+
+    if (viewMode === "test") {
+      setTimeout(() => {
+        setIsDoneUploading(true);
+        data.onUploadComplete?.(modelType);
+        setIsUploading(false);
+      }, 600);
+      return;
+    }
+
     try {
       // Upload model
       const modelForm = new FormData();
@@ -126,7 +136,7 @@ function ModelUploadNode({ data }: NodeProps<ModelUploadNodeType>) {
     } finally {
       setIsUploading(false);
     }
-  }, [modelFile, sampleFile, modelType, data]);
+  }, [modelFile, sampleFile, modelType, data, viewMode]);
 
   return (
     <div className="relative w-[340px] rounded-2xl bg-[#15171B] border border-[#1F2228] shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-visible">

@@ -15,8 +15,15 @@ from typing import Dict, Optional
 from websockets.exceptions import ConnectionClosedOK, ConnectionClosedError
 
 import sys
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
 sys.path.append(os.path.abspath("."))
+
 from backend.model_backend.agents.model_graph import run_model_pipeline
+from backend.model_backend.backend import qa as qa_module
+from pydantic import BaseModel
 
 app = FastAPI(title="Aletheia Model Audit API")
 
@@ -517,6 +524,10 @@ async def model_audit_websocket(websocket: WebSocket):
 
     except (WebSocketDisconnect, ConnectionClosedOK, ConnectionClosedError) as e:
         print(f"[WS] Client disconnected: {e}", flush=True)
+        del active_sessions[session_id]
+        print(f"[WS] Cleaned up session {session_id}")
+
+
     except RuntimeError as e:
         print(f"[WS] Runtime error: {e}", flush=True)
         import traceback as tb
@@ -565,6 +576,36 @@ async def list_model_outputs():
 
 os.makedirs("model_outputs", exist_ok=True)
 
+
+
+class QaAskRequest(BaseModel):
+    question: str
+    agent_numbers: list[int]
+    test_mode: bool = False
+    view_type: str = "model"
+
+@app.get("/qa/agents")
+async def qa_agents(test_mode: bool = False, view_type: str = "model"):
+    """Report which agents currently have output on disk, for the Ask sidebar checkboxes."""
+    context = qa_module.get_available_agent_context(test_mode=test_mode, view_type=view_type)
+    return {
+        str(num): {"name": info["name"], "available": info["available"]}
+        for num, info in context.items()
+    }
+
+@app.post("/qa/ask")
+async def qa_ask(req: QaAskRequest):
+    """Stream a natural-language answer grounded in the selected agents' on-disk reports."""
+    async def event_stream():
+        try:
+            async for piece in qa_module.stream_answer(req.question, req.agent_numbers, test_mode=req.test_mode, view_type=req.view_type):
+                yield f"data: {json.dumps({'text': piece})}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            
+    from fastapi.responses import StreamingResponse
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8006)
+    uvicorn.run(app, host="0.0.0.0", port=8006)

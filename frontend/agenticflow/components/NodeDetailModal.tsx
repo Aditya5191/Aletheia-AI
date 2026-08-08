@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { API_BASE_URL, MODEL_API_BASE_URL } from "../lib/config";
 import {
   X,
@@ -37,6 +37,8 @@ interface NodeDetailModalProps {
   nodeId: string;
   onClose: () => void;
   forceTestMode?: boolean;
+  testFileName?: string;
+  testTargetColumn?: string;
 }
 
 /* ------------------------------------------------------------------ */
@@ -316,6 +318,123 @@ print("Mitigation complete. New sample weights calculated.")`,
     findings: [],
     review:
       "**Report Compiler**\n\nThe Report Writer agent reads every output produced by the three previous agents, renders all chart JSON data as publication-quality matplotlib figures, and compiles everything into a single aesthetically polished PDF report.\n\nOnce the PDF is ready, use the Download button above to save it locally.",
+    codeSnippet: "",
+    lastRun: "Just now",
+  },
+  "model-inspector": {
+    title: "Model Inspector",
+    iconType: "search",
+    statusLabel: "Completed",
+    statusColor: "var(--color-primary)",
+    charts: [
+      {
+        id: "prediction_dist",
+        label: "Prediction Distribution",
+        type: "pie",
+        color: "var(--color-primary)",
+        data: [
+          { label: "Positive (1)", value: 415 },
+          { label: "Negative (0)", value: 585 },
+        ],
+      }
+    ],
+    metrics: [
+      { label: "Samples Evaluated", value: "1,000", change: "", up: true },
+      { label: "Base Positive Rate", value: "41.5%", change: "", up: true },
+      { label: "Protected Attrs", value: "4", change: "", up: true },
+    ],
+    findings: [
+      { severity: "success", text: "Model loaded successfully (RandomForestClassifier)" },
+      { severity: "warning", text: "Target variable (approved) shows slight imbalance (41.5% positive)" },
+    ],
+    review: "The Model Inspector successfully loaded the Random Forest model and evaluated predictions on the 1000-row sample dataset. No immediate execution errors were found.",
+    codeSnippet: `import joblib
+import pandas as pd
+
+def inspect_model(model_path, sample_path):
+    model = joblib.load(model_path)
+    df = pd.read_csv(sample_path)
+    preds = model.predict(df.drop(columns=['approved'], errors='ignore'))
+    return {"positive_rate": preds.mean(), "samples": len(df)}
+`,
+    lastRun: "Just now",
+  },
+  "behavioral-auditor": {
+    title: "Behavioral Auditor",
+    iconType: "brain",
+    statusLabel: "Completed",
+    statusColor: "var(--color-error)",
+    charts: [
+      {
+        id: "fpr_chart",
+        label: "False Positive Rate (FPR)",
+        type: "bar",
+        color: "var(--color-error)",
+        data: [
+          { label: "Male", value: 15 },
+          { label: "Female", value: 38 },
+        ],
+      }
+    ],
+    metrics: [
+      { label: "FPR Disparity", value: "2.5x", change: "Favors Male", up: false },
+      { label: "Equal Opportunity", value: "Fail", change: "Unprivileged Lagging", up: false },
+    ],
+    findings: [
+      { severity: "error", text: "High False Alarm Rate (FPR=0.38) detected for Female cohort vs Male (0.15)." },
+      { severity: "error", text: "Age group <25 also experiences elevated False Positive Rates." },
+    ],
+    review: "The Behavioral Auditor detected severe equal opportunity disparities. While the model achieves similar accuracy across groups, it produces significantly more false positives for unprivileged groups, meaning they are incorrectly flagged at much higher rates.",
+    codeSnippet: `from sklearn.metrics import confusion_matrix
+
+def calc_fpr(y_true, y_pred):
+    tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
+    return fp / (fp + tn)
+`,
+    lastRun: "Just now",
+  },
+  "threshold-calibrator": {
+    title: "Threshold Calibrator",
+    iconType: "tool",
+    statusLabel: "Completed",
+    statusColor: "var(--color-success)",
+    charts: [
+      {
+        id: "calibration_chart",
+        label: "Post-Calibration FPR",
+        type: "bar",
+        color: "var(--color-success)",
+        data: [
+          { label: "Male", value: 16 },
+          { label: "Female", value: 17 },
+        ],
+      }
+    ],
+    metrics: [
+      { label: "Female Threshold", value: "0.63", change: "+0.13", up: true },
+      { label: "Male Threshold", value: "0.51", change: "+0.01", up: true },
+    ],
+    findings: [
+      { severity: "success", text: "Equalized Odds Linear Program converged successfully." },
+      { severity: "success", text: "False Positive Rates aligned across all demographic cuts." },
+    ],
+    review: "Threshold Calibrator applied an Equalized Odds post-processing algorithm. By requiring a slightly higher confidence threshold (0.63) for the unprivileged group, the model's False Positive Rate was effectively normalized without retraining.",
+    codeSnippet: `def calibrate_thresholds(y_true, y_prob, group):
+    # Solves linear program for Equalized Odds
+    # ...
+    return {"Male": 0.51, "Female": 0.63}
+`,
+    lastRun: "Just now",
+  },
+  "report-compiler": {
+    title: "Report Compiler",
+    iconType: "code",
+    statusLabel: "Completed",
+    statusColor: "var(--color-primary)",
+    charts: [],
+    metrics: [],
+    findings: [],
+    review: "**Model Fairness Audit Report Compiled**\n\nThe Report Compiler agent synthesized the pre-calibration profiling and post-calibration equalized odds results into a single PDF.",
     codeSnippet: "",
     lastRun: "Just now",
   },
@@ -1769,9 +1888,9 @@ function ChartSection({ charts, onActiveChartChange }: { charts: ChartDef[], onA
 /*  Modal Component                                                    */
 /* ------------------------------------------------------------------ */
 
-export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: NodeDetailModalProps) {
+export default function NodeDetailModal({ nodeId, onClose, forceTestMode, testFileName, testTargetColumn }: NodeDetailModalProps) {
   const { viewMode, tourTab } = useViewMode();
-  const isTestMode = forceTestMode || viewMode === "test-developer";
+  const isTestMode = forceTestMode || viewMode === "test";
   // Model Auditor nodes share the same modal as the dataset agents, but they
   // have no static entry in `nodeDetails`. Synthesize a detail header for them.
   const MODEL_NODE_META: Record<string, { title: string; iconType: "database" | "brain" | "code" }> = {
@@ -1783,13 +1902,22 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
   const isModel = nodeId in MODEL_NODE_META;
   const isReportNode = nodeId === "report-writer" || nodeId === "report-compiler";
 
-  const detail: NodeDetailData | undefined = nodeDetails[nodeId] ?? (isModel ? {
-    title: MODEL_NODE_META[nodeId].title,
-    iconType: MODEL_NODE_META[nodeId].iconType,
-    statusLabel: "Completed",
-    statusColor: "#64c8ff",
-    charts: [], metrics: [], findings: [], review: "", codeSnippet: "", lastRun: "just now",
-  } : undefined);
+  const rawDetail = nodeDetails[nodeId];
+  const detail: NodeDetailData | undefined = useMemo(() => {
+    return rawDetail
+      ? JSON.parse(
+          JSON.stringify(rawDetail)
+            .replace(/data\.csv/g, testFileName || "data.csv")
+            .replace(/approved/g, testTargetColumn || "approved")
+        )
+      : (isModel ? {
+          title: MODEL_NODE_META[nodeId].title,
+          iconType: MODEL_NODE_META[nodeId].iconType,
+          statusLabel: "Completed",
+          statusColor: "#64c8ff",
+          charts: [], metrics: [], findings: [], review: "", codeSnippet: "", lastRun: "just now",
+        } : undefined);
+  }, [nodeId, isModel, rawDetail, testFileName, testTargetColumn]);
 
   const [activeTab, setActiveTab] = useState<"chart" | "review" | "code">(isReportNode ? "review" : "chart");
   const [activeChartData, setActiveChartData] = useState<ChartDef | null>(null);
@@ -1913,7 +2041,7 @@ export default function NodeDetailModal({ nodeId, onClose, forceTestMode }: Node
     return () => clearInterval(intervalId);
   }, [agentNum, isTestMode]);
 
-  // In test-developer mode, use the static hardcoded data; in live mode, use dynamic API data
+  // In test mode, use the static hardcoded data; in live mode, use dynamic API data
   const chartsToRender = isTestMode ? (detail?.charts || []) : (dynamicCharts || []);
   const metricsToRender = isTestMode ? (detail?.metrics || []) : (dynamicMetrics?.metrics || []);
   const findingsToRender = isTestMode ? (detail?.findings || []) : (dynamicMetrics?.findings || []);
