@@ -56,7 +56,7 @@ export default function TopAppBar() {
         >
           <Menu className="w-5 h-5" />
         </button>
-        <Link href="/dashboard" className="text-xl font-black tracking-tighter text-primary uppercase select-none hover:opacity-80 transition-opacity cursor-pointer">
+        <Link href="/" className="text-xl font-black tracking-tighter text-primary uppercase select-none hover:opacity-80 transition-opacity cursor-pointer">
           Aletheia
         </Link>
       </div>
