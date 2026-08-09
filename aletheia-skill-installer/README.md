@@ -2,8 +2,7 @@
 
 An interactive installer for the Aletheia Fairness Auditor plugin. Aletheia is a multi-agent algorithmic fairness auditing framework that profiles datasets, detects bias using 13 statistical and causal algorithms, applies bias mitigations, and compiles structured audit reports — all executed in a secure, sandboxed environment.
 
-This installer packages and delivers the plugin in the correct format for three AI coding environments: Antigravity, Claude Code, and Codex (OpenAI). The same underlying MCP servers are also available as manually-configured plugins for **IBM Bob** and **watsonx Orchestrate** — see [Additional Platforms](#additional-platforms-manual-setup) below.
-
+This installer packages and delivers the plugin in the correct format for four AI coding environments: Antigravity, Claude Code, Codex (OpenAI), and IBM Bob. The same underlying MCP servers are also available as a manually-configured plugin for **watsonx Orchestrate** — see [Additional Platforms](#additional-platforms-manual-setup) below.
 ---
 
 ## Requirements
@@ -96,32 +95,22 @@ The marketplace file can be committed to your repository so that other team memb
 
 ---
 
-## Additional Platforms (Manual Setup)
-
-These two platforms reuse the exact same MCP servers as above, but aren't wired into
-the `npx create-aletheia-skill` interactive installer — set them up by hand from their
-plugin folder.
-
 ### IBM Bob
 
-`plugins/bob_aletheia-fairness-plugin/` bundles the Sandbox MCP server the same way the
-Antigravity plugin does, plus a `.bob/mcp.json` in the format Bob's MCP settings panel
-expects. See [`MCP_SETUP.md`](plugins/bob_aletheia-fairness-plugin/MCP_SETUP.md) for the
-Docker build step and how to register the server (drop-in project config or the
-3-dot menu → **MCP Servers** panel in Bob's chat window).
+The installer natively configures the plugin for IBM Bob, handling both global and project-level installations.
 
-**Plugin structure:**
-```
-bob_aletheia-fairness-plugin/
-├── plugin.json
-├── .bob/
-│   └── mcp.json                    (Bob's MCP server config — stdio or remote url/httpURL)
-├── skills/
-│   └── bob_aletheia-fairness-auditor/   (reference material — not auto-loaded by Bob)
-└── mcps/
-    └── sandbox/
-        └── mcp_server.py           (Docker sandbox MCP server)
-```
+1. **Global Install:** Copies the skill to `~/.bob/skills/` and patches `~/.bob/settings/mcp.json`.
+2. **Project Install:** Copies the skill to `./.bob/skills/` and creates a local `./.bob/mcp.json`.
+
+The installer automatically merges the Aletheia Sandbox MCP into Bob's JSON configuration and sets up the strict execution rules. After installation, simply restart Bob and the `aletheia-fairness-auditor` skill will appear in your Skills tab!
+
+---
+
+## Additional Platforms (Manual Setup)
+
+This platform reuses the exact same MCP servers as above, but isn't wired into
+the `npx create-aletheia-skill` interactive installer — set it up by hand from its
+plugin folder.
 
 ### watsonx Orchestrate
 

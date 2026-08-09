@@ -142,6 +142,10 @@ async function main() {
         name:  'Codex         ' + chalk.dim('Copy plugin + generate marketplace.json'),
         value: 'codex',
       },
+      {
+        name:  'IBM Bob       ' + chalk.dim('Auto-install to ~/.bob/ (Global) or ./.bob/ (Project)'),
+        value: 'bob',
+      },
     ],
   });
 
@@ -271,8 +275,97 @@ async function main() {
       ]);
     }
 
+  // ── IBM Bob ─────────────────────────────────────────────────────────────────
+  } else if (platform === 'bob') {
+    section('IBM Bob Plugin');
+
+    step(1, 3, 'Installation Scope');
+    const isGlobal = await confirm({
+      message: chalk.white('Install globally? ') + chalk.dim('(Global: ~/.bob/, Project: ./.bob/)'),
+      default: true,
+    });
+
+    const bobDir = isGlobal 
+      ? path.join(os.homedir(), '.bob')
+      : path.join(process.cwd(), '.bob');
+
+    const skillsDest = path.join(bobDir, 'skills');
+    const mcpJsonDest = isGlobal 
+      ? path.join(bobDir, 'settings', 'mcp.json') 
+      : path.join(bobDir, 'mcp.json');
+
+    // Ensure settings directory exists for global installs
+    if (isGlobal) {
+      fs.mkdirSync(path.dirname(mcpJsonDest), { recursive: true });
+    }
+
+    step(2, 3, 'Installing Skills & MCP Code');
+    const spinner = ora({ text: 'Copying files...', color: 'cyan' }).start();
+    try {
+      const sourceSkills = path.join(sourceFolder, 'skills');
+      fs.mkdirSync(skillsDest, { recursive: true });
+      fs.cpSync(sourceSkills, skillsDest, { recursive: true });
+
+      const mcpsDest = path.join(bobDir, 'mcps');
+      fs.mkdirSync(mcpsDest, { recursive: true });
+      fs.cpSync(path.join(sourceFolder, 'mcps'), mcpsDest, { recursive: true });
+
+      spinner.succeed(chalk.white('Files copied'));
+    } catch (err) {
+      spinner.fail(chalk.red('Failed to copy files'));
+      error(err.message);
+      process.exit(1);
+    }
+
+    step(3, 3, 'Configuring MCP');
+    const spinner2 = ora({ text: 'Updating mcp.json...', color: 'cyan' }).start();
+    try {
+      const sourceMcpPath = path.join(sourceFolder, '.bob', 'mcp.json');
+      const sourceMcp = JSON.parse(fs.readFileSync(sourceMcpPath, 'utf8'));
+      
+      const mcpsDest = path.join(bobDir, 'mcps');
+      const absoluteServerPath = path.join(mcpsDest, 'sandbox', 'mcp_server.py');
+      
+      if (sourceMcp.mcpServers && sourceMcp.mcpServers['aletheia-sandbox']) {
+        sourceMcp.mcpServers['aletheia-sandbox'].args = [absoluteServerPath];
+        sourceMcp.mcpServers['aletheia-sandbox'].description = "Aletheia secure Docker execution sandbox for fairness auditing";
+      }
+
+      let targetMcp = { mcpServers: {} };
+      if (fs.existsSync(mcpJsonDest)) {
+        try {
+          targetMcp = JSON.parse(fs.readFileSync(mcpJsonDest, 'utf8'));
+          if (!targetMcp.mcpServers) targetMcp.mcpServers = {};
+        } catch (e) {}
+      }
+
+      targetMcp.mcpServers = {
+        ...targetMcp.mcpServers,
+        ...(sourceMcp.mcpServers || {})
+      };
+
+      fs.writeFileSync(mcpJsonDest, JSON.stringify(targetMcp, null, 2));
+      spinner2.succeed(chalk.white('mcp.json updated'));
+    } catch (err) {
+      spinner2.fail(chalk.red('Failed to update MCP'));
+      error(err.message);
+      process.exit(1);
+    }
+    
+    success('Plugin installed');
+    console.log('');
+    info('Location', bobDir);
+    info('Skill name', 'aletheia-fairness-auditor');
+    info('MCP config', mcpJsonDest);
+
+    nextSteps([
+      'Restart IBM Bob',
+      'Open Bob Settings > MCP and verify "aletheia-sandbox" is active',
+      'The "aletheia-fairness-auditor" skill is now available in your chat',
+    ]);
+
   // ── Codex ───────────────────────────────────────────────────────────────────
-  } else {
+  } else if (platform === 'codex') {
     section('Codex Plugin');
 
     const defaultPluginsDir = path.join(process.cwd(), 'plugins');
@@ -305,6 +398,7 @@ async function main() {
         if (serverBlock) {
           const absoluteServerPath = path.join(pluginDest, 'mcp_sandbox', 'mcp_server.py');
           serverBlock.args = [absoluteServerPath];
+          serverBlock.description = 'Aletheia secure Docker execution sandbox for fairness auditing';
           const rootKey = mcpConfig.mcp_servers ? 'mcp_servers' : 'mcpServers';
           mcpConfig[rootKey][serverKey] = serverBlock;
           fs.writeFileSync(mcpJsonPath, JSON.stringify(mcpConfig, null, 2));
