@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import {
   Search,
   History,
@@ -55,9 +56,9 @@ export default function TopAppBar() {
         >
           <Menu className="w-5 h-5" />
         </button>
-        <span className="text-xl font-black tracking-tighter text-primary uppercase select-none">
+        <Link href="/dashboard" className="text-xl font-black tracking-tighter text-primary uppercase select-none hover:opacity-80 transition-opacity cursor-pointer">
           Aletheia
-        </span>
+        </Link>
       </div>
 
       {/* Right Side */}
