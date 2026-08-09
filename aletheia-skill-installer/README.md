@@ -2,7 +2,7 @@
 
 An interactive installer for the Aletheia Fairness Auditor plugin. Aletheia is a multi-agent algorithmic fairness auditing framework that profiles datasets, detects bias using 13 statistical and causal algorithms, applies bias mitigations, and compiles structured audit reports — all executed in a secure, sandboxed environment.
 
-This installer packages and delivers the plugin in the correct format for four AI coding environments: Antigravity, Claude Code, Codex (OpenAI), and IBM Bob. The same underlying MCP servers are also available as a manually-configured plugin for **watsonx Orchestrate** — see [Additional Platforms](#additional-platforms-manual-setup) below.
+This installer packages and delivers the plugin in the correct format for four AI coding environments: Antigravity, Claude Code, Codex (OpenAI), and IBM Bob.
 ---
 
 ## Requirements
@@ -106,34 +106,6 @@ The installer automatically merges the Aletheia Sandbox MCP into Bob's JSON conf
 
 ---
 
-## Additional Platforms (Manual Setup)
-
-This platform reuses the exact same MCP servers as above, but isn't wired into
-the `npx create-aletheia-skill` interactive installer — set it up by hand from its
-plugin folder.
-
-### watsonx Orchestrate
-
-`plugins/watsonx_aletheia-fairness-plugin/` registers the **Auditor** MCP server
-(`list_algorithms`, `load_algorithm_knowledge`) as a Remote MCP Toolkit in watsonx
-Orchestrate, using the ADK CLI's `orchestrate toolkits import --kind mcp` command.
-Orchestrate's Tool Catalog only accepts remote MCP servers, so the Auditor server needs
-to be reachable at a public URL (the same one used for the production deployment of
-`mcps/auditor/server.py`), not `localhost`. See
-[`MCP_SETUP.md`](plugins/watsonx_aletheia-fairness-plugin/MCP_SETUP.md) for the full
-walkthrough.
-
-**Quick start:**
-```bash
-pip install ibm-watsonx-orchestrate
-orchestrate env activate <your-environment>
-cd plugins/watsonx_aletheia-fairness-plugin
-AUDITOR_MCP_URL="https://your-deployed-host/sse" ./import_toolkit.sh
-```
-Then attach the imported `aletheia-auditor` toolkit to an agent from Orchestrate's
-Agent Builder / Tool Catalog UI.
-
----
 
 ## Using the Skill
 
