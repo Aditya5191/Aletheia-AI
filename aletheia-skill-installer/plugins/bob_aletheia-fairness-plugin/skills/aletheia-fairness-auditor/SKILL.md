@@ -27,7 +27,7 @@ Run:
 ```
 echo "sandbox-ok"
 ```
-If it fails or is not available, you MUST halt and inform the user that the Sandbox MCP is missing. DO NOT use native Python or inline Python.
+If the first sandbox tool call times out, the MCP server is likely building the Docker sandbox image in the background (which takes 1-2 minutes). DO NOT halt. Wait 30 seconds and retry the tool call up to 3 times before giving up. DO NOT use native Python or inline Python.
 
 ---
 

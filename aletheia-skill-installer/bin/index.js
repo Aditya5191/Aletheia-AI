@@ -102,7 +102,7 @@ function buildClaudeZip(sourceFolder, outputZipPath, absoluteInstallPath) {
 
   const mcpJsonEntry = zip.getEntry(`${ROOT}/.mcp.json`);
   if (mcpJsonEntry && absoluteInstallPath) {
-    const serverScriptPath = path.join(absoluteInstallPath, 'mcp_sandbox', 'mcp_server.py');
+    const serverScriptPath = path.join(absoluteInstallPath, 'mcp_sandbox', 'boot.py');
     const mcpConfig = {
       mcpServers: {
         sandbox: { command: 'python', args: [serverScriptPath] },
@@ -239,7 +239,7 @@ async function main() {
       console.log('');
       info('Location', defaultDest);
       info('Skill name', 'aletheia-fairness-auditor');
-      info('MCP server', path.join(defaultDest, 'mcps', 'sandbox', 'mcp_server.py'));
+      info('MCP server', path.join(defaultDest, 'mcps', 'sandbox', 'boot.py'));
 
       nextSteps([
         'Restart Antigravity',
@@ -324,7 +324,7 @@ async function main() {
       const sourceMcp = JSON.parse(fs.readFileSync(sourceMcpPath, 'utf8'));
       
       const mcpsDest = path.join(bobDir, 'mcps');
-      const absoluteServerPath = path.join(mcpsDest, 'sandbox', 'mcp_server.py');
+      const absoluteServerPath = path.join(mcpsDest, 'sandbox', 'boot.py');
       
       if (sourceMcp.mcpServers && sourceMcp.mcpServers['aletheia-sandbox']) {
         sourceMcp.mcpServers['aletheia-sandbox'].args = [absoluteServerPath];
@@ -396,7 +396,7 @@ async function main() {
         const serverKey = Object.keys(mcpConfig.mcp_servers || mcpConfig.mcpServers || {})[0];
         const serverBlock = (mcpConfig.mcp_servers || mcpConfig.mcpServers)?.[serverKey];
         if (serverBlock) {
-          const absoluteServerPath = path.join(pluginDest, 'mcp_sandbox', 'mcp_server.py');
+          const absoluteServerPath = path.join(pluginDest, 'mcp_sandbox', 'boot.py');
           serverBlock.args = [absoluteServerPath];
           serverBlock.description = 'Aletheia secure Docker execution sandbox for fairness auditing';
           const rootKey = mcpConfig.mcp_servers ? 'mcp_servers' : 'mcpServers';

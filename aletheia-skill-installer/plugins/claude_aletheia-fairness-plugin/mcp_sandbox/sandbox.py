@@ -159,6 +159,37 @@ class SandboxManager:
             return f"Error: {self._docker_error}"
         return None
 
+    def _ensure_image(self, image_tag: str = "sandbox-python:latest"):
+        """Check if the sandbox Docker image exists; build it from the
+        bundled Dockerfile if it doesn't."""
+        try:
+            self.docker_client.images.get(image_tag)
+            log.info(f"Docker image '{image_tag}' found.")
+        except docker.errors.ImageNotFound:
+            dockerfile_dir = os.path.dirname(os.path.abspath(__file__))
+            dockerfile_path = os.path.join(dockerfile_dir, "Dockerfile")
+            if not os.path.isfile(dockerfile_path):
+                log.error(
+                    f"Docker image '{image_tag}' not found and no Dockerfile "
+                    f"exists at {dockerfile_path} to build it."
+                )
+                return False
+            log.info(
+                f"Docker image '{image_tag}' not found. "
+                f"Building from {dockerfile_path} (this may take a few minutes)..."
+            )
+            try:
+                self.docker_client.images.build(
+                    path=dockerfile_dir,
+                    tag=image_tag,
+                    rm=True,
+                )
+                log.info(f"Docker image '{image_tag}' built successfully.")
+            except Exception as build_exc:
+                log.error(f"Failed to build Docker image: {build_exc}")
+                return False
+        return True
+
     def _auto_spawn_default_container(self):
         err = self._ensure_docker()
         if err: return None
@@ -170,6 +201,9 @@ class SandboxManager:
         except docker.errors.NotFound:
             # Spawn it
             log.info("Auto-spawning default aletheia-sandbox container...")
+            if not self._ensure_image():
+                log.error("Cannot spawn container — Docker image build failed.")
+                return None
             mount_dir = os.getcwd()
             # If we are deep in the plugin folder, we might want to mount the root workspace,
             # but cwd of MCP server is usually the IDE workspace.

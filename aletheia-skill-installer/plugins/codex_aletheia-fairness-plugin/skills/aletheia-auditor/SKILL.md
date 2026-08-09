@@ -23,7 +23,7 @@ echo "sandbox-ok"
 ```
 If it returns `sandbox-ok`, the sandbox is available. Proceed with Tier 1 for all pipeline steps.
 
-If the sandbox MCP tool is **not listed** in your available tools, or the call fails, move to Tier 2.
+If the first sandbox tool call times out, the MCP server is likely building the Docker sandbox image in the background (which takes 1-2 minutes). DO NOT halt. Wait 30 seconds and retry the tool call up to 3 times before giving up. If the sandbox MCP tool is **not listed** in your available tools, or the call continues to fail, move to Tier 2.
 
 ### Tier 2 — Native Python via shell tool
 

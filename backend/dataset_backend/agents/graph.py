@@ -5,7 +5,7 @@ from typing import TypedDict, Annotated, Sequence
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, ToolMessage, AIMessage, RemoveMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
-from langchain_google_vertexai import ChatVertexAI, HarmCategory, HarmBlockThreshold
+from langchain_google_genai import ChatGoogleGenerativeAI, HarmCategory, HarmBlockThreshold
 from langgraph.prebuilt import ToolNode
 from langchain_core.tools import StructuredTool
 
@@ -140,21 +140,17 @@ async def run_langgraph_agent(
                         tool.args_schema.Config.extra = "allow"
             # -----------------------------------------------
 
-            creds_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
-            if creds_path and os.path.exists(creds_path):
-                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.abspath(creds_path)
-                print(f"[AUTH] Using credentials: {os.environ['GOOGLE_APPLICATION_CREDENTIALS']}", flush=True)
-            else:
-                if "GOOGLE_APPLICATION_CREDENTIALS" in os.environ:
-                    os.environ.pop("GOOGLE_APPLICATION_CREDENTIALS")
-                print("[AUTH] Using Application Default Credentials (ADC)", flush=True)
+            # Use VM default credentials (ADC) — don't override with empty file
+            os.environ.pop("GOOGLE_APPLICATION_CREDENTIALS", None)
+            print("[AUTH] Using VM default credentials (ADC)", flush=True)
 
-            model_name = os.environ.get("VERTEX_MODEL", "gemini-2.0-flash")
-            print(f"[LLM] Using model: {model_name}", flush=True)
+            model_name = "gemini-3.1-pro-preview"
+            print(f"[LLM] Using model: {model_name} (location=global)", flush=True)
 
-            llm = ChatVertexAI(
+            llm = ChatGoogleGenerativeAI(
                 model=model_name,
-                location=os.environ.get("VERTEX_LOCATION", "us-central1"),
+                vertexai=True,
+                location="global",
                 temperature=0.2,
                 max_retries=8,
                 safety_settings={

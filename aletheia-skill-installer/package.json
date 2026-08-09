@@ -1,6 +1,6 @@
 {
   "name": "create-aletheia-skill",
-  "version": "2.4.6",
+  "version": "2.5.2",
   "description": "Installer for the Aletheia Fairness Auditor Plugins",
   "main": "index.js",
   "type": "module",
