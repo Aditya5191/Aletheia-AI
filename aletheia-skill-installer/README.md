@@ -2,7 +2,7 @@
 
 An interactive installer for the Aletheia Fairness Auditor plugin. Aletheia is a multi-agent algorithmic fairness auditing framework that profiles datasets, detects bias using 13 statistical and causal algorithms, applies bias mitigations, and compiles structured audit reports — all executed in a secure, sandboxed environment.
 
-This installer packages and delivers the plugin in the correct format for three AI coding environments: Antigravity, Claude Code, and Codex (OpenAI).
+This installer packages and delivers the plugin in the correct format for three AI coding environments: Antigravity, Claude Code, and Codex (OpenAI). The same underlying MCP servers are also available as manually-configured plugins for **IBM Bob** and **watsonx Orchestrate** — see [Additional Platforms](#additional-platforms-manual-setup) below.
 
 ---
 
@@ -96,6 +96,56 @@ The marketplace file can be committed to your repository so that other team memb
 
 ---
 
+## Additional Platforms (Manual Setup)
+
+These two platforms reuse the exact same MCP servers as above, but aren't wired into
+the `npx create-aletheia-skill` interactive installer — set them up by hand from their
+plugin folder.
+
+### IBM Bob
+
+`plugins/bob_aletheia-fairness-plugin/` bundles the Sandbox MCP server the same way the
+Antigravity plugin does, plus a `.bob/mcp.json` in the format Bob's MCP settings panel
+expects. See [`MCP_SETUP.md`](plugins/bob_aletheia-fairness-plugin/MCP_SETUP.md) for the
+Docker build step and how to register the server (drop-in project config or the
+3-dot menu → **MCP Servers** panel in Bob's chat window).
+
+**Plugin structure:**
+```
+bob_aletheia-fairness-plugin/
+├── plugin.json
+├── .bob/
+│   └── mcp.json                    (Bob's MCP server config — stdio or remote url/httpURL)
+├── skills/
+│   └── bob_aletheia-fairness-auditor/   (reference material — not auto-loaded by Bob)
+└── mcps/
+    └── sandbox/
+        └── mcp_server.py           (Docker sandbox MCP server)
+```
+
+### watsonx Orchestrate
+
+`plugins/watsonx_aletheia-fairness-plugin/` registers the **Auditor** MCP server
+(`list_algorithms`, `load_algorithm_knowledge`) as a Remote MCP Toolkit in watsonx
+Orchestrate, using the ADK CLI's `orchestrate toolkits import --kind mcp` command.
+Orchestrate's Tool Catalog only accepts remote MCP servers, so the Auditor server needs
+to be reachable at a public URL (the same one used for the production deployment of
+`mcps/auditor/server.py`), not `localhost`. See
+[`MCP_SETUP.md`](plugins/watsonx_aletheia-fairness-plugin/MCP_SETUP.md) for the full
+walkthrough.
+
+**Quick start:**
+```bash
+pip install ibm-watsonx-orchestrate
+orchestrate env activate <your-environment>
+cd plugins/watsonx_aletheia-fairness-plugin
+AUDITOR_MCP_URL="https://your-deployed-host/sse" ./import_toolkit.sh
+```
+Then attach the imported `aletheia-auditor` toolkit to an agent from Orchestrate's
+Agent Builder / Tool Catalog UI.
+
+---
+
 ## Using the Skill
 
 Once installed, invoke the skill by describing your task in natural language. The agent will activate the appropriate workflow automatically.
@@ -168,9 +218,11 @@ aletheia-skill-installer/
 ├── bin/
 │   └── index.js                          # Interactive installer entry point
 ├── plugins/
-│   ├── antigravity_aletheia-fairness-plugin/   # Antigravity plugin
-│   ├── claude_aletheia-fairness-plugin/         # Claude Code plugin
-│   └── codex_aletheia-fairness-plugin/          # Codex plugin
+│   ├── antigravity_aletheia-fairness-plugin/   # Antigravity plugin (installer-managed)
+│   ├── claude_aletheia-fairness-plugin/         # Claude Code plugin (installer-managed)
+│   ├── codex_aletheia-fairness-plugin/          # Codex plugin (installer-managed)
+│   ├── bob_aletheia-fairness-plugin/            # IBM Bob plugin (manual setup)
+│   └── watsonx_aletheia-fairness-plugin/        # watsonx Orchestrate toolkit (manual setup)
 ├── .npmignore
 └── package.json
 ```

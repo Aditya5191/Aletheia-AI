@@ -1,0 +1,179 @@
+algorithm_id: 4
+name: Intersectional Subgroup Scan
+type: FRAMEWORK
+agent_parameter_tuning_guide:
+  - parameter: "max_depth"
+    default: 2
+    impact: "Controls how many protected attributes are combined for intersectional groups. Depth 1 scans single attributes, depth 2 scans pairs, depth 3 scans triples. Increase to 3 only if dataset has > 10,000 rows to avoid combinatorial explosion. Each additional depth level multiplies combinations by ~n_attributes."
+  - parameter: "min_size"
+    default: 30
+    impact: "Minimum subgroup size to include in the scan. Subgroups below this threshold are excluded to avoid noisy statistics. If dataset < 500 rows, decrease to 15. If dataset > 50,000 rows, increase to 100 for statistical stability."
+  - parameter: "alpha"
+    default: 0.05
+    impact: "Benjamini-Hochberg FDR significance threshold. Use 0.05 for standard audits. Increase to 0.10 for smaller datasets where fewer discoveries are expected. Decrease to 0.01 for conservative, publication-grade audits."
+  - parameter: "outcome_col"
+    default: null
+    impact: "Column name of the binary outcome. Must be specified by the user. This is the decision variable being audited for fairness (e.g., 'hired', 'approved', 'admitted')."
+pipeline_dag:
+  - step_id: 1
+    name: "Generate Combinatorial Subgroups"
+    sub_skill: "combinatorics"
+    pseudo_code: |
+      def generate_subgroups(df, protected_cols, max_depth=2, min_size=30):
+          """
+          Generate all intersectional subgroup combinations up to max_depth.
+          Filter out subgroups with fewer members than min_size.
+
+          Args:
+              df: pandas DataFrame. The dataset.
+              protected_cols: list of str. Column names of protected attributes.
+              max_depth: int. Maximum combination depth (1=single, 2=pairs, etc.).
+              min_size: int. Minimum subgroup size threshold.
+          Returns:
+              list of dicts, each with 'combo' (tuple of columns) and 'subgroups'
+              (list of dicts with 'values' tuple and 'size' int).
+          """
+          import itertools
+          import pandas as pd
+
+          all_groups = []
+          for depth in range(1, max_depth + 1):
+              for combo in itertools.combinations(protected_cols, depth):
+                  combo_list = list(combo)
+                  grouped = df.groupby(combo_list).size().reset_index(name='count')
+                  valid_subgroups = []
+                  for _, row in grouped.iterrows():
+                      if row['count'] >= min_size:
+                          values = tuple(row[c] for c in combo_list)
+                          valid_subgroups.append({'values': values, 'size': int(row['count'])})
+                  if len(valid_subgroups) >= 2:
+                      all_groups.append({'combo': combo, 'subgroups': valid_subgroups})
+          return all_groups
+    constraints: ["protected_cols must all exist in df.columns", "max_depth <= len(protected_cols)"]
+    output: "candidate_groups"
+  - step_id: 2
+    name: "Compute Disparate Impact Ratio and Statistical Test Per Group"
+    sub_skill: "statistical_parity"
+    depends_on: ["candidate_groups"]
+    pseudo_code: |
+      def compute_parity(df, candidate_groups, outcome_col):
+          """
+          For each intersectional combination, compute the Disparate Impact
+          Ratio (DIR) and chi-squared test p-value across all subgroups.
+
+          Args:
+              df: pandas DataFrame.
+              candidate_groups: list of dicts from step 1.
+              outcome_col: str. Column name of the binary outcome.
+          Returns:
+              list of dicts with combo, dir_value, p_value, and per-subgroup rates.
+          """
+          import pandas as pd
+          import numpy as np
+          from scipy.stats import chi2_contingency
+
+          results = []
+          for group_info in candidate_groups:
+              combo = group_info['combo']
+              combo_list = list(combo)
+
+              # Compute outcome rate for each subgroup value
+              rates = df.groupby(combo_list)[outcome_col].mean()
+
+              # Disparate Impact Ratio: min rate / max rate
+              max_rate = rates.max()
+              min_rate = rates.min()
+              dir_val = float(min_rate / max_rate) if max_rate > 0 else 1.0
+
+              # Chi-squared test using full intersectional contingency table
+              try:
+                  ct = pd.crosstab(
+                      index=[df[c] for c in combo_list],
+                      columns=df[outcome_col]
+                  )
+                  # Remove rows/columns that are all zeros
+                  ct = ct.loc[(ct.sum(axis=1) > 0), (ct.sum(axis=0) > 0)]
+                  if ct.shape[0] >= 2 and ct.shape[1] >= 2:
+                      chi2, p_val, dof, expected = chi2_contingency(ct)
+                  else:
+                      p_val = 1.0
+              except ValueError:
+                  p_val = 1.0
+
+              subgroup_rates = {str(k): float(v) for k, v in rates.items()}
+              results.append({
+                  "combo": combo,
+                  "dir": dir_val,
+                  "p_val": float(p_val),
+                  "subgroup_rates": subgroup_rates,
+                  "n_subgroups": len(rates)
+              })
+          return results
+    constraints: ["outcome_col must be binary (0 or 1)", "skip combos where all subgroups have identical rates"]
+    output: "raw_metrics"
+  - step_id: 3
+    name: "Multiple Testing Correction (Benjamini-Hochberg)"
+    sub_skill: "fdr_correction"
+    depends_on: ["raw_metrics"]
+    pseudo_code: |
+      def fdr_adjust(raw_metrics, alpha=0.05):
+          """
+          Apply Benjamini-Hochberg FDR correction to the p-values from
+          all intersectional scans and flag significant disparities.
+
+          Args:
+              raw_metrics: list of dicts from step 2.
+              alpha: float. FDR significance threshold.
+          Returns:
+              list of dicts for flagged (significant) intersectional groups.
+          """
+          from statsmodels.stats.multitest import multipletests
+
+          if not raw_metrics:
+              return []
+
+          p_vals = [r["p_val"] for r in raw_metrics]
+          reject, p_adj, _, _ = multipletests(p_vals, alpha=alpha, method='fdr_bh')
+
+          flagged = []
+          for i, r in enumerate(raw_metrics):
+              r["p_adj"] = float(p_adj[i])
+              r["is_significant"] = bool(reject[i])
+              if reject[i]:
+                  flagged.append(r)
+          return flagged
+    constraints: ["requires statsmodels package", "returns empty list if no metrics provided"]
+    output: "corrected_flags"
+  - step_id: 4
+    name: "Rank and Report Flagged Subgroups"
+    sub_skill: "aggregation"
+    depends_on: ["corrected_flags"]
+    pseudo_code: |
+      def rank_and_report(corrected_flags):
+          """
+          Sort flagged subgroups by severity (lowest DIR first) and produce
+          a structured audit report.
+
+          Args:
+              corrected_flags: list of dicts from step 3.
+          Returns:
+              dict with ranked results, summary statistics, and audit metadata.
+          """
+          ranked = sorted(corrected_flags, key=lambda x: x["dir"])
+
+          return {
+              "flagged_subgroups": ranked,
+              "n_flagged": len(ranked),
+              "worst_dir": ranked[0]["dir"] if ranked else None,
+              "worst_combo": ranked[0]["combo"] if ranked else None,
+              "summary": {
+                  "total_scanned": len(corrected_flags),
+                  "below_80_percent_rule": sum(1 for r in ranked if r["dir"] < 0.8),
+                  "below_50_percent": sum(1 for r in ranked if r["dir"] < 0.5)
+              }
+          }
+    constraints: ["handles empty corrected_flags gracefully"]
+    output: "final_result"
+orchestration_pattern: "sequential_with_conditional_skip"
+sandbox_requirements: ["pandas", "scipy", "statsmodels"]
+failure_handling: "return_partial_state_on_timeout"

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "aletheia-sandbox": {
+      "command": "python",
+      "args": [
+        "./mcps/sandbox/mcp_server.py"
+      ]
+    }
+  }
+}
