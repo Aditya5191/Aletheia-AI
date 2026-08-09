@@ -1,0 +1,1474 @@
+=== https://bob.ibm.com/docs/ide/configuration/mcp/understanding-mcp ===
+IBM Bob
+Pricing
+Docs
+Blog
+Enterprise
+Download
+Login
+Search
+Ctrl
+K
+
+IDE
+
+Welcome to IBM Bob
+Changelog
+Frequently Asked Questions
+
+Getting started
+
+Installing
+Best practices
+Quickstart
+Tutorials
+Core concepts
+Configuration
+Keyboard shortcuts
+Ignoring files
+Custom modes
+Agent personas
+Custom rules
+Lifecycle hooks
+Telemetry data
+MCP
+Understanding MCP
+MCP server transports
+Using MCP in Bob
+MCP OAuth authentication
+Features
+Account
+Security
+Enterprise
+Premium packages
+Troubleshooting
+Configuration
+MCP
+Understanding MCP
+
+Feedback
+The Model Context Protocol (MCP) is a standardized communication protocol that enables AI systems to interact with external tools and services.
+
+Copy Markdown
+What is MCP?
+
+Think of MCP as similar to a USB-C port: any compatible AI system can connect to any MCP server to access its functionality. This standardization eliminates the need to build custom integrations for each tool and service.
+
+For example, Bob can use MCP to search a company database and generate a report without requiring specialized code for each database system.
+
+Why use MCP?
+
+MCP enables Bob to:
+
+Connect to both local and remote MCP servers
+Provide a consistent interface for accessing tools
+Extend functionality without core modifications
+Enable specialized capabilities on demand
+How MCP works
+
+MCP uses a client-server architecture:
+
+Bob (the client) connects to MCP servers
+Each server provides specific capabilities such as file access, database queries, or API integrations
+Bob uses these capabilities through a standardized interface
+Communication occurs via JSON-RPC 2.0 messages
+Common questions
+Is MCP a cloud service?
+Does MCP replace other integration methods?
+How is security handled?
+Security Warning
+
+Protect your credentials: Never hardcode API keys, tokens, or other sensitive credentials directly in MCP configuration files. Instead:
+
+Use environment variables to store sensitive information
+Utilize secure credential stores or vaults
+Ensure MCP configuration files with credentials are not committed to source control
+Add configuration files containing secrets to your .gitignore
+
+Exposing credentials in configuration files can lead to unauthorized access and security breaches.
+
+Next steps
+MCP in Bob
+
+Configure and manage MCP servers
+
+MCP server transports
+
+Choose between local and remote deployment models
+
+How is this topic?
+Good
+Bad
+
+Telemetry data
+
+Learn about the telemetry data IBM Bob collects, how it's used to improve the product, and how to enable or disable data collection.
+
+MCP server transports
+
+MCP supports transport mechanisms for communication between Bob and MCP servers.
+
+On this page
+What is MCP?
+Why use MCP?
+How MCP works
+Common questions
+Next steps
+About cookies on this site
+Our websites require some cookies to function properly (required). In addition, other cookies may be used with your consent to analyze site usage, improve the user experience and for advertising.
+For more information, please review yourcookie preferences options. By visiting our website, you agree to our processing of information as described in IBM’sprivacy statement. 
+To provide a smooth navigation, your cookie preferences will be shared across the IBM web domains listed here.
+Accept all
+More options
+
+=== https://bob.ibm.com/docs/ide/configuration/mcp/server-transports ===
+IBM Bob
+Pricing
+Docs
+Blog
+Enterprise
+Download
+Login
+Search
+Ctrl
+K
+
+IDE
+
+Welcome to IBM Bob
+Changelog
+Frequently Asked Questions
+
+Getting started
+
+Installing
+Best practices
+Quickstart
+Tutorials
+Core concepts
+Configuration
+Keyboard shortcuts
+Ignoring files
+Custom modes
+Agent personas
+Custom rules
+Lifecycle hooks
+Telemetry data
+MCP
+Understanding MCP
+MCP server transports
+Using MCP in Bob
+MCP OAuth authentication
+Features
+Account
+Security
+Enterprise
+Premium packages
+Troubleshooting
+Configuration
+MCP
+MCP server transports
+
+Feedback
+MCP supports transport mechanisms for communication between Bob and MCP servers.
+
+Copy Markdown
+Overview
+
+MCP offers three transport options, each suited for different deployment scenarios:
+
+STDIO transport (local servers)
+Streamable HTTP transport (modern standard for remote servers)
+SSE transport (legacy remote option)
+
+Each transport has distinct characteristics, advantages, and use cases.
+
+STDIO transport
+
+STDIO transport runs locally on your machine and communicates via standard input/output streams.
+
+How STDIO transport works
+Bob spawns an MCP server as a child process
+Communication happens through process streams: Bob writes to the server's STDIN, the server responds to STDOUT
+Each message is delimited by a newline character
+Messages are formatted as JSON-RPC 2.0
+Client                    Server
+  |                         |
+  |---- JSON message ------>| (via STDIN)
+  |                         | (processes request)
+  |<---- JSON message ------| (via STDOUT)
+  |                         |
+STDIO characteristics
+Locality: Runs on the same machine as Bob
+Performance: Very low latency and overhead (no network stack involved)
+Simplicity: Direct process communication without network configuration
+Relationship: One-to-one relationship between client and server
+Security: Inherently more secure with no network exposure
+When to use STDIO
+
+STDIO transport is ideal for:
+
+Local integrations and tools running on the same machine
+Security-sensitive operations
+Low-latency requirements
+Single-client scenarios (one Bob instance per server)
+Command-line tools or IDE extensions
+STDIO implementation example
+const server = new Server({name: 'local-server', version: '1.0.0'});
+// Register tools...
+// Use STDIO transport
+const transport = new StdioServerTransport(server);
+transport.listen();
+Streamable HTTP transport
+
+Streamable HTTP transport is the modern standard for remote MCP server communication, replacing the older HTTP+SSE transport. It operates over HTTP/HTTPS and allows for more flexible server implementations.
+
+How Streamable HTTP transport works
+The server provides a single HTTP endpoint (MCP endpoint) that supports both POST and GET methods
+Bob sends requests to this MCP endpoint using HTTP POST
+The server processes the request and sends back a response
+Optionally, the server can use Server-Sent Events (SSE) over the same connection to stream multiple messages or notifications to Bob
+
+This allows for basic request-response interactions as well as more advanced streaming and server-initiated communication.
+
+Client                             Server
+  |                                  |
+  |---- HTTP POST /mcp_endpoint ---->| (client request)
+  |                                  | (processes request)
+  |<--- HTTP Response / SSE Stream --| (server response / stream)
+  |                                  |
+Streamable HTTP characteristics
+Modern standard: Preferred method for new remote MCP server implementations
+Remote access: Can be hosted on a different machine from Bob
+Scalability: Can handle multiple client connections concurrently
+Protocol: Works over standard HTTP/HTTPS
+Flexibility: Supports simple request-response and advanced streaming
+Single endpoint: Uses a single URL path for all MCP communication
+Authentication: Can use standard HTTP authentication mechanisms
+Backwards compatibility: Servers can maintain compatibility with older HTTP+SSE clients
+When to use Streamable HTTP
+
+Streamable HTTP transport is ideal for:
+
+All new remote MCP server developments
+Servers requiring robust, scalable, and flexible communication
+Integrations that might involve streaming data or server-sent notifications
+Public services or centralized tools
+Replacing legacy SSE transport implementations
+Streamable HTTP implementation example
+
+Configuration in settings.json:
+
+{
+  "mcpServers": {
+    "StreamableHTTPMCPName": {
+      "type": "streamable-http",
+      "url": "http://localhost:8080/mcp"
+    }
+  }
+}
+
+For server-side implementation, refer to the MCP SDK documentation for StreamableHTTPClientTransport.
+
+Backwards compatibility with HTTP+SSE
+
+Clients and servers can maintain backwards compatibility with the deprecated HTTP+SSE transport.
+
+Servers wanting to support older clients should continue to host both the SSE (/events) and POST (/message) endpoints of the old transport, alongside the new MCP endpoint defined for the Streamable HTTP transport.
+
+SSE transport (legacy)
+
+Server-Sent Events (SSE) transport runs on a remote server and communicates over HTTP/HTTPS. For new remote servers, use Streamable HTTP transport instead.
+
+How SSE transport works
+Bob connects to the server's SSE endpoint via HTTP GET request
+This establishes a persistent connection where the server can push events to Bob
+For client-to-server communication, Bob makes HTTP POST requests to a separate endpoint
+Communication happens over two channels:
+Event stream (GET): Server-to-client updates
+Message endpoint (POST): Client-to-server requests
+Client                             Server
+  |                                  |
+  |---- HTTP GET /events ----------->| (establish SSE connection)
+  |<---- SSE event stream -----------| (persistent connection)
+  |                                  |
+  |---- HTTP POST /message --------->| (client request)
+  |<---- SSE event with response ----| (server response)
+  |                                  |
+SSE characteristics
+Remote access: Can be hosted on a different machine from Bob
+Scalability: Can handle multiple client connections concurrently
+Protocol: Works over standard HTTP (no special protocols needed)
+Persistence: Maintains a persistent connection for server-to-client messages
+Authentication: Can use standard HTTP authentication mechanisms
+When to use SSE
+
+SSE transport is suitable for:
+
+Remote access across networks
+Multi-client scenarios
+Public services
+Centralized tools that many users need to access
+Integration with web services
+SSE implementation example
+import express from 'express';
+const app = express();
+const server = new Server({name: 'remote-server', version: '1.0.0'});
+// Register tools...
+// Use SSE transport
+const transport = new SSEServerTransport(server);
+app.use('/mcp', transport.requestHandler());
+app.listen(3000, () => {
+  console.log('MCP server listening on port 3000');
+});
+Deployment considerations
+
+The choice between STDIO and remote transports (Streamable HTTP or SSE) directly impacts how you deploy and manage your MCP servers.
+
+STDIO: Local deployment
+
+STDIO servers run locally on the same machine as Bob:
+
+Installation: The server executable must be installed on each user's machine
+Distribution: You need to provide installation packages for different operating systems
+Updates: Each instance must be updated separately
+Resources: Uses the local machine's CPU, memory, and disk
+Access control: Relies on the local machine's filesystem permissions
+Integration: Easy integration with local system resources (files, processes)
+Execution: Starts and stops with Bob (child process lifecycle)
+Dependencies: Any dependencies must be installed on the user's machine
+
+Example use case:
+
+A local file search tool using STDIO would:
+
+Run on the user's machine
+Have direct access to the local filesystem
+Start when needed by Bob
+Not require network configuration
+Need to be installed alongside Bob or via a package manager
+Remote: Hosted deployment
+
+Remote servers (Streamable HTTP or SSE) can be deployed to remote servers and accessed over the network:
+
+Installation: Installed once on a server, accessed by many users
+Distribution: Single deployment serves multiple clients
+Updates: Centralized updates affect all users immediately
+Resources: Uses server resources, not local machine resources
+Access control: Managed through authentication and authorization systems
+Integration: More complex integration with user-specific resources
+Execution: Runs as an independent service (often continuously)
+Dependencies: Managed on the server, not on user machines
+
+Example use case:
+
+A database query tool using remote transport would:
+
+Run on a central server
+Connect to databases with server-side credentials
+Be continuously available for multiple users
+Require proper network security configuration
+Be deployed using container or cloud technologies
+Hybrid approaches
+
+Some scenarios benefit from a hybrid approach:
+
+STDIO with network access: A local STDIO server that acts as a proxy to remote services
+Remote with local commands: A remote server that can trigger operations on the client machine through callbacks
+Gateway pattern: STDIO servers for local operations that connect to remote servers for specialized functions
+Transport comparison
+Consideration	STDIO	Streamable HTTP / SSE
+Location	Local machine only	Local or remote
+Clients	Single client	Multiple clients
+Performance	Lower latency	Higher latency (network overhead)
+Setup complexity	Simpler	More complex (requires HTTP server)
+Security	Inherently secure	Requires explicit security measures
+Network access	Not needed	Required
+Scalability	Limited to local machine	Can distribute across network
+Deployment	Per-user installation	Centralized installation
+Updates	Distributed updates	Centralized updates
+Resource usage	Uses client resources	Uses server resources
+Dependencies	Client-side dependencies	Server-side dependencies
+Configure transports in Bob
+
+For detailed information on configuring transports in Bob, including example configurations, see MCP in Bob.
+
+How is this topic?
+Good
+Bad
+
+Understanding MCP
+
+The Model Context Protocol (MCP) is a standardized communication protocol that enables AI systems to interact with external tools and services.
+
+Using MCP in Bob
+
+The Model Context Protocol (MCP) extends Bob's capabilities by connecting to external tools and services. This guide shows you how to configure, manage, and use MCP servers with Bob.
+
+On this page
+Overview
+STDIO transport
+How STDIO transport works
+STDIO characteristics
+When to use STDIO
+STDIO implementation example
+Streamable HTTP transport
+How Streamable HTTP transport works
+Streamable HTTP characteristics
+When to use Streamable HTTP
+Streamable HTTP implementation example
+Backwards compatibility with HTTP+SSE
+SSE transport (legacy)
+How SSE transport works
+SSE characteristics
+When to use SSE
+SSE implementation example
+Deployment considerations
+STDIO: Local deployment
+Remote: Hosted deployment
+Hybrid approaches
+Transport comparison
+Configure transports in Bob
+About cookies on this site
+Our websites require some cookies to function properly (required). In addition, other cookies may be used with your consent to analyze site usage, improve the user experience and for advertising.
+For more information, please review yourcookie preferences options. By visiting our website, you agree to our processing of information as described in IBM’sprivacy statement. 
+To provide a smooth navigation, your cookie preferences will be shared across the IBM web domains listed here.
+Accept all
+More options
+
+=== https://bob.ibm.com/docs/ide/configuration/mcp/mcp-in-bob ===
+IBM Bob
+Pricing
+Docs
+Blog
+Enterprise
+Download
+Login
+Search
+Ctrl
+K
+
+IDE
+
+Welcome to IBM Bob
+Changelog
+Frequently Asked Questions
+
+Getting started
+
+Installing
+Best practices
+Quickstart
+Tutorials
+Core concepts
+Configuration
+Keyboard shortcuts
+Ignoring files
+Custom modes
+Agent personas
+Custom rules
+Lifecycle hooks
+Telemetry data
+MCP
+Understanding MCP
+MCP server transports
+Using MCP in Bob
+MCP OAuth authentication
+Features
+Account
+Security
+Enterprise
+Premium packages
+Troubleshooting
+Configuration
+MCP
+Using MCP in Bob
+
+Feedback
+The Model Context Protocol (MCP) extends Bob's capabilities by connecting to external tools and services. This guide shows you how to configure, manage, and use MCP servers with Bob.
+
+Copy Markdown
+
+For conceptual information, see Understanding MCP.
+
+Configuration levels
+
+You can configure MCP servers at two levels:
+
+Global: Stored in ~/.bob/mcp.json, applies across all workspaces
+Project: Stored in .bob/mcp.json in your project root, allows team sharing via version control
+
+Project-level configurations take precedence over global settings when server names conflict.
+
+Edit configuration files
+
+You can edit MCP configuration files from the settings menu:
+
+Click the 
+ icon in the Bob panel.
+Select the MCP tab.
+Click the appropriate button:
+Edit Global MCP: Opens the global ~/.bob/mcp.json file
+Edit Project MCP: Opens the project-specific .bob/mcp.json file (Bob creates it if it does not exist)
+
+Both files use JSON format with an mcpServers object containing named server configurations.
+
+Find and install servers
+
+IBM Bob does not include pre-installed MCP servers. To find servers:
+
+Build your own: Use the MCP SDK to create custom servers (see the MCP GitHub repository)
+Community servers: Explore community-contributed MCP servers in the MCP ecosystem
+Enable or disable MCP servers
+
+When you disable MCP servers, Bob removes all MCP-related logic and definitions from your system prompt, reducing token usage. Bob cannot connect to any MCP servers, and the use_mcp_tool and access_mcp_resource tools are unavailable. This setting is enabled by default.
+
+To enable or disable MCP servers:
+
+Click the 
+ icon in the Bob panel.
+Select the MCP tab.
+Check or uncheck Use MCP Servers.
+Enable or disable MCP server creation
+
+When you disable MCP server creation, Bob removes the instructions from your system prompt that Bob uses to write MCP servers. Bob retains the context for operating existing MCP servers, reducing token usage. This setting is enabled by default.
+
+To enable or disable MCP server creation:
+
+Click the 
+ icon in the Bob panel.
+Select the MCP tab.
+Check or uncheck Enable MCP Server Creation.
+Enable or disable individual MCP tools
+
+You can enable or disable specific tools within an MCP server to control which capabilities Bob can access. This provides fine-grained control over MCP functionality and helps reduce context window usage by excluding unused tool definitions.
+
+To manage individual tools:
+
+Click the 
+ icon in the Bob panel.
+Select the MCP tab.
+Locate the MCP server in the list.
+Expand the server to view its available tools.
+Toggle individual tools on or off as needed.
+
+Disabling unused tools reduces the amount of context consumed by tool definitions, allowing more space for your code and conversation history.
+
+Transport types
+
+MCP supports different transport types for server communication. Choose the transport based on where your server runs and how you want to deploy it. For detailed information on all transport types, see MCP server transports.
+
+For servers that require OAuth 2.1 user authentication instead of static tokens, see MCP OAuth authentication.
+
+STDIO transport
+
+Use STDIO transport for local servers running on your machine.
+
+Benefits:
+
+Lower latency (no network overhead)
+Better security (no network exposure)
+Simpler setup (no HTTP server needed)
+
+Configuration parameters:
+
+Parameter	Required	Description
+command	Yes	Executable to run (e.g., node, python, npx)
+args	No	Array of arguments to pass to the command
+cwd	No	Working directory for the server process
+env	No	Environment variables for the server process
+alwaysAllow	No	Array of tool names to auto-approve
+disabled	No	Set to true to disable this server
+
+Example:
+
+{
+  "mcpServers": {
+    "local-server": {
+      "command": "node",
+      "args": ["server.js"],
+      "cwd": "/path/to/project/root",
+      "env": {
+        "API_KEY": "your_api_key"
+      },
+      "alwaysAllow": ["tool1", "tool2"],
+      "disabled": false
+    }
+  }
+}
+
+For more detailed information, see STDIO transport.
+
+Streamable HTTP transport
+
+Use Streamable HTTP transport for remote servers accessed over HTTP/HTTPS. This is the modern standard for new remote server implementations.
+
+Benefits:
+
+Can be hosted on different machines
+Supports multiple client connections
+Allows centralized deployment
+Supports both simple request-response and streaming
+
+Configuration parameters:
+
+Parameter	Required	Description
+url	Yes	Full URL of the MCP endpoint
+headers	No	Custom HTTP headers (e.g., authentication tokens)
+alwaysAllow	No	Array of tool names to auto-approve
+disabled	No	Set to true to disable this server
+
+Example:
+
+{
+  "mcpServers": {
+    "remote-server": {
+      "type": "streamable-http",
+      "url": "https://your-server-url.com/mcp",
+      "headers": {
+        "Authorization": "Bearer your-token"
+      },
+      "alwaysAllow": ["tool3"],
+      "disabled": false
+    }
+  }
+}
+
+For more detailed information, see Streamable HTTP transport.
+
+SSE transport (legacy)
+
+Use SSE transport for remote servers accessed over HTTP/HTTPS. For new remote servers, use Streamable HTTP transport instead.
+
+Benefits:
+
+Can be hosted on different machines
+Supports multiple client connections
+Allows centralized deployment
+
+Configuration parameters:
+
+Parameter	Required	Description
+url	Yes	Full URL endpoint of the remote MCP server
+headers	No	Custom HTTP headers (e.g., authentication tokens)
+alwaysAllow	No	Array of tool names to auto-approve
+disabled	No	Set to true to disable this server
+
+Example:
+
+{
+  "mcpServers": {
+    "remote-server": {
+      "url": "https://your-server-url.com/mcp",
+      "headers": {
+        "Authorization": "Bearer your-token"
+      },
+      "alwaysAllow": ["tool3"],
+      "disabled": false
+    }
+  }
+}
+Create an MCP server with Bob
+
+You can ask Bob to build custom MCP servers for specific capabilities you need.
+
+Prerequisite: Enable the Enable MCP Server Creation setting.
+
+To create a server:
+
+Request the tool or capability from Bob. For example:
+
+"Create an MCP tool that gets the current Bitcoin price"
+"Build an MCP server to interact with the GitHub Gist API"
+
+Bob will:
+
+Scaffold a server project (typically TypeScript) in the default MCP directory
+Implement the requested tool with necessary API calls
+Prompt you for API keys or credentials if needed
+Add the server configuration to your settings file
+Connect to the new server automatically
+
+For more information about tool mechanics, see Understand Bob's tools.
+
+Manage individual servers
+
+To access server settings:
+
+Click the 
+ icon in the Bob panel.
+Select the MCP tab.
+Locate the server in the list.
+
+Available actions:
+
+Delete: Click 
+ and confirm deletion
+Restart: Click 
+ to restart the server
+Enable/Disable: Toggle the server on or off using the power toggle
+Network timeout: Set response timeout (30 seconds to 5 minutes, default 1 minute)
+Manage tools: Expand the server to enable or disable individual tools
+Auto-approve tools
+
+MCP tool auto-approval is disabled by default and works per-tool:
+
+Enable the global "Use MCP servers" option in Auto-approving actions.
+In the MCP server settings, locate the tool.
+Check Always allow next to the tool name.
+
+The global setting takes precedence—if disabled, no MCP tools auto-approve.
+
+Use MCP tools effectively
+
+After configuring an MCP server, Bob automatically detects available tools. Effective usage depends on clear tool definitions.
+
+Workflow
+Type your request in the Bob chat interface
+Bob analyzes your request and available MCP tools
+Bob proposes tool use; you approve (unless auto-approved)
+Write effective tool descriptions
+
+Bob's ability to select and use tools correctly depends on description quality. Follow these guidelines when defining MCP tools:
+
+Tool names
+
+Use descriptive, unambiguous names that indicate the primary function.
+
+Tool descriptions
+
+Provide comprehensive summaries that include:
+
+What the tool does
+Its purpose and use cases
+Prerequisites or important context
+Expected outcomes
+Parameter descriptions
+
+For each parameter, specify:
+
+Purpose and expected data type
+Formatting requirements or constraints
+Example valid values
+Whether optional or required
+Example
+
+Poor description:
+
+Gets data
+
+Good description:
+
+Retrieves user profile data from the API using a user ID. 
+Returns JSON containing username, email, and account creation date. 
+Requires valid authentication token in environment.
+Additional guidance
+
+Use Custom rules to define preferred approaches, complex workflows, or tool prioritization for your team.
+
+MCP security considerations
+Important Security Information
+
+Using MCP servers introduces security considerations that you should carefully evaluate before deployment.
+
+Data privacy risks
+
+External MCP servers:
+
+May send your data to external providers or third-party services
+Could expose sensitive code, credentials, or proprietary information
+May store or log data in ways you don't control
+
+Recommendations:
+
+Review the MCP server's data handling policies before use
+Avoid using external MCP servers with sensitive or proprietary code
+Prefer local MCP servers for confidential projects
+Local security risks
+
+Local MCP servers:
+
+Run with the same permissions as Bob
+Can access your file system, environment variables, and system resources
+May execute arbitrary code on your machine
+Could potentially modify or delete files
+
+Recommendations:
+
+Only install MCP servers from trusted sources
+Review the source code of MCP servers before installation when possible
+Understand what permissions and capabilities each server requires
+Be cautious with servers that request broad file system access
+Organizational compliance
+
+Business and enterprise considerations:
+
+Ensure MCP server usage aligns with your organization's security policies
+Verify that data handling complies with regulatory requirements (GDPR, HIPAA, etc.)
+Check if MCP servers are approved for use within restricted networks
+Document which MCP servers are authorized for use in your environment
+
+Best practices:
+
+Maintain an inventory of approved MCP servers
+Establish a review process for new MCP servers
+Regularly audit MCP server usage and permissions
+Provide security training for team members using MCP
+Vetting MCP servers
+
+Before installing any MCP server:
+
+Research the source: Verify the publisher's reputation and track record
+Review documentation: Understand what the server does and what it accesses
+Check permissions: Evaluate what system resources the server requires
+Read the code: If open source, review the implementation for security issues
+Test in isolation: Try the server in a non-production environment first
+Monitor behavior: Watch for unexpected network activity or file access
+
+When in doubt, consult your security team or IT department before installing MCP servers, especially in corporate or regulated environments.
+
+How is this topic?
+Good
+Bad
+
+MCP server transports
+
+MCP supports transport mechanisms for communication between Bob and MCP servers.
+
+MCP OAuth authentication
+
+Bob supports OAuth 2.1 for MCP servers that require user-delegated access. Bob handles the authentication flow automatically, including token refresh, so you do not need to manage tokens manually.
+
+On this page
+Configuration levels
+Edit configuration files
+Find and install servers
+Enable or disable MCP servers
+Enable or disable MCP server creation
+Enable or disable individual MCP tools
+Transport types
+STDIO transport
+Streamable HTTP transport
+SSE transport (legacy)
+Create an MCP server with Bob
+Manage individual servers
+Auto-approve tools
+Use MCP tools effectively
+Workflow
+Write effective tool descriptions
+Tool names
+Tool descriptions
+Parameter descriptions
+Example
+Additional guidance
+MCP security considerations
+Data privacy risks
+Local security risks
+Organizational compliance
+Vetting MCP servers
+About cookies on this site
+Our websites require some cookies to function properly (required). In addition, other cookies may be used with your consent to analyze site usage, improve the user experience and for advertising.
+For more information, please review yourcookie preferences options. By visiting our website, you agree to our processing of information as described in IBM’sprivacy statement. 
+To provide a smooth navigation, your cookie preferences will be shared across the IBM web domains listed here.
+Accept all
+More options
+
+=== https://bob.ibm.com/docs/ide/configuration/mcp/mcp-oauth ===
+IBM Bob
+Pricing
+Docs
+Blog
+Enterprise
+Download
+Login
+Search
+Ctrl
+K
+
+IDE
+
+Welcome to IBM Bob
+Changelog
+Frequently Asked Questions
+
+Getting started
+
+Installing
+Best practices
+Quickstart
+Tutorials
+Core concepts
+Configuration
+Keyboard shortcuts
+Ignoring files
+Custom modes
+Agent personas
+Custom rules
+Lifecycle hooks
+Telemetry data
+MCP
+Understanding MCP
+MCP server transports
+Using MCP in Bob
+MCP OAuth authentication
+Features
+Account
+Security
+Enterprise
+Premium packages
+Troubleshooting
+Configuration
+MCP
+MCP OAuth authentication
+
+Feedback
+Bob supports OAuth 2.1 for MCP servers that require user-delegated access. Bob handles the authentication flow automatically, including token refresh, so you do not need to manage tokens manually.
+
+Copy Markdown
+
+For general MCP configuration, see Using MCP in Bob.
+
+Overview
+Feedback
+
+Some MCP servers need to act on behalf of you as a user, for example to read your GitHub repositories or access your Google Drive files. These servers use OAuth 2.1 to request your consent before accessing any data.
+
+Feedback
+
+Bob handles the full OAuth flow automatically. When you connect to a server that requires OAuth, the server is marked with a needs authentication warning in the MCP settings and an authentication button appears. Click the button to open the authorization flow in your browser. After you authorize, Bob manages token storage and refresh without further manual steps.
+
+Feedback
+
+This is different from static authentication methods such as a Bearer token in headers or an API key in env, which are suited to service accounts or tokens that do not expire. Use OAuth when:
+
+Feedback
+The server needs access to resources owned by your user account
+Feedback
+The server's authorization server issues short-lived tokens that must be refreshed
+Feedback
+You want to avoid storing long-lived secrets in your MCP configuration files
+How the authentication flow works
+Feedback
+You add an OAuth-enabled MCP server to your configuration file (no headers or env credentials required)
+Feedback
+When Bob first connects to the server, it detects the server's OAuth authorization metadata
+Feedback
+Bob opens a browser-based authentication prompt asking you to sign in and grant consent
+Feedback
+After you authorize, Bob stores the access and refresh tokens securely across sessions
+Feedback
+Bob automatically refreshes tokens before they expire. You are not prompted again unless the refresh fails.
+Bob IDE                     Authorization Server              MCP Server
+   |                                |                               |
+   |-- connect to server ---------->|                               |
+   |<-- OAuth metadata (401) -------|                               |
+   |-- open auth prompt ----------->|                               |
+   |   (user signs in & consents)   |                               |
+   |<-- authorization code ---------|                               |
+   |-- exchange for tokens -------->|                               |
+   |<-- access + refresh tokens ----|                               |
+   |-- authenticated requests --------------------------------->    |
+   |   (auto-refresh when needed)                                   |
+Configure an OAuth-enabled server
+Feedback
+
+OAuth-enabled MCP servers advertise their authorization requirements automatically. In most cases you only need the server URL — OAuth fields are optional. Bob also supports the following optional OAuth properties:
+
+Feedback
+oauth: Set to false to disable OAuth for a server, or true to explicitly enable it
+Feedback
+clientId: OAuth client ID, if required by the authorization server
+Feedback
+clientSecret: OAuth client secret, if required by the authorization server
+Feedback
+scope: Space-separated list of OAuth scopes to request
+Feedback
+
+Example configuration:
+
+{
+  "mcpServers": {
+    "my-oauth-server": {
+      "url": "https://your-server-url.com/mcp"
+    }
+  }
+}
+Feedback
+
+Bob detects the OAuth requirement when it connects and initiates the flow. No headers or env credentials are needed.
+
+Warning:
+
+Adding a static Authorization header to an OAuth-enabled server disables automatic OAuth entirely. Bob will not attempt the OAuth flow. Conversely, when OAuth is active, Bob removes any static Authorization header before sending requests. Use one method only.
+
+Authenticate when prompted
+Feedback
+
+When Bob connects to an OAuth-enabled server for the first time:
+
+Feedback
+An authentication prompt appears in the IDE
+Feedback
+Review the permissions the server is requesting
+Feedback
+Sign in with the required account and grant consent
+Feedback
+Bob stores the tokens and completes the connection automatically
+Feedback
+
+The prompt may appear in a browser window or an embedded webview, depending on the authorization server.
+
+View and manage authentication status
+Feedback
+
+To check or manage authentication for an MCP server:
+
+Feedback
+Click the 
+ icon in the Bob panel.
+Feedback
+Select the MCP tab.
+Feedback
+Locate the server in the list.
+Feedback
+
+Authenticated servers show a connected status indicator. If authentication has expired or been revoked, the server shows an error status.
+
+Feedback
+
+To re-authenticate: Click 
+ next to the server to restart the connection. Bob opens the authentication prompt again.
+
+Troubleshooting
+Feedback
+
+The authentication prompt does not appear
+
+Feedback
+Confirm the server is not marked as disabled in your configuration
+Feedback
+Restart the server from the MCP settings tab
+Feedback
+Check that your browser or webview is not blocking the authorization page
+Feedback
+
+Authentication succeeds but the server fails to connect
+
+Feedback
+Verify the server URL is correct and reachable
+Feedback
+Check that you granted all required permissions during the consent step
+Feedback
+Review the server's documentation for any additional setup requirements
+Feedback
+
+Tokens expire frequently and re-authentication is required
+
+Feedback
+Confirm the authorization server supports refresh tokens. Some servers issue access-only tokens with short lifetimes.
+Feedback
+Check that your system clock is accurate, as clock skew can cause premature token expiry
+Feedback
+
+You want to sign out or switch accounts
+
+Feedback
+
+Restarting the server does not clear OAuth credentials. To sign out or switch accounts, use Reset auth from the MCP settings tab. This clears the stored tokens and triggers a fresh authentication prompt on the next connection.
+
+How is this topic?
+Good
+Bad
+
+Using MCP in Bob
+
+The Model Context Protocol (MCP) extends Bob's capabilities by connecting to external tools and services. This guide shows you how to configure, manage, and use MCP servers with Bob.
+
+Chat interface
+
+Bob IDE's chat interface is your primary workspace where you use natural language prompts, slash commands, and auto-approval for AI-assisted coding workflows.
+
+On this page
+Overview
+How the authentication flow works
+Configure an OAuth-enabled server
+Authenticate when prompted
+View and manage authentication status
+Troubleshooting
+About cookies on this site
+Our websites require some cookies to function properly (required). In addition, other cookies may be used with your consent to analyze site usage, improve the user experience and for advertising.
+For more information, please review yourcookie preferences options. By visiting our website, you agree to our processing of information as described in IBM’sprivacy statement. 
+To provide a smooth navigation, your cookie preferences will be shared across the IBM web domains listed here.
+Accept all
+More options
+
+=== https://bob.ibm.com/docs/ide/features/skills ===
+IBM Bob
+Pricing
+Docs
+Blog
+Enterprise
+Download
+Login
+Search
+Ctrl
+K
+
+IDE
+
+Welcome to IBM Bob
+Changelog
+Frequently Asked Questions
+
+Getting started
+
+Installing
+Best practices
+Quickstart
+Tutorials
+Core concepts
+Configuration
+Features
+Chat interface
+Auto-approve
+Modes
+Subagents
+Context mentions
+Bob tips
+Rollback
+Code actions
+Code reviews
+Commit messages
+Pull requests
+Literate coding
+Skills
+Bobalytics
+Account
+Security
+Enterprise
+Premium packages
+Troubleshooting
+Features
+Skills
+
+Feedback
+Create reusable instruction sets for specialized workflows. Define custom workflows, add supporting files, and teach Bob specialized tasks for consistent results.
+
+Copy Markdown
+Feedback
+
+Skills are reusable instruction sets that teach Bob new workflows and specialized tasks. Think of them as recipes that Bob follows to complete specific types of work in a consistent, repeatable manner.
+
+Why use skills
+Feedback
+Reusability: Define workflows once and use them across multiple conversations.
+Feedback
+Consistency: Ensure Bob follows the same approach every time for specific tasks.
+Feedback
+Specialization: Create domain-specific expertise for code reviews, testing, documentation, and more.
+Feedback
+Team collaboration: Share standardized workflows across your team through version control.
+Feedback
+Flexibility: Include supporting files like checklists, templates, and reference materials.
+Requirements
+Feedback
+
+Skills are only available in Advanced mode. This ensures Bob has access to all necessary tools to run skill-based workflows effectively.
+
+How skills work
+Feedback
+
+When you activate a skill, Bob receives the skill's instructions and gains access to any supporting files in the skill directory. Bob then follows these instructions to complete your task according to the defined workflow.
+
+Feedback
+
+Skills load once per conversation to avoid duplicate prompts. Bob automatically determines when to activate a skill based on your request and the skill's description.
+
+Creating a skill
+Basic setup
+
+Create a folder inside .bob/skills/ in your project root, or use ~/.bob/skills/ for global skills.
+
+Add a SKILL.md file inside that folder.
+
+Feedback
+
+Example structure:
+
+your-project/
+.bob/
+skills/
+code-review/
+SKILL.md
+SKILL.md format
+Feedback
+
+The SKILL.md file uses YAML front matter followed by the skill instructions:
+
+---
+name: code-review
+description: Review code for bugs, security issues, and best practices
+---
+When reviewing code, check for:
+- Security vulnerabilities
+- Performance issues
+- Missing error handling at API boundaries
+- Unused imports and dead code
+Provide a summary with severity levels for each finding.
+Feedback
+
+Required fields:
+
+Feedback
+name: The skill's display name used in the Bob interface
+Feedback
+description: A clear summary that helps Bob decide when to activate this skill—skills without descriptions are ignored
+Feedback
+
+Instructions section: Everything below the --- delimiter becomes the instructions Bob receives when the skill is activated.
+
+Adding supporting files
+Feedback
+
+You can include additional files and subfolders alongside SKILL.md to provide reference materials, templates, checklists, scripts, or other resources. Bob can read these files automatically once the skill is activated.
+
+Feedback
+
+Example with supporting files:
+
+.bob/skills/
+code-review/
+SKILL.md
+checklist.md
+severity-guide.md
+scripts/
+analyze.sh
+report-generator.py
+Feedback
+
+Supporting files and folders can include:
+
+Feedback
+Checklists and templates
+Feedback
+Reference documentation
+Feedback
+Configuration examples
+Feedback
+Scripts and utilities in subfolders
+Feedback
+Style guides
+Feedback
+Any other resources needed for the skill
+Skill locations
+Feedback
+
+Skills can be defined at two levels:
+
+Location	Scope	Use case
+<project>/.bob/skills/	Project-specific	Workflows unique to this project
+~/.bob/skills/	Global	Personal or organization-wide workflows
+Feedback
+
+Priority: If both locations contain a skill with the same name, the project-level skill takes precedence.
+
+Approving skills
+Feedback
+
+By default, Bob asks for your permission before activating a skill. This gives you control over when specialized workflows are applied.
+
+Feedback
+
+To skip the approval prompt:
+
+Open Bob Settings.
+
+Navigate to the Auto-Approve section.
+
+Turn on the toggle for Skills.
+
+Feedback
+
+With this setting enabled, Bob automatically activates skills when appropriate without requesting permission.
+
+Skills settings tab
+Feedback
+
+The Skills tab in Bob Settings gives you a central place to view and manage the skills available in your workspace. Use it to see which skills are loaded, check their locations, and verify that skills from your project or global directories are being picked up correctly.
+
+Writing effective skills
+Clear descriptions
+Feedback
+
+Write descriptions that clearly indicate when the skill should be used. Bob relies on these descriptions to determine skill relevance.
+
+Feedback
+
+Good: "Review code for bugs, security issues, and best practices"
+
+Feedback
+
+Avoid: "Code review skill"
+
+Focused instructions
+Feedback
+
+Keep the main SKILL.md file focused on the core workflow. Move detailed reference material, examples, and checklists to supporting files.
+
+Feedback
+
+Example:
+
+---
+name: api-documentation
+description: Generate API documentation following OpenAPI standards
+---
+Generate API documentation that includes:
+- Endpoint descriptions
+- Request/response schemas
+- Authentication requirements
+- Example requests and responses
+Follow the style guide in `api-style-guide.md` and use the template in `api-template.md`.
+Actionable steps
+Feedback
+
+Structure instructions as clear, actionable steps that Bob can follow systematically.
+
+Feedback
+
+Example:
+
+---
+name: feature-implementation
+description: Implement new features following team standards
+---
+<Steps>
+<Step>
+Review the feature requirements.
+</Step>
+<Step>
+Create a plan with file changes needed.
+</Step>
+<Step>
+Implement the feature with tests.
+</Step>
+<Step>
+Update documentation.
+</Step>
+<Step>
+Verify all tests pass.
+</Step>
+</Steps>
+Follow coding standards in `coding-standards.md`.
+Example skills
+Code review skill
+---
+name: security-review
+description: Review code for security vulnerabilities and best practices
+---
+Perform a security-focused code review:
+<Steps>
+<Step>
+Check for common vulnerabilities:
+- SQL injection risks
+- XSS vulnerabilities
+- Authentication/authorization issues
+- Sensitive data exposure
+</Step>
+<Step>
+Review security best practices:
+- Input validation
+- Output encoding
+- Secure configuration
+- Error handling
+</Step>
+<Step>
+Provide findings with:
+- Severity level (Critical, High, Medium, Low)
+- Location in code
+- Recommended fix
+- Reference to security standards
+</Step>
+</Steps>
+Use the severity guide in `severity-levels.md` for classification.
+Documentation skill
+---
+name: api-docs
+description: Generate comprehensive API documentation
+---
+Create API documentation that includes:
+<Steps>
+<Step>
+Overview section:
+- Purpose and use cases
+- Authentication requirements
+- Base URL and versioning
+</Step>
+<Step>
+For each endpoint:
+- HTTP method and path
+- Description and purpose
+- Request parameters
+- Request body schema
+- Response codes and schemas
+- Example requests and responses
+</Step>
+<Step>
+Additional sections:
+- Error handling
+- Rate limiting
+- Pagination
+</Step>
+</Steps>
+Follow the template in `api-doc-template.md` and examples in `api-examples.md`.
+Tips and best practices
+Feedback
+Start simple: Begin with basic instructions and refine based on results.
+Feedback
+Use supporting files: Keep SKILL.md concise by moving detailed content to companion files.
+Feedback
+Test thoroughly: Verify skills work as expected before sharing with your team.
+Feedback
+Version control: Include project skills in your repository for team consistency.
+Feedback
+Clear naming: Use descriptive skill names that indicate their purpose.
+Feedback
+Single responsibility: Create focused skills for specific tasks rather than trying to handle multiple unrelated workflows.
+How is this topic?
+Good
+Bad
+
+Literate coding
+
+Write code with AI assistance directly in your editor using natural language instructions right where the code should go. Bob generates the implementation in context with inline diffs.
+
+Bobalytics
+
+Bobalytics provides analytics and insights into how IBM Bob contributes to your software development process. Use it to understand Bob's impact on your codebase, track Bobcoin spending, and monitor team adoption across your organization.
+
+On this page
+Why use skills
+Requirements
+How skills work
+Creating a skill
+Basic setup
+SKILL.md format
+Adding supporting files
+Skill locations
+Approving skills
+Skills settings tab
+Writing effective skills
+Clear descriptions
+Focused instructions
+Actionable steps
+Example skills
+Code review skill
+Documentation skill
+Tips and best practices
+About cookies on this site
+Our websites require some cookies to function properly (required). In addition, other cookies may be used with your consent to analyze site usage, improve the user experience and for advertising.
+For more information, please review yourcookie preferences options. By visiting our website, you agree to our processing of information as described in IBM’sprivacy statement. 
+To provide a smooth navigation, your cookie preferences will be shared across the IBM web domains listed here.
+Accept all
+More options
+

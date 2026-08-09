@@ -11,6 +11,7 @@ import {
   Settings, Plus, Upload, MessageSquare, ExternalLink, ChevronRight, ChevronLeft, ShieldAlert, Check
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const FaultyTerminal = dynamic(() => import('@/components/FaultyTerminal'), { ssr: false });
 const BackgroundHalo = dynamic(() => import('@/components/BackgroundHalo').then(mod => mod.BackgroundHalo), { ssr: false });
@@ -19,7 +20,7 @@ export default function ClaudeSkillPage() {
   const router = useRouter();
   const container = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState('claude');
+  const [activeTab, setActiveTab] = useState('bob');
   const [claudeSlide, setClaudeSlide] = useState(0);
   const claudeSteps = [
     { img: '/claude-install/step0.png', label: 'Step 1: Run the installer' },
@@ -41,6 +42,13 @@ export default function ClaudeSkillPage() {
     { img: '/anti-install/step0.png', label: 'Step 1: Run the installer' },
     { img: '/anti-install/step1.png', label: 'Step 2: Antigravity Settings' },
     { img: '/anti-install/step2.png', label: 'Step 3: Aletheia skill installed' },
+  ];
+  const [bobSlide, setBobSlide] = useState(0);
+  const bobSteps = [
+    { img: '/ibm-bob-install/stop 0.png', label: 'Step 1: Run the installer' },
+    { img: '/ibm-bob-install/step1.png', label: 'Step 2: Restart IBM Bob' },
+    { img: '/ibm-bob-install/step2.png', label: 'Step 3: Check MCP Servers' },
+    { img: '/ibm-bob-install/step3.png', label: 'Step 4: Enable Aletheia Skill' },
   ];
 
 
@@ -151,6 +159,7 @@ export default function ClaudeSkillPage() {
         {/* Platform Tabs Section */}
         {(() => {
           const tabs = [
+            { id: 'bob', label: 'IBM Bob' },
             { id: 'claude', label: 'Claude' },
             { id: 'codex', label: 'Codex' },
             { id: 'antigravity', label: 'Antigravity' },
@@ -160,12 +169,18 @@ export default function ClaudeSkillPage() {
               <div className="flex flex-col h-full relative">
                 {/* Image */}
                 <div className="flex-1 flex items-center justify-center relative">
-                  <img 
-                    key={claudeSlide}
-                    src={claudeSteps[claudeSlide].img} 
-                    alt={claudeSteps[claudeSlide].label}
-                    className="w-full rounded-2xl object-cover transition-opacity duration-300"
-                  />
+                  <AnimatePresence mode="wait">
+                    <motion.img 
+                      key={claudeSlide}
+                      src={claudeSteps[claudeSlide].img} 
+                      alt={claudeSteps[claudeSlide].label}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="w-full rounded-2xl object-cover"
+                    />
+                  </AnimatePresence>
                   {/* Step Number Badge */}
                   <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-[#f95d2c] flex items-center justify-center text-white font-bold text-[16px] shadow-lg font-sans">
                     {claudeSlide + 1}
@@ -201,12 +216,18 @@ export default function ClaudeSkillPage() {
               <div className="flex flex-col h-full relative">
                 {/* Image */}
                 <div className="flex-1 flex items-center justify-center relative">
-                  <img 
-                    key={codexSlide}
-                    src={codexSteps[codexSlide].img} 
-                    alt={codexSteps[codexSlide].label}
-                    className="w-full rounded-2xl object-cover transition-opacity duration-300"
-                  />
+                  <AnimatePresence mode="wait">
+                    <motion.img 
+                      key={codexSlide}
+                      src={codexSteps[codexSlide].img} 
+                      alt={codexSteps[codexSlide].label}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="w-full rounded-2xl object-cover"
+                    />
+                  </AnimatePresence>
                   {/* Step Number Badge */}
                   <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-[#f95d2c] flex items-center justify-center text-white font-bold text-[16px] shadow-lg font-sans">
                     {codexSlide + 1}
@@ -242,12 +263,18 @@ export default function ClaudeSkillPage() {
               <div className="flex flex-col h-full relative">
                 {/* Image */}
                 <div className="flex-1 flex items-center justify-center relative">
-                  <img 
-                    key={antiSlide}
-                    src={antiSteps[antiSlide].img} 
-                    alt={antiSteps[antiSlide].label}
-                    className="w-full rounded-2xl object-cover transition-opacity duration-300"
-                  />
+                  <AnimatePresence mode="wait">
+                    <motion.img 
+                      key={antiSlide}
+                      src={antiSteps[antiSlide].img} 
+                      alt={antiSteps[antiSlide].label}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="w-full rounded-2xl object-cover"
+                    />
+                  </AnimatePresence>
                   {/* Step Number Badge */}
                   <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-[#f95d2c] flex items-center justify-center text-white font-bold text-[16px] shadow-lg font-sans">
                     {antiSlide + 1}
@@ -274,6 +301,53 @@ export default function ClaudeSkillPage() {
                       key={i}
                       onClick={() => setAntiSlide(i)}
                       className={`w-2 h-2 rounded-full transition-all duration-300 ${i === antiSlide ? 'bg-[#f95d2c] w-5' : 'bg-white/20 hover:bg-white/40'}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            ),
+            bob: (
+              <div className="flex flex-col h-full relative">
+                {/* Image */}
+                <div className="flex-1 flex items-center justify-center relative">
+                  <AnimatePresence mode="wait">
+                    <motion.img 
+                      key={bobSlide}
+                      src={bobSteps[bobSlide].img} 
+                      alt={bobSteps[bobSlide].label}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="w-full rounded-2xl object-cover"
+                    />
+                  </AnimatePresence>
+                  {/* Step Number Badge */}
+                  <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-[#f95d2c] flex items-center justify-center text-white font-bold text-[16px] shadow-lg font-sans">
+                    {bobSlide + 1}
+                  </div>
+                  {/* Left Button */}
+                  <button
+                    onClick={() => setBobSlide((prev) => (prev - 1 + bobSteps.length) % bobSteps.length)}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/70 transition-all"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  {/* Right Button */}
+                  <button
+                    onClick={() => setBobSlide((prev) => (prev + 1) % bobSteps.length)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/70 transition-all"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
+                {/* Dots */}
+                <div className="flex items-center justify-center gap-2 py-3">
+                  {bobSteps.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setBobSlide(i)}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${i === bobSlide ? 'bg-[#f95d2c] w-5' : 'bg-white/20 hover:bg-white/40'}`}
                     />
                   ))}
                 </div>
