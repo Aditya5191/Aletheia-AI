@@ -11,7 +11,8 @@ import {
   X,
   PlugZap,
 } from "lucide-react";
-import { BIASPROBE_API_BASE_URL } from "../lib/config";
+import { BIASPROBE_WS_BASE_URL, BIASPROBE_API_BASE_URL } from "../lib/config";
+import { useViewMode } from "./ViewModeContext";
 import {
   BIAS_DIMENSION_PRESETS,
   ENDPOINT_PRESET_DEFAULTS,
@@ -33,6 +34,9 @@ const PRESETS: { id: EndpointPreset; label: string }[] = [
 ];
 
 export default function BiasProbeConfigForm({ onStartRun, isRunning }: BiasProbeConfigFormProps) {
+  const { viewMode } = useViewMode();
+  const isTestMode = viewMode === "test";
+
   const [preset, setPreset] = useState<EndpointPreset>("ollama");
   const [label, setLabel] = useState("My Target Model");
   const [baseUrl, setBaseUrl] = useState(ENDPOINT_PRESET_DEFAULTS.ollama.base_url);
@@ -101,6 +105,15 @@ export default function BiasProbeConfigForm({ onStartRun, isRunning }: BiasProbe
   const runTestConnection = useCallback(async () => {
     setTestStatus("testing");
     setTestMessage("");
+
+    if (isTestMode) {
+      setTimeout(() => {
+        setTestStatus("success");
+        setTestMessage("Test Mode: Connection mocked successfully. Target is simulated.");
+      }, 800);
+      return;
+    }
+
     try {
       const res = await fetch(`${BIASPROBE_API_BASE_URL}/biasprobe/test-connection`, {
         method: "POST",

@@ -9,9 +9,6 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.
 apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# Authenticate Docker with Artifact Registry
-sudo -u root docker-credential-gcloud configure-docker --registries="us-central1-docker.pkg.dev"
-
 # Install Caddy
 apt-get install -y debian-keyring debian-archive-keyring apt-transport-https
 curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
@@ -27,13 +24,18 @@ DOMAIN="$DASH_IP.sslip.io"
 # Configure Caddy
 cat <<EOF > /etc/caddy/Caddyfile
 $DOMAIN {
-    reverse_proxy localhost:8006
+    reverse_proxy localhost:11434
 }
 EOF
 systemctl restart caddy
 
-# Run the backend container
-docker run -d --restart unless-stopped -p 8006:8006 \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  --name aletheia-model-api \
-  us-central1-docker.pkg.dev/project-1c7dff83-6a39-4797-94c/aletheia/backend-model:latest
+# Run the Ollama container
+docker run -d --restart unless-stopped -p 11434:11434 \
+  -v ollama:/root/.ollama \
+  --name ollama-granite4 \
+  ollama/ollama
+
+# Wait for Ollama to start, then pull Granite4 model
+# Adjust the model name 'granite-code:8b' or similar based on exact requirements
+sleep 10
+docker exec ollama-granite4 ollama pull granite3.1-dense:8b

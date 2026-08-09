@@ -5,8 +5,8 @@
 # ALETHEIA AI
 ### Autonomous Algorithmic Fairness Auditing Protocol
 
-[![Live MVP](https://img.shields.io/badge/🚀%20Live%20MVP-aletheia--frontend-4285F4?style=for-the-badge)](https://aletheia-frontend-69262873588.us-central1.run.app/)
-[![Demo Video](https://img.shields.io/badge/▶%20Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/Xu2u8bvfD-w)
+[![Live MVP](https://img.shields.io/badge/%20Live%20MVP-aletheia--frontend-4285F4?style=for-the-badge)](https://aletheia-frontend-69262873588.us-central1.run.app/)
+[![Demo Video](https://img.shields.io/badge/%20Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/Xu2u8bvfD-w)
 [![GitHub](https://img.shields.io/badge/GitHub-Aletheia--AI-181717?style=for-the-badge&logo=github)](https://github.com/Aditya5191/Aletheia-AI)
 [![Google Solution Challenge](https://img.shields.io/badge/Google-Solution%20Challenge%202025-4285F4?style=for-the-badge&logo=google)](https://developers.google.com/community/gdsc-solution-challenge)
 
@@ -63,7 +63,7 @@ Upload CSV or Model  →  4 Autonomous Agents  →  PDF Report + Fixed Output
 
 ---
 
-## 🇮🇳 Why India Needs This
+##  Why India Needs This
 
 India's AI ecosystem is deploying algorithms in high-stakes decisions affecting millions — **without any systematic fairness auditing.**
 
@@ -126,7 +126,7 @@ Upload a trained sklearn-compatible `.pkl` or `.joblib` model + a representative
 
 ---
 
-## 🧪 LLM BiasProbe (Addon)
+##  LLM BiasProbe (Addon)
 
 Aletheia's two audit modes test *datasets* and *trained models*. **LLM BiasProbe** is a separate addon that adversarially tests **any LLM API endpoint** for bias — your own model, a third-party API, a local Ollama model — pointed at a specific deployment use case you describe.
 
@@ -144,7 +144,7 @@ Describe use case  →  Gemini generates forced-choice scenarios  →  Target mo
 
 ---
 
-## 🔬 The 13-Algorithm MCP Server
+##  The 13-Algorithm MCP Server
 
 Aletheia's core differentiator is the **custom Audit Algorithm MCP Server** — a Knowledge Skill Delivery system that injects peer-reviewed fairness algorithm specifications into agent context at runtime.
 
@@ -186,22 +186,22 @@ Plain-English verdict and before/after comparison for decision-makers. Full stat
 
 ##  Key Differentiators
 
-| Capability | IBM AIF360 | Google What-If | Microsoft Fairlearn | Aequitas | Themis-ML | **Aletheia ✦** |
+| Capability | IBM AIF360 | Google What-If | Microsoft Fairlearn | Aequitas | Themis-ML | **Aletheia ** |
 |-----------|:----------:|:--------------:|:-------------------:|:--------:|:---------:|:--------------:|
-| Zero-code drag-and-drop | ❌ | Partial | ❌ | Partial | ❌ | **✅** |
-| Auto algorithm selection | ❌ | ❌ | ❌ | ❌ | ❌ | **✅ 13 algorithms** |
-| Bias detection | Manual | Visual only | Manual | ✅ | Limited | **Full — proxy, intersectional, causal** |
-| Automated bias mitigation | Some | ❌ | Some | ❌ | Some | **✅ Full before/after** |
-| Proxy / indirect bias | ❌ | ❌ | ❌ | ❌ | ❌ | **✅ SHAP, dCor, MI** |
-| Intersectional analysis | ❌ | ❌ | ❌ | ❌ | ❌ | **✅** |
-| Causal fairness analysis | ❌ | ❌ | ❌ | ❌ | ❌ | **✅ PSE, CEF** |
-| Sandboxed execution | ❌ | ❌ | ❌ | ❌ | ❌ | **✅ Docker isolated** |
-| PDF audit report | ❌ | ❌ | ❌ | ❌ | ❌ | **✅ Publication-ready** |
-| Plain-English findings | ❌ | Partial | ❌ | Partial | ❌ | **✅ Full narrative** |
-| Fixed dataset/model output | Manual | ❌ | Manual | ❌ | ❌ | **✅ Auto-generated** |
-| Requires ML expertise | ✅ | ✅ | ✅ | Some | ✅ | **❌ No** |
-| Multi-agent AI pipeline | ❌ | ❌ | ❌ | ❌ | ❌ | **✅ LangGraph** |
-| Plugin for coding agents | ❌ | ❌ | ❌ | ❌ | ❌ | **✅ Claude, Codex, Gemini** |
+| Zero-code drag-and-drop |  | Partial |  | Partial |  | **** |
+| Auto algorithm selection |  |  |  |  |  | ** 13 algorithms** |
+| Bias detection | Manual | Visual only | Manual |  | Limited | **Full — proxy, intersectional, causal** |
+| Automated bias mitigation | Some |  | Some |  | Some | ** Full before/after** |
+| Proxy / indirect bias |  |  |  |  |  | ** SHAP, dCor, MI** |
+| Intersectional analysis |  |  |  |  |  | **** |
+| Causal fairness analysis |  |  |  |  |  | ** PSE, CEF** |
+| Sandboxed execution |  |  |  |  |  | ** Docker isolated** |
+| PDF audit report |  |  |  |  |  | ** Publication-ready** |
+| Plain-English findings |  | Partial |  | Partial |  | ** Full narrative** |
+| Fixed dataset/model output | Manual |  | Manual |  |  | ** Auto-generated** |
+| Requires ML expertise |  |  |  | Some |  | ** No** |
+| Multi-agent AI pipeline |  |  |  |  |  | ** LangGraph** |
+| Plugin for coding agents |  |  |  |  |  | ** Claude, Codex, Gemini** |
 
 **Four things no competitor does:**
 
@@ -244,9 +244,9 @@ Supports: **Claude Code · Gemini CLI / Antigravity · OpenAI Codex · Custom Ag
 
 | Mode | Documentation |
 |------|--------------|
-| 📊 Dataset Audit Pipeline | [Dataset Agents — all 4 agents explained](DATASET_AGENTS.md) |
-| 🤖 Model Audit Pipeline | [Model Agents — classification + regression](MODEL_AGENTS.md) |
-| 🔬 Algorithm Reference | [13 Algorithms — MCP server explained](docs/algorithms.md) |
+|  Dataset Audit Pipeline | [Dataset Agents — all 4 agents explained](DATASET_AGENTS.md) |
+|  Model Audit Pipeline | [Model Agents — classification + regression](MODEL_AGENTS.md) |
+|  Algorithm Reference | [13 Algorithms — MCP server explained](docs/algorithms.md) |
 
 ---
 
@@ -343,6 +343,187 @@ python mcps/miscellaneous/server.py &
 
 # Start frontend
 cd frontend && npm install && npm run dev
+```
+
+---
+
+##  Deployment Commands
+
+> **Project:** `project-1c7dff83-6a39-4797-94c` · **Zone:** `us-central1-a` · **Frontend:** Cloud Run
+
+### Infrastructure Overview
+
+| VM | Role | Machine | Static IP | Ports |
+|----|------|---------|-----------|-------|
+| `aletheia-dataset-vm` | Dataset Audit Backend | e2-standard-2 | `34.136.58.37` | 8005 |
+| `aletheia-model-vm` | Model Audit Backend | e2-standard-2 | `35.232.143.12` | 8006 |
+| `aletheia-llmbias-vm` | LLM BiasProbe Backend | e2-standard-2 | `136.115.172.168` | 8007 |
+| `aletheia-granite4-vm` | Ollama (Granite LLM) | e2-standard-4 | `136.119.188.112` | 11434 |
+
+Each backend VM runs **Caddy** (reverse proxy with auto-TLS via `sslip.io`) → **Docker container** (FastAPI app).
+
+---
+
+###  SSH into VMs
+
+```bash
+# Dataset VM
+gcloud compute ssh aletheia-dataset-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a
+
+# Model VM
+gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a
+
+# LLM BiasProbe VM
+gcloud compute ssh aletheia-llmbias-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a
+
+# Granite (Ollama) VM
+gcloud compute ssh aletheia-granite4-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a
+```
+
+---
+
+###  View Logs (Live)
+
+Stream real-time logs from any backend container:
+
+```bash
+# Dataset backend logs
+gcloud compute ssh aletheia-dataset-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
+  --command="sudo docker logs -f dataset-api"
+
+# Model backend logs
+gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
+  --command="sudo docker logs -f model-api"
+
+# LLM BiasProbe backend logs
+gcloud compute ssh aletheia-llmbias-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
+  --command="sudo docker logs -f biasprobe-api"
+
+# Ollama logs
+gcloud compute ssh aletheia-granite4-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
+  --command="sudo docker logs -f ollama"
+
+# Last N lines only (no follow)
+gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
+  --command="sudo docker logs --tail 50 model-api"
+```
+
+---
+
+###  Container Management
+
+```bash
+# List all containers on a VM
+gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
+  --command="sudo docker ps -a"
+
+# Restart a container
+gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
+  --command="sudo docker restart model-api"
+
+# Stop and remove a container
+gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
+  --command="sudo docker rm -f model-api"
+
+# Pull latest image and run (Model backend example)
+gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
+  --command="sudo docker pull us-central1-docker.pkg.dev/project-1c7dff83-6a39-4797-94c/aletheia/backend-model:latest && \
+  sudo docker run -d --name model-api --restart unless-stopped \
+    -p 8006:8006 \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -e QA_OLLAMA_URL=http://10.128.0.5:11434 \
+    -e QA_OLLAMA_MODEL=granite4:micro-h \
+    -e DEPLOY_ENV=cloud \
+    us-central1-docker.pkg.dev/project-1c7dff83-6a39-4797-94c/aletheia/backend-model:latest"
+
+# Check container environment variables
+gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
+  --command="sudo docker exec model-api env"
+```
+
+---
+
+###  Hot-Patch (Update Code Without Rebuilding Image)
+
+Copy a local file into the running container and restart — useful for quick fixes:
+
+```bash
+# Step 1: SCP the file to the VM
+gcloud compute scp path/to/local/file.py aletheia-model-vm:/tmp/file.py \
+  --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a
+
+# Step 2: Copy into the container and restart
+gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
+  --command="sudo docker cp /tmp/file.py model-api:/app/path/to/file.py && sudo docker restart model-api"
+```
+
+---
+
+###  Frontend Deployment (Cloud Run)
+
+```bash
+# Build and deploy frontend
+cd frontend
+npm run build
+
+gcloud run deploy aletheia-frontend \
+  --source . \
+  --project=project-1c7dff83-6a39-4797-94c \
+  --region=us-central1 \
+  --allow-unauthenticated
+```
+
+---
+
+###  Build & Push Docker Images (Artifact Registry)
+
+```bash
+# Authenticate Docker with Artifact Registry
+gcloud auth configure-docker us-central1-docker.pkg.dev
+
+# Build and push Dataset backend
+docker build -t us-central1-docker.pkg.dev/project-1c7dff83-6a39-4797-94c/aletheia/backend-dataset:latest \
+  -f backend/dataset_backend/Dockerfile .
+docker push us-central1-docker.pkg.dev/project-1c7dff83-6a39-4797-94c/aletheia/backend-dataset:latest
+
+# Build and push Model backend
+docker build -t us-central1-docker.pkg.dev/project-1c7dff83-6a39-4797-94c/aletheia/backend-model:latest \
+  -f backend/model_backend/Dockerfile .
+docker push us-central1-docker.pkg.dev/project-1c7dff83-6a39-4797-94c/aletheia/backend-model:latest
+
+# Build and push Sandbox image
+docker build -t us-central1-docker.pkg.dev/project-1c7dff83-6a39-4797-94c/aletheia/sandbox-python:latest \
+  ./mcps/sandbox/
+docker push us-central1-docker.pkg.dev/project-1c7dff83-6a39-4797-94c/aletheia/sandbox-python:latest
+```
+
+---
+
+###  Troubleshooting
+
+```bash
+# Check if all VMs are running
+gcloud compute instances list --project=project-1c7dff83-6a39-4797-94c
+
+# Check Caddy reverse proxy logs
+gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
+  --command="sudo journalctl -u caddy --no-pager -n 50"
+
+# Check disk usage on a VM
+gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
+  --command="df -h && sudo docker system df"
+
+# Kill stale sandbox containers on a VM
+gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
+  --command="sudo docker ps -a --filter name=aletheia- --format '{{.ID}}' | xargs -r sudo docker rm -f"
+
+# Test Ollama connectivity from a backend VM
+gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
+  --command="curl -s http://10.128.0.5:11434/api/tags | head -20"
+
+# Check OOM / crash status of a container
+gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
+  --command="sudo docker inspect model-api -f '{{.State.OOMKilled}} {{.State.ExitCode}} {{.State.Status}}'"
 ```
 
 ---

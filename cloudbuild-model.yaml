@@ -1,0 +1,5 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/project-1c7dff83-6a39-4797-94c/aletheia/backend-model:latest', '-f', 'backend/model_backend/Dockerfile', '.']
+images:
+- 'us-central1-docker.pkg.dev/project-1c7dff83-6a39-4797-94c/aletheia/backend-model:latest'

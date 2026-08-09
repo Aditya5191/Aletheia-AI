@@ -17,12 +17,21 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ValidationError
 from websockets.exceptions import ConnectionClosedError, ConnectionClosedOK
+# Resolve the path dynamically so it works no matter where the user runs this script from
+import pathlib
+root_dir = pathlib.Path(__file__).resolve().parent.parent.parent.parent
 
-load_dotenv(override=True)
+# Force load the root .env file
+load_dotenv(dotenv_path=root_dir / ".env", override=True)
 
-# Make the standalone `biasprobe` project importable as a package.
-sys.path.append(os.path.abspath("."))
-sys.path.append(os.path.abspath("biasprobe"))
+# The user is using `gcloud auth application-default login` (ADC).
+# We must clear GOOGLE_APPLICATION_CREDENTIALS in case their PowerShell session
+# has an old/stale path exported, otherwise Vertex AI will try to load it and crash.
+if "GOOGLE_APPLICATION_CREDENTIALS" in os.environ:
+    del os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
+
+sys.path.append(str(root_dir))
+sys.path.append(str(root_dir / "biasprobe"))
 
 from biasprobe import counterfactual_builder, judge, scenario_generator, target_runner
 from biasprobe import report as report_mod

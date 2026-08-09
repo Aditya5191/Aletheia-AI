@@ -27,13 +27,13 @@ DOMAIN="$DASH_IP.sslip.io"
 # Configure Caddy
 cat <<EOF > /etc/caddy/Caddyfile
 $DOMAIN {
-    reverse_proxy localhost:8006
+    reverse_proxy localhost:8007
 }
 EOF
 systemctl restart caddy
 
 # Run the backend container
-docker run -d --restart unless-stopped -p 8006:8006 \
+docker run -d --restart unless-stopped -p 8007:8007 \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  --name aletheia-model-api \
-  us-central1-docker.pkg.dev/project-1c7dff83-6a39-4797-94c/aletheia/backend-model:latest
+  --name aletheia-llmbias-api \
+  us-central1-docker.pkg.dev/project-1c7dff83-6a39-4797-94c/aletheia/backend-biasprobe:latest

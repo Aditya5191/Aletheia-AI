@@ -25,6 +25,9 @@ from backend.model_backend.agents.model_graph import run_model_pipeline
 from backend.model_backend.backend import qa as qa_module
 from pydantic import BaseModel
 
+DEPLOY_ENV = os.getenv("DEPLOY_ENV", "local")
+IS_LOCAL = DEPLOY_ENV == "local"
+
 app = FastAPI(title="Aletheia Model Audit API")
 
 app.add_middleware(

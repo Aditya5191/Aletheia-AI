@@ -323,7 +323,7 @@ print("Mitigation complete. New sample weights calculated.")`,
   },
   "model-inspector": {
     title: "Model Inspector",
-    iconType: "search",
+    iconType: "brain",
     statusLabel: "Completed",
     statusColor: "var(--color-primary)",
     charts: [
@@ -395,7 +395,7 @@ def calc_fpr(y_true, y_pred):
   },
   "threshold-calibrator": {
     title: "Threshold Calibrator",
-    iconType: "tool",
+    iconType: "code",
     statusLabel: "Completed",
     statusColor: "var(--color-success)",
     charts: [

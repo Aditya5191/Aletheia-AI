@@ -36,4 +36,4 @@ systemctl restart caddy
 docker run -d --restart unless-stopped -p 8005:8005 \
   -v /var/run/docker.sock:/var/run/docker.sock \
   --name aletheia-dataset-api \
-  us-central1-docker.pkg.dev/project-f97facc4-90fc-43df-91f/aletheia/backend-dataset:latest
+  us-central1-docker.pkg.dev/project-1c7dff83-6a39-4797-94c/aletheia/backend-dataset:latest
