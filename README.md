@@ -8,7 +8,7 @@
 [![Live MVP](https://img.shields.io/badge/%20Live%20MVP-aletheia--frontend-4285F4?style=for-the-badge)](https://aletheia-frontend-69262873588.us-central1.run.app/)
 [![Demo Video](https://img.shields.io/badge/%20Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube)](https://youtu.be/Xu2u8bvfD-w)
 [![GitHub](https://img.shields.io/badge/GitHub-Aletheia--AI-181717?style=for-the-badge&logo=github)](https://github.com/Aditya5191/Aletheia-AI)
-[![Google Solution Challenge](https://img.shields.io/badge/Google-Solution%20Challenge%202025-4285F4?style=for-the-badge&logo=google)](https://developers.google.com/community/gdsc-solution-challenge)
+
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-WebSocket-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com)

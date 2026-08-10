@@ -109,7 +109,7 @@ export default function AboutPage() {
         <section className="px-8 lg:px-20 py-24 flex flex-col items-center text-center relative min-h-[50vh] justify-center">
           <div className="flex flex-col items-center gap-8 z-10 max-w-[900px]">
             <span className="hero-badge text-[10px] text-primary uppercase tracking-[0.5em] font-label font-bold bg-background/40 backdrop-blur-sm px-8 py-2.5 rounded-full border border-primary/20 shadow-[0_0_30px_rgba(255,105,26,0.15)]">
-              Built for the Google Solution Challenge
+              Built for algorithmic fairness auditing
             </span>
             <h2 className="text-5xl md:text-7xl font-display font-black text-on-surface uppercase tracking-tighter leading-[0.9]">
               <div className="hero-title-line overflow-hidden"><div className="hero-text-inner">Ensuring Fairness</div></div> 
@@ -290,7 +290,7 @@ export default function AboutPage() {
               <span className="font-display font-bold uppercase tracking-widest text-sm">Aletheia</span>
             </div>
             <span className="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">© 2026 Aletheia Forensic AI Systems</span>
-            <span className="text-[8px] text-on-surface-variant/40 uppercase tracking-[0.4em]">Google Solution Challenge — Team Technopaths</span>
+            <span className="text-[8px] text-on-surface-variant/40 uppercase tracking-[0.4em]">Team Technopaths</span>
           </div>
           <div className="flex flex-wrap justify-center md:justify-end gap-x-12 gap-y-6">
             {navItems.map((item) => (

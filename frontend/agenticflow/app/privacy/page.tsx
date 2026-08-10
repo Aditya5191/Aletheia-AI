@@ -355,7 +355,7 @@ export default function PrivacyPage() {
               <span className="font-display font-bold uppercase tracking-widest text-sm text-white">Aletheia</span>
             </div>
             <span className="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">© 2026 Aletheia Forensic AI Systems</span>
-            <span className="text-[8px] text-on-surface-variant/40 uppercase tracking-[0.4em]">Google Solution Challenge — Team Technopaths</span>
+            <span className="text-[8px] text-on-surface-variant/40 uppercase tracking-[0.4em]">Team Technopaths</span>
           </div>
           <div className="flex flex-wrap justify-center md:justify-end gap-x-12 gap-y-6">
             {navItems.map((item) => (
