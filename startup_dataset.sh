@@ -35,5 +35,8 @@ systemctl restart caddy
 # Run the backend container
 docker run -d --restart unless-stopped -p 8005:8005 \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  --name aletheia-dataset-api \
+  -e QA_OLLAMA_URL=http://10.128.0.5:11434 \
+  -e QA_OLLAMA_MODEL=granite4:micro-h \
+  -e DEPLOY_ENV=cloud \
+  --name dataset-api \
   us-central1-docker.pkg.dev/project-1c7dff83-6a39-4797-94c/aletheia/backend-dataset:latest

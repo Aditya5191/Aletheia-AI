@@ -5,6 +5,7 @@ langgraph
 langchain-core
 langchain-openai
 langchain-google-vertexai
+langchain-google-genai
 langchain-ollama
 langchain-mcp-adapters
 mcp

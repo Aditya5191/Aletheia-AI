@@ -412,6 +412,8 @@ gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --
 
 ###  Container Management
 
+> **⚠️ CRITICAL:** Do not name your main backend containers starting with `aletheia-model-` or `aletheia-api-` (e.g. `aletheia-model-api`). The backend's sandbox cleanup routine deletes containers with these prefixes on startup. If you use these names, the container will mistakenly delete itself! Always stick to `dataset-api`, `model-api`, and `biasprobe-api`.
+
 ```bash
 # List all containers on a VM
 gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
