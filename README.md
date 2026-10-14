@@ -521,17 +521,6 @@ gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --
 gcloud compute ssh aletheia-model-vm --project=project-1c7dff83-6a39-4797-94c --zone=us-central1-a \
   --command="sudo docker inspect model-api -f '{{.State.OOMKilled}} {{.State.ExitCode}} {{.State.Status}}'"
 ```
-
----
-
-##  Project Links
-
-| Resource | Link |
-|---------|------|
-|  **Live MVP** | https://aletheia-frontend-69262873588.us-central1.run.app/ |
-|  **Demo Video** | https://youtu.be/Xu2u8bvfD-w |
-|  **GitHub Repository** | https://github.com/Aditya5191/Aletheia-AI |
-
 ---
 
 ##  Documentation Index
